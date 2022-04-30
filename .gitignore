@@ -1,8 +1,10 @@
+bin/
 out/
 build/
 
 # Exclude CMake-Buildfiles
 CMakeFiles/
+CMakeCache.txt
 Makefile
 cmake_install.cmake
 
