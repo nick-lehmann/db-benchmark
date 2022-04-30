@@ -7,6 +7,8 @@
 #include <stdexcept>
 #include <vector>
 
+#include "filters.h"
+
 template <typename T>
 class Table {
  public:
