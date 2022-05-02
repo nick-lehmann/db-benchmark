@@ -28,9 +28,25 @@ class LessThan : public Filter<Data> {
 };
 
 template <typename Data>
+class LessEqual : public Filter<Data> {
+  using Filter::Filter;
+
+ public:
+  bool match(Data *cell) { return *cell <= value; }
+};
+
+template <typename Data>
 class GreaterThan : public Filter<Data> {
   using Filter::Filter;
 
  public:
   bool match(Data *cell) { return *cell > value; }
+};
+
+template <typename Data>
+class GreaterEqual : public Filter<Data> {
+  using Filter::Filter;
+
+ public:
+  bool match(Data *cell) { return *cell >= value; }
 };
