@@ -22,12 +22,12 @@ class Table {
   ~Table() = 0;
 
   void addRow(T *row) = 0;
-  T *getRow(const int rowIndex) = 0;
-  T *getCell(const int rowIndex, const in columnIndex) = 0;
+  virtual T *getRow(const int rowIndex) = 0;
+  virtual T *getCell(const int rowIndex, const in columnIndex) = 0;
 
   T *operator[](const int index) { return this->getRow(index); }
 
-  T *query(vector<int> projection, vector<Filter *> filters) = 0;
+  virtual T *query(vector<int> projection, vector<Filter *> filters) = 0;
 
   // Print the whole table
   // TODO: Add padding to make all cells align
