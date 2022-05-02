@@ -27,7 +27,7 @@ class Table {
 
   T *operator[](const int index) { return this->getRow(index); }
 
-  virtual T *query(vector<int> &projection, vector<Filter *> &filters) = 0;
+  virtual Table *query(vector<int> &projection, vector<Filter *> &filters) = 0;
 
   // Print the whole table
   // TODO: Add padding to make all cells align
