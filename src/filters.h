@@ -1,3 +1,5 @@
+#pragma once
+
 template <typename Data>
 class Filter {
  public:
@@ -13,40 +15,40 @@ class Filter {
 
 template <typename Data>
 class Equal : public Filter<Data> {
-  using Filter::Filter;
+  using Filter<Data>::Filter;
 
  public:
-  bool match(Data *cell) { return *cell == value; }
+  bool match(Data *cell) { return *cell == this.value; }
 };
 
 template <typename Data>
 class LessThan : public Filter<Data> {
-  using Filter::Filter;
+  using Filter<Data>::Filter;
 
  public:
-  bool match(Data *cell) { return *cell < value; }
+  bool match(Data *cell) { return *cell < this.value; }
 };
 
 template <typename Data>
 class LessEqual : public Filter<Data> {
-  using Filter::Filter;
+  using Filter<Data>::Filter;
 
  public:
-  bool match(Data *cell) { return *cell <= value; }
+  bool match(Data *cell) { return *cell <= this.value; }
 };
 
 template <typename Data>
 class GreaterThan : public Filter<Data> {
-  using Filter::Filter;
+  using Filter<Data>::Filter;
 
  public:
-  bool match(Data *cell) { return *cell > value; }
+  bool match(Data *cell) { return *cell > this.value; }
 };
 
 template <typename Data>
 class GreaterEqual : public Filter<Data> {
-  using Filter::Filter;
+  using Filter<Data>::Filter;
 
  public:
-  bool match(Data *cell) { return *cell >= value; }
+  bool match(Data *cell) { return *cell >= this.value; }
 };
