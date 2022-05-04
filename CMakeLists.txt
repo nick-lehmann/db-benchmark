@@ -16,6 +16,8 @@ add_definitions(${CFLAGS})
 set(CMAKE_BINARY_DIR "bin")
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 
+# include directories
+include_directories(src/include)
 
 # specify executable to build
 add_executable(row_store src/row_store/main.cpp)
