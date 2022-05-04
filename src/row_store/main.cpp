@@ -3,7 +3,7 @@
 #include <array>
 #include <cstdlib>
 
-#include "../Table.h"
+#include "Table.h"
 #include "Projection.h"
 #include "Filter.h"
 

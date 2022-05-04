@@ -7,11 +7,9 @@
 #include <iostream>
 #include <stdexcept>
 
-#include "../Table.h"
+#include "Table.h"
 #include "Filter.h"
 #include "Projection.h"
-
-
 
 template<typename T>
 class RowStoreTable : public Table<T> {

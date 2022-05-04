@@ -2,7 +2,7 @@
 #include <cstdint>
 #include <stdexcept>
 #include "RowStoreTable.h"
-#include "../filters.h"
+#include "Filters.h"
 
 /**
 This filter method requires the Table to be sorted over the selected attribute
