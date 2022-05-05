@@ -17,7 +17,7 @@ class Equal : public Filter<T> {
     using Filter<T>::Filter;
 
 public:
-    bool match(T cell) override { return *cell == this->value; }
+    bool match(T cell) override { return cell == this->value; }
 };
 
 template <typename T>
@@ -25,7 +25,7 @@ class LessThan : public Filter<T> {
     using Filter<T>::Filter;
 
 public:
-    bool match(T cell) override { return *cell < this->value; }
+    bool match(T cell) override { return cell < this->value; }
 };
 
 template <typename T>
@@ -33,7 +33,7 @@ class LessEqual : public Filter<T> {
     using Filter<T>::Filter;
 
 public:
-    bool match(T cell) override { return *cell <= this->value; }
+    bool match(T cell) override { return cell <= this->value; }
 };
 
 template <typename T>
@@ -41,7 +41,7 @@ class GreaterThan : public Filter<T> {
     using Filter<T>::Filter;
 
 public:
-    bool match(T cell) override { return *cell > this->value; }
+    bool match(T cell) override { return cell > this->value; }
 };
 
 template <typename T>
@@ -49,5 +49,5 @@ class GreaterEqual : public Filter<T> {
     using Filter<T>::Filter;
 
 public:
-    bool match(T cell) override { return *cell >= this->value; }
+    bool match(T cell) override { return cell >= this->value; }
 };
