@@ -8,7 +8,7 @@
 #include "Filter.h"
 
 int main(int argc, char ** argv) {
-    std::cout << "Row-Store Code" << std::endl;
+    /*std::cout << "Row-Store Code" << std::endl;
     auto baseTable = *createSortedTestTable<uint64_t>(5, 100, 50);
 
     baseTable.print();
@@ -27,7 +27,7 @@ int main(int argc, char ** argv) {
     //destruct tables -> free allocated memory
     delete &result;
     delete &result2;
-    delete &baseTable;
+    delete &baseTable;*/
 
 	return 0;
 }

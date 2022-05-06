@@ -1,9 +1,8 @@
+#pragma once
 #include <cstdint>
 #include <stdexcept>
-#include "Table.h"
-
-#ifndef FILTER_H
-#define FILTER_H
+#include "RowStoreTable.h"
+#include "Filters.h"
 
 /**
 This filter method requires the Table to be sorted over the selected attribute
@@ -37,19 +36,17 @@ Table<T, S> * filter_binary_search(Table<T, S> &table, const int attribute, cons
 }*/
 
 template<typename T>
-Table<T> * filter_basic(Table<T> &table, const int attribute, const int value) {
-	if (attribute < 0 || attribute >= table.tupleSize) {
+Table<T> * filter_basic(Table<T> &table, Filter<T> *predicate) {
+	if (predicate->index < 0 || predicate->index >= table.numberOfAttributes) {
 		throw std::invalid_argument("Error! Invalid attribute index!");
 	}
 
-	auto result = new Table<T>(table.tupleSize);
+	auto result = new Table<T>(table.numberOfAttributes);
 	for (int i = 0; i < table.data.size(); ++i) {
-		if (table.data[i][attribute] == value) {
+		if (predicate->match(table[i][predicate->index])) {
 			// more efficient approach: use tuple-pointer and add the whole tuple to the result table
 			result->addTuple(table[i]);
 		}
 	}
 	return result;
 }
-
-#endif
