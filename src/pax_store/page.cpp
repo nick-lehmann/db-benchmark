@@ -1,6 +1,5 @@
 #pragma once
 #include <errno.h>
-#include <malloc.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,8 +8,10 @@
 
 #include <iostream>
 #include <iterator>
+#include <memory>
 #include <vector>
 
+#include "../include/Filters.h"
 #include "types.h"
 
 using namespace std;
@@ -18,13 +19,10 @@ using namespace std;
 // PAX Page that supports fixed width integers.
 //
 // No presence bits implemented as we do not store nullable values right now
-// Question: Can we skip the presence bit if the attribute is not nullable?
-// Question: If the presence bit for a value is not set, will we not write the
-// attribute in the minipage?
-//
-// No v-minitables are supported because all data types we care about are
+// No v-minitables are supported because all T types we care about are
 // fixed-sized.
-class Page {
+template <typename T>
+class PaxPage {
   unsigned short *start;
   long int pagesize;
 
@@ -36,14 +34,14 @@ class Page {
 
  public:
   // Read page from memory
-  Page(Header *start, long int pagesize) {
+  PaxPage(Header *start, long int pagesize) {
     this->start = start;
     this->pagesize = pagesize;
     numberOfAttributes = start;
   }
 
   // Write page to memory
-  Page(Header *start, long int pagesize, Header attributes) {
+  PaxPage(Header *start, long int pagesize, Header attributes) {
     this->start = start;
     this->pagesize = pagesize;
     clear();
@@ -57,13 +55,11 @@ class Page {
 
     *numberOfAttributes = attributes;
 
-    for (int i = 0; i < attributes; i++) {
-      *(attributeSizes++) = sizeof(Data);
-    }
+    for (int i = 0; i < attributes; i++) *(attributeSizes++) = sizeof(T);
 
-    unsigned short headerLength = (3 + 2 * attributes) * sizeof(unsigned short);
+    unsigned short headerLength = (3 + 2 * attributes) * sizeof(Header);
     unsigned short freeBytes = pagesize - headerLength;
-    unsigned short recordSize = *numberOfAttributes * sizeof(Data);
+    unsigned short recordSize = *numberOfAttributes * sizeof(T);
     cout << "Freespace: " << freeBytes << " (" << freeBytes / recordSize
          << " records)" << endl;
 
@@ -87,6 +83,13 @@ class Page {
     freeSpace = numberOfRecords + 1;
   }
 
+  static unsigned int getMaximumRows(unsigned long pagesize,
+                                     Header numberOfAttributes) {
+    unsigned short headerLength = (3 + 2 * numberOfAttributes) * sizeof(Header);
+
+    return (pagesize - headerLength) / numberOfAttributes * sizeof(T);
+  }
+
   void print() {
     int lineWidth = 8;
     for (int i = 0; i < pagesize / sizeof(unsigned short); i++) {
@@ -102,14 +105,14 @@ class Page {
     }
   }
 
-  vector<Data> readRecord(RowIndex index) {
-    vector<Data> result;
+  vector<T> readRow(RowIndex index) {
+    vector<T> result;
 
     for (int i = 0; i < *numberOfAttributes; i++) {
       Header offset = *(minipageOffsets + i);
 
-      Data *minipage = (Data *)(start + offset / 2);
-      Data *location = minipage + index;
+      T *minipage = (T *)(start + offset / 2);
+      T *location = minipage + index;
 
       result.push_back(*location);
     }
@@ -117,8 +120,8 @@ class Page {
     return result;
   }
 
-  void writeRecord(Data *record) {
-    unsigned short recordSize = *numberOfAttributes * sizeof(Data);
+  void writeRecord(T *record) {
+    unsigned short recordSize = *numberOfAttributes * sizeof(T);
     if (*freeSpace < recordSize) {
       cout << "Page is full" << endl;
       return;
@@ -127,8 +130,8 @@ class Page {
     for (int i = 0; i < *numberOfAttributes; i++) {
       Header offset = *(minipageOffsets + i);
 
-      Data *minipage = (Data *)(start + offset / 2);
-      Data *location = minipage + *numberOfRecords;
+      T *minipage = (T *)(start + offset / 2);
+      T *location = minipage + *numberOfRecords;
       cout << "Writing attribute " << i << " to offset " << offset << " at "
            << location << endl;
       *(location) = record[i];
@@ -137,14 +140,14 @@ class Page {
     (*freeSpace) -= recordSize;
   }
 
-  void process(vector<Equal> filters) {
-    vector<vector<Data>> results = {};
+  void process(vector<Filter<T> *> filters) {
+    vector<vector<T>> results = {};
     for (RowIndex index = 0; index < *numberOfRecords; index++) {
-      vector<Data> record = readRecord(index);
+      vector<T> record = readRow(index);
 
       bool fits = true;
       for (auto &filter : filters) {
-        Data cell = record.at(filter.index);
+        T cell = record.at(filter.index);
         if (!filter.match(&cell)) {
           fits = false;
           break;

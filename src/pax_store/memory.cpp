@@ -1,9 +1,10 @@
-#include <malloc.h>
+#pragma once
 #include <stdio.h>
 
 #include <iostream>
+#include <memory>
 
-#include "pax.cpp"
+#include "page.cpp"
 #include "types.h"
 
 using namespace std;
@@ -17,30 +18,33 @@ long getPagesize() {
 }
 
 Buffer allocateAlignedBuffer(long pagesize) {
-  Buffer buffer = (Buffer)memalign(pagesize, pagesize);
+  // Buffer buffer = (Buffer)memalign(pagesize, pagesize);
 
-  // Initialize with zeros
-  for (unsigned long i = 0; i < pagesize / sizeof(Buffer); i++) {
-    *(buffer + i) = 0;
-  }
+  // // Initialize with zeros
+  // for (unsigned long i = 0; i < pagesize / sizeof(Buffer); i++) {
+  //   *(buffer + i) = 0;
+  // }
 
-  if (buffer == NULL) {
-    cerr << "Failed to allocate buffer" << endl;
-    throw;
-  }
-  return buffer;
+  // if (buffer == NULL) {
+  //   cerr << "Failed to allocate buffer" << endl;
+  //   throw;
+  // }
+  // char buffer[4096];
+  // return &buffer;
+  return (char*)0xFFFFFF;
 }
 
-Page createPage() {
-  long pagesize = getPagesize();
-  Buffer buffer = allocateAlignedBuffer(pagesize);
-  return Page((Header *)buffer, pagesize, 3);
-}
+// PaxPage createPage() {
+//   long pagesize = getPagesize();
+//   Buffer buffer = allocateAlignedBuffer(pagesize);
+//   return Page((Header *)buffer, pagesize, 3);
+// }
 
 // Fill page with random data
-void fillPage(Page *page) {
+template <typename T>
+void fillPage(PaxPage<T>* page) {
   for (int i = 0; i < 10; i++) {
-    Data record[] = {i, 42 + i, 69 + i};
+    T record[] = {i, 42 + i, 69 + i};
     page->writeRecord(record);
   }
 }

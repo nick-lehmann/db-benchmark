@@ -1,5 +1,4 @@
 #include <errno.h>
-#include <malloc.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,18 +7,26 @@
 #include <iterator>
 #include <vector>
 
-#include "Filters.cpp"
+#include "Helper.h"
 #include "memory.cpp"
-#include "pax.cpp"
+#include "page.cpp"
+#include "table.cpp"
 #include "types.h"
 
 using namespace std;
 
 int main() {
-  Page page = createPage();
-  fillPage(&page);
+  uint16_t lowerBound = 0;
+  uint16_t upperBound = 100;
+  const uint16_t** data =
+      TableHelper::generateRandomData<uint16_t>(3, 3, lowerBound, upperBound);
 
-  page.print();
+  PaxTable<uint16_t> table(3, 3, data);
+
+  // Page page = createPage();
+  // fillPage(&page);
+
+  // page.print();
 
   // cout << "Reading vector 4" << endl;
   // vector<Data> record = page.readRecord(4);
@@ -27,9 +34,9 @@ int main() {
   //   cout << x << "\n";
   // }
 
-  vector<Equal> filters;
-  Equal f1(2, 69);
-  filters.push_back(f1);
+  // vector<Equal> filters;
+  // Equal f1(2, 69);
+  // filters.push_back(f1);
 
-  page.process(filters);
+  // page.process(filters);
 }
