@@ -5,7 +5,7 @@
 #include <vector>
 #include "RowStoreTable.h"
 
-bool columnIndicesValid(std::vector<int> columnIndices, int tupleSize) {
+/*bool columnIndicesValid(std::vector<int> columnIndices, int tupleSize) {
 	// check for each column index if it is in range of 0 and tupleSize
 	for (uint64_t i = 0; i < columnIndices.size(); i++) {
 		if (columnIndices[i] < 0 || columnIndices[i] >= tupleSize) {
@@ -13,10 +13,10 @@ bool columnIndicesValid(std::vector<int> columnIndices, int tupleSize) {
 		}
 	}
 	return true;
-}
+}*/
 
-template<typename T>
-RowStoreTable<T> * projection(RowStoreTable<T> &table, std::vector<int> projection) {
+/*template <typename T>
+RowStoreTable<T> *projection(RowStoreTable<T> &table, std::vector<int> &projection) {
     if (!columnIndicesValid(projection, table.numberOfAttributes)) {
         throw std::invalid_argument("Error! Invalid column indices!");
     }
@@ -36,4 +36,4 @@ RowStoreTable<T> * projection(RowStoreTable<T> &table, std::vector<int> projecti
     }
 
     return result;
-}
+}*/

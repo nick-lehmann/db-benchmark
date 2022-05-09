@@ -1,4 +1,5 @@
 #pragma once
+
 #include <array>
 #include <vector>
 #include <cstdint>
@@ -14,79 +15,178 @@
 template<typename T>
 class RowStoreTable : public Table<T> {
 
-private:
-    //true: table owns the original pointer to a tuple
-    //      (and must free the memory behind that pointer when deconstucted)
-    //false:table only contains copies of tuples
-    //      (and must not free the memory behind that pointer)
-    const bool baseTable;
 public:
     std::vector<T *> data;
 
-    RowStoreTable(const int numberOfAttributes, const int numberOfRows) :
-            Table<T>(numberOfAttributes, numberOfRows), baseTable(false) {}
-    RowStoreTable(const int numberOfAttributes, const int numberOfRows, bool baseTable) :
-            Table<T>(numberOfAttributes, numberOfRows), baseTable(baseTable) {}
-    ~RowStoreTable() {
+public:
+    RowStoreTable(unsigned numAttributes, unsigned numRows, const T **initialData)
+        : Table<T>(numAttributes, numRows, initialData) {}
+
+    ~RowStoreTable() override {
         //only delete the tuple if table is a base table
-        if(baseTable) {
-            for(int i = 0; i < data.size(); ++i) {
-                free(data[i]);
-            }
+        for(uint64_t i = 0; i < data.size(); ++i) {
+            free(data[i]);
         }
     }
 
     void addRow(T *row) {
         data.push_back(row);
+        this->numberOfRows = data.size();
     }
 
-    T *getRow(const int rowIndex) {
+    T *getRow(unsigned rowIndex) override {
         return data[rowIndex];
-    };
-    T *getCell(const int rowIndex, const int columnIndex) {
-        return data[rowIndex][columnIndex];
-    };
+    }
 
-    Table<T>* query(std::vector<int> &projection, std::vector<Filter<T>  *> &filters) {
+    T **query_table(std::vector<unsigned> &projection, std::vector<Filter<T>> &filters) override {
+        // TODO
+        return nullptr;
+    }
+
+    uint64_t query_count(std::vector<unsigned> &projection, std::vector<Filter<T>> &filters) override {
+        // TODO
+        return -1;
+    }
+
+    bool columnIndicesValid(std::vector<int> columnIndices, int tupleSize) {
+    	// check for each column index if it is in range of 0 and tupleSize
+    	for (uint64_t i = 0; i < columnIndices.size(); i++) {
+    		if (columnIndices[i] < 0 || columnIndices[i] >= tupleSize) {
+    			return false;
+    		}
+    	}
+    	return true;
+    }
+
+    RowStoreTable<T> *projection(RowStoreTable<T> &table, std::vector<int> &projection) {
+        if (!columnIndicesValid(projection, table.numberOfAttributes)) {
+            throw std::invalid_argument("Error! Invalid column indices!");
+        }
+
+        // create empty table
+        //TODO result is if type intermediate result, which we need to implement first
+        auto result = new RowStoreTable<T>(projection.size(), true);
+
+        // iterate over given table tuples
+        for (int i = 0; i < table.data.size(); i++) {
+            // create empty (temporary) tuple
+            auto tuple = (T *) calloc(projection.size(), sizeof(T));
+
+            // fill tuple with data from every row of table
+            for (int j = 0; j < projection.size(); j++) {
+                tuple[j] = table[i][projection[j]];
+            }
+            result->addRow(tuple);
+        }
+
+        return result;
+    }
+
+    RowStoreTable<T> * filter_basic(RowStoreTable<T> &table, Filter<T> *predicate) {
+    	if (predicate->index < 0 || predicate->index >= table.numberOfAttributes) {
+    		throw std::invalid_argument("Error! Invalid attribute index!");
+    	}
+
+        //TODO needs to be intermediate table (see above)
+    	RowStoreTable<T> *result = new RowStoreTable<T>(table.numberOfAttributes, 0);
+    	for (int i = 0; i < table.data.size(); ++i) {
+    		if (predicate->match(table[i][predicate->index])) {
+    			// more efficient approach: use tuple-pointer and add the whole tuple to the result table
+                // TODO create actual
+    			result->addRow(table[i]);
+    		}
+    	}
+    	return result;
+    }
+
+
+
+
+    Table<T>* query(std::vector<int> &projectionColumns, std::vector<Filter<T>  *> &filters) {
         //TODO: for highest performance do projections as early as possible
         //(AQP WiSe19/20, Lecture 8 Query Processing, Slide 23)
 
-        Table<T> filter_result = this;
+        RowStoreTable<T> *filterResult = this;
         // apply all filters on the table
         for(int i = 0; i < filters.size(); ++i) {
-            filter_result = filter_basic(filter_result);
+            auto oldResult = filterResult;
+            filterResult = filter_basic(*filterResult, filters[i]);
+
+            if(oldResult != this) {
+                delete oldResult;
+            }
         }
         // project to the desired columns
-        return projection(filter_result, projection);
+        RowStoreTable<T> * projectionResult = projection(*filterResult, projectionColumns);
+        return projectionResult;
     }
 };
 
 template<typename T>
 RowStoreTable<T> * createSortedTestTable(const int tupleSize, const int tupleCount, int duplicates) {
+    //TODO needs to be intermediate table (see above)
 	RowStoreTable<T> *table = new RowStoreTable<T>(tupleSize, true);
 
-    T number = 0;
-    int stop = tupleCount + duplicates;
-	for(int i = 0; i < stop; ++i) {
-        //create empty tuple
-        T *tuple = malloc(tupleSize * sizeof(T));
+	for(int i = 0; i < tupleCount; ++i) {
+    //create empty tuple
+    T *tuple = (T *) malloc(tupleSize * sizeof(T));
 		// fill tuple with data
 		for(int j = 0; j < tupleSize; ++j){
-			tuple[j] = number++;
-        }
-        // append tuple to table
-        table.addRow(tuple);
-        //creates duplicates
-        if(duplicates > 0) {
-            number-=tupleSize;
-            T *dtuple = malloc(tupleSize * sizeof(T));
-            ++i;
-            for(int j = 0; j < tupleSize; ++j){
-    			tuple[j] = number++;
-            }
-            table.addRow(dtuple);
-            --duplicates;
-        }
+      tuple[j] = i*tupleSize + j;
+    }
+    // append tuple to table
+    table->addRow(tuple);
 	}
 	return table;
 }
+
+
+bool columnIndicesValid(std::vector<int> columnIndices, int tupleSize) {
+	// check for each column index if it is in range of 0 and tupleSize
+	for (uint64_t i = 0; i < columnIndices.size(); i++) {
+		if (columnIndices[i] < 0 || columnIndices[i] >= tupleSize) {
+			return false;
+		}
+	}
+	return true;
+}
+
+/*template <typename T>
+RowStoreTable<T> *projection(RowStoreTable<T> &table, std::vector<int> &projection) {
+    if (!columnIndicesValid(projection, table.numberOfAttributes)) {
+        throw std::invalid_argument("Error! Invalid column indices!");
+    }
+
+    // create empty table
+    auto result = new RowStoreTable<T>(projection.size(), true);
+
+    // iterate over given table tuples
+    for (int i = 0; i < table.data.size(); i++) {
+        // create empty (temporary) tuple
+        auto tuple = (T *) calloc(projection.size(), sizeof(T));
+
+        // fill tuple with data from every row of table
+        for (int j = 0; j < projection.size(); j++) {
+            tuple[j] = table[i][projection[j]];
+        }
+        result->addRow(tuple);
+    }
+
+    return result;
+}*/
+
+/*template <typename T>
+RowStoreTable<T> * filter_basic(RowStoreTable<T> &table, Filter<T> *predicate) {
+	if (predicate->index < 0 || predicate->index >= table.numberOfAttributes) {
+		throw std::invalid_argument("Error! Invalid attribute index!");
+	}
+
+	RowStoreTable<T> *result = new RowStoreTable<T>(table.numberOfAttributes, 0);
+	for (int i = 0; i < table.data.size(); ++i) {
+		if (predicate->match(table[i]+predicate->index)) {
+			// more efficient approach: use tuple-pointer and add the whole tuple to the result table
+			result->addRow(table[i]);
+		}
+	}
+	return result;
+}*/

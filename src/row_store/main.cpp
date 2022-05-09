@@ -8,26 +8,25 @@
 #include "Filter.h"
 
 int main(int argc, char ** argv) {
-    /*std::cout << "Row-Store Code" << std::endl;
-    auto baseTable = *createSortedTestTable<uint64_t>(5, 100, 50);
+    using Type = uint64_t;
 
-    baseTable.print();
-    std::cout << "_____________________" << std::endl;
+    std::cout << "Row-Store Code" << std::endl;
+    auto baseTable = createSortedTestTable<Type>(5, 100, 50);
 
-    int projectionAttributes[] = {0, 2, 3};
-    auto result = *projection(baseTable, projectionAttributes, 3);
+    baseTable->print();
 
-    result.print();
+    std::vector<int> projectionAttributes = {0, 2, 3};
+    std::vector<Filter<Type> *> filters;
+    filters.push_back(new LessThan<Type>(2, 42));
 
-    auto result2 = *filter_basic(result, 1, 42);
+    auto result = baseTable->query(projectionAttributes, filters);
 
-    result2.print();
-
+    result->print();
 
     //destruct tables -> free allocated memory
-    delete &result;
-    delete &result2;
-    delete &baseTable;*/
+    delete baseTable;
+    delete result;
+
 
 	return 0;
 }
