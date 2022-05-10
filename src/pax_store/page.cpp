@@ -26,11 +26,11 @@ class PaxPage {
   unsigned short *start;
   long int pagesize;
 
-  Header *numberOfAttributes;
-  Header *attributeSizes;
-  Header *minipageOffsets;
-  Header *numberOfRecords;
-  Header *freeSpace;
+  Header *numberOfAttributes;  // Fixed
+  Header *attributeSizes;      // Variable
+  Header *minipageOffsets;     // Variable
+  Header *numberOfRecords;     // Fixed
+  Header *freeSpace;           // Fixed
 
  public:
   // Read page from memory
@@ -83,11 +83,17 @@ class PaxPage {
     freeSpace = numberOfRecords + 1;
   }
 
-  static unsigned int getMaximumRows(unsigned long pagesize,
-                                     Header numberOfAttributes) {
+  /**
+   * @brief Get the maximum number of records that can be stored in one page
+   *
+   * @param pagesize
+   * @param numberOfAttributes
+   * @return int
+   */
+  static int getMaximumRows(long pagesize, Header numberOfAttributes) {
+    // 3 header fields, plus 2 for every attribute
     unsigned short headerLength = (3 + 2 * numberOfAttributes) * sizeof(Header);
-
-    return (pagesize - headerLength) / numberOfAttributes * sizeof(T);
+    return (pagesize - headerLength) / (numberOfAttributes * sizeof(T));
   }
 
   void print() {
