@@ -29,11 +29,15 @@ namespace ColumnStore {
             return returnRow;
         }
 
-        T **query_table(std::vector<unsigned> &projection, std::vector<Filter<T>*> &filters) override {
+        T **query_table(std::vector<unsigned> &projection, std::vector<Filter<T>*> &filters, unsigned& rows,
+                        unsigned& columns) override {
             std::vector<unsigned>* filter_indices = nullptr;
             for (const auto& filter : filters) {
                 filter_indices = filter_basic(filter, filter_indices);
             }
+
+            columns = (unsigned) this->numberOfAttributes;
+            rows = (unsigned) filter_indices->size();
 
             return reconstruct_table(filter_indices);
 

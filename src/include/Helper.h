@@ -28,8 +28,21 @@ namespace TableHelper {
         return const_cast<const T**>(data);
     }
 
+    /// Prints a two-dimensional C-array as a table.
+    /// \tparam T type of the data
+    /// \param table table to print
+    /// \param numberOfColumns number of columns
+    /// \param numberOfRows number of rows
     template<typename T>
-    void printTable(T** table, unsigned numberOfRows, unsigned numberOfColumns) {
-        std::cout << "TODO" << std::endl;
+    void printTable(T** table, unsigned numberOfColumns, unsigned numberOfRows) {
+        for (unsigned row = 0; row < numberOfRows; row++) {
+            for (unsigned column = 0; column < numberOfColumns; column++) {
+                std::cout << table[row][column];
+
+                if (column < (numberOfColumns - 1)) std::cout << " | ";
+            }
+            std::cout << std::endl;
+        }
+        std::cout << std::endl;
     }
 }
