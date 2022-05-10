@@ -1,44 +1,39 @@
-#include <iostream>
-#include <vector>
 #include <array>
 #include <cstdlib>
+#include <iostream>
+#include <vector>
 
-#include "Table.h"
-#include "Projection.h"
-#include "Filter.h"
 #include "BaseTable.h"
+#include "Filter.h"
 #include "Helper.h"
+#include "IntermediateTable.h"
+#include "Projection.h"
+#include "Table.h"
 
-int main(int argc, char ** argv) {
-    using Type = uint64_t;
+int main(int argc, char **argv) {
+  using Type = uint64_t;
 
-    std::cout << "Row-Store Code" << std::endl;
-    const int** initialData = TableHelper::generateRandomData<int>(5, 20, 1, 10);
-    RowStore::BaseTable<int> baseTable(5, 20, initialData);
+  std::cout << "Row-Store Code" << std::endl;
+  const int **initialData = TableHelper::generateRandomData<int>(5, 20, 1, 10);
+  RowStore::BaseTable<int> baseTable(5, 20, initialData);
 
-    std::cout << "Print Test-BaseTable: \n" << std::endl;
-    baseTable.print();
+  std::cout << "Print Test-BaseTable: \n" << std::endl;
+  baseTable.print();
 
-    std::vector<int> projectionAttributes = {0, 2, 3};
-    std::vector<Filter<Type> *> filters;
-    filters.push_back(new LessThan<Type>(2, 42));
+  std::cout << "Print Test-IntermediateTable: \n" << std::endl;
+  RowStore::IntermediateTable<int> interTable(5, baseTable);
+  uint64_t size = 0;
+  RowStore::printTableOutput(5, size, interTable.table(size));
 
-    /* commented out until implementation of baseTable & IntermediateTable is complete and working
-    auto result = baseTable->query(projectionAttributes, filters);
+  /*std::vector<int> projectionAttributes = {0, 2, 3};
+  std::vector<Filter<Type> *> filters;
+  filters.push_back(new LessThan<Type>(2, 42));*/
 
-    result->print();
-    */
+  /* commented out until implementation of baseTable & IntermediateTable is complete and working
+  auto result = baseTable->query(projectionAttributes, filters);
 
+  result->print();
+  */
 
-    //destruct tables -> free allocated memory
-    
-    /* No manual erasing of baseTable since baseTable is initialized statically.
-    delete baseTable;
-    */
-
-    /* commented out until implementation of baseTable & IntermediateTable is complete and working
-    delete result;
-    */
-
-	return 0;
+  return 0;
 }
