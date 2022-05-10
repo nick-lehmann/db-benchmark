@@ -36,17 +36,19 @@ namespace ColumnStore {
                 filter_indices = filter_basic(filter, filter_indices);
             }
 
-            columns = (unsigned) this->numberOfAttributes;
+            columns = (unsigned) projection.size();
             rows = (unsigned) filter_indices->size();
 
-            return reconstruct_table(filter_indices);
-
-            // TODO add projection code
+            return reconstruct_table(projection,filter_indices);
         }
 
         uint64_t query_count(std::vector<unsigned> &projection, std::vector<Filter<T>*> &filters) override {
-            // TODO
-            return -1;
+            std::vector<unsigned>* filter_indices = nullptr;
+            for (const auto& filter : filters) {
+                filter_indices = filter_basic(filter, filter_indices);
+            }
+
+            return (unsigned) filter_indices->size();
         }
 
     private:
@@ -70,19 +72,14 @@ namespace ColumnStore {
             return output_indices;
         }
 
-        std::vector<unsigned>* projection_basic() {
-            return nullptr;
-        }
-
-        T** reconstruct_table(std::vector<unsigned>* row_indices /* TODO projection (column indices) */) {
+        T** reconstruct_table(std::vector<unsigned> &projection, std::vector<unsigned>* row_indices) {
             T** to_return = (T**) malloc(row_indices->size() * sizeof(T*));
 
             for (unsigned row = 0; row < row_indices->size(); row++) {
-                // TODO add projection from here
-                T* rowData = (T*) malloc(this->numberOfAttributes * sizeof(T));
+                T* rowData = (T*) malloc(projection.size() * sizeof(T));
                 to_return[row] = rowData;
-                for (unsigned column = 0; column < this->numberOfAttributes; column++) {
-                    to_return[row][column] = data[column][row];
+                for (unsigned projection_index = 0; projection_index < projection.size(); projection_index++) {
+                    to_return[row][projection_index] = data[projection.at(projection_index)][row_indices->at(row)];
                 }
             }
 
