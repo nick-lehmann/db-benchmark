@@ -3,5 +3,6 @@
   "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
   "files.associations": {
     "iostream": "cpp"
-  }
+  },
+  "C_Cpp.clang_format_fallbackStyle": "LLVM"
 }
