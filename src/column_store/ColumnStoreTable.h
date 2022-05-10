@@ -29,12 +29,13 @@ namespace ColumnStore {
             return returnRow;
         }
 
-        T **query_table(std::vector<unsigned> &projection, std::vector<Filter<T>> &filters) override {
+        T **query_table(std::vector<unsigned> &projection, std::vector<Filter<T>*> &filters,
+                        unsigned& rows, unsigned& columns) override {
             // TODO
             return nullptr;
         }
 
-        uint64_t query_count(std::vector<unsigned> &projection, std::vector<Filter<T>> &filters) override {
+        uint64_t query_count(std::vector<unsigned> &projection, std::vector<Filter<T>*> &filters) override {
             // TODO
             return -1;
         }
