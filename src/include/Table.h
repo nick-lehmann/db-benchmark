@@ -30,12 +30,12 @@ public:
     /// Queries the table and returns a 2-dimensional C-array representing the table.
     /// \param projection column indices to project
     /// \param filters filters to apply
-    virtual T **query_table(std::vector<unsigned> &projection, std::vector<Filter<T>> &filters) = 0;
+    virtual T **query_table(std::vector<unsigned> &projection, std::vector<Filter<T>*> &filters) = 0;
 
     /// Queries the table and returns the amount of rows in the result.
     /// \param projection column indices to project
     /// \param filters filters to apply
-    virtual uint64_t query_count(std::vector<unsigned> &projection, std::vector<Filter<T>> &filters) = 0;
+    virtual uint64_t query_count(std::vector<unsigned> &projection, std::vector<Filter<T>*> &filters) = 0;
 
     /// Prints the entire table.
     void print() {

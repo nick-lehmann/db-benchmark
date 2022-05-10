@@ -27,4 +27,9 @@ namespace TableHelper {
 
         return const_cast<const T**>(data);
     }
+
+    template<typename T>
+    void printTable(T** table, unsigned numberOfRows, unsigned numberOfColumns) {
+        std::cout << "TODO" << std::endl;
+    }
 }

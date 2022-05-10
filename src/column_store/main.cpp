@@ -8,6 +8,12 @@ void debugTest() {
     ColumnStore::ColumnStoreTable<int> testTable(5, 20, initialData);
 
     testTable.print();
+
+    auto equalFilter = new Equal<int>(0, 4);
+    std::vector<Filter<int>*> filters;
+    filters.push_back(equalFilter);
+
+
 }
 
 int main(int argc, char ** argv) {
