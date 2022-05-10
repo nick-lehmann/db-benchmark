@@ -51,13 +51,16 @@ public:
   T *getRow(unsigned rowIndex) override { return data[rowIndex]; }
 
   T **query_table(std::vector<unsigned> &projection, std::vector<Filter<T>> &filters) override {
+    RowStore::IntermediateTable<T> result(numAttributes, *this);
     // TODO
-    return nullptr;
+    uint64_t a = 0;
+    return result.table(&a);
   }
 
   uint64_t query_count(std::vector<unsigned> &projection, std::vector<Filter<T>> &filters) override {
+    RowStore::IntermediateTable<T> result(numAttributes, *this);
     // TODO
-    return -1;
+    return result.count();
   }
 
   bool columnIndicesValid(std::vector<int> columnIndices, int tupleSize) {
