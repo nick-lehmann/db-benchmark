@@ -31,8 +31,11 @@ int main(int argc, char ** argv) {
 
 
     //destruct tables -> free allocated memory
-    delete baseTable;
     
+    /* No manual erasing of baseTable since baseTable is initialized statically.
+    delete baseTable;
+    */
+
     /* commented out until implementation of baseTable & IntermediateTable is complete and working
     delete result;
     */

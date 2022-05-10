@@ -25,10 +25,11 @@ namespace RowStore {
         BaseTable(unsigned numAttributes, unsigned numRows, const T** initialData)
             : Table<T>(numAttributes, numRows, initialData) {
             
-            data = new std::vector<T>[numAttributes];
+            //data = new std::vector<T>[numAttributes];
             for (unsigned row = 0; row < numRows; row++) {
+                data.push_back(static_cast<T*>(malloc(sizeof(T) * numAttributes)));
                 for (unsigned column = 0; column < numAttributes; column++) {
-                    data[column].push_back(initialData[row][column]);
+                    data.back[column] = initialData[row][column];
                 }
             }
         }
@@ -42,10 +43,13 @@ namespace RowStore {
             }
         }
 
+        /* Function addRow() is not needed. Data in baseTable is final and should not be expanded.
+         * 
         void addRow(T* row) {
             data.push_back(row);
             this->numberOfRows = data.size();
         }
+        */
 
         T* getRow(unsigned rowIndex) override {
             return data[rowIndex];
@@ -70,6 +74,10 @@ namespace RowStore {
             }
             return true;
         }
+
+
+
+
         /*
         BaseTable<T>* projection(BaseTable<T>& table, std::vector<int>& projection) {
             if (!columnIndicesValid(projection, table.numberOfAttributes)) {
