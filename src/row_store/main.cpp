@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
   baseTable.print();
 
   std::cout << "Print Test-IntermediateTable: \n" << std::endl;
-  RowStore::IntermediateTable<int> interTable(5, baseTable);
+  RowStore::IntermediateTable<int> interTable(5, baseTable.data);
   uint64_t size = 0;
   RowStore::printTableOutput(5, size, interTable.table(size));
 

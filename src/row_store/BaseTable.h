@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "Filter.h"
+#include "IntermediateTable.h"
 #include "Projection.h"
 #include "Table.h"
 
@@ -51,15 +52,15 @@ public:
   T *getRow(unsigned rowIndex) override { return data[rowIndex]; }
 
   T **query_table(std::vector<unsigned> &projection, std::vector<Filter<T>> &filters) override {
-    RowStore::IntermediateTable<T> result(numAttributes, *this);
-    // TODO
+    RowStore::IntermediateTable<T> result(this->numberOfAttributes, data);
+    //  TODO
     uint64_t a = 0;
-    return result.table(&a);
+    return result.table(a);
   }
 
   uint64_t query_count(std::vector<unsigned> &projection, std::vector<Filter<T>> &filters) override {
-    RowStore::IntermediateTable<T> result(numAttributes, *this);
-    // TODO
+    RowStore::IntermediateTable<T> result(this->numberOfAttributes, data);
+    //  TODO
     return result.count();
   }
 
