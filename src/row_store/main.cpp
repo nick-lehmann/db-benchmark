@@ -3,12 +3,13 @@
 #include <iostream>
 #include <vector>
 
-#include "BaseTable.h"
-#include "Filter.h"
-#include "Helper.h"
-#include "IntermediateTable.h"
-#include "Projection.h"
 #include "Table.h"
+#include "Helper.h"
+#include "Filters.h"
+#include "BaseTable.h"
+#include "IntermediateTable.h"
+#include "Filter.h"
+#include "Projection.h"
 
 int main(int argc, char **argv) {
   using Type = uint64_t;
@@ -27,7 +28,7 @@ int main(int argc, char **argv) {
 
   std::cout << "Print Test-Query: \n" << std::endl;
   std::vector<unsigned> projectionAttributes = {0, 2, 3};
-  std::vector<Filter<int> *> filters;
+  std::vector<Filter<int> *> filters = { new GreaterThan<int>(1, 6) };
   unsigned numRow = 0, numCol = 0;
   baseTable.query_table(projectionAttributes, filters, numRow, numCol);
 

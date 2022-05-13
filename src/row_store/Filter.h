@@ -4,18 +4,39 @@
 #include <cstdint>
 #include <stdexcept>
 
-/*template <typename T>
-RowStoreTable<T> * filter_basic(RowStoreTable<T> &table, Filter<T> *predicate) {
-        if (predicate->index < 0 || predicate->index >= table.numberOfAttributes) {
-                throw std::invalid_argument("Error! Invalid attribute index!");
-        }
+namespace RowStore {
+template <typename T> IntermediateTable<T> *apply_filter(IntermediateTable<T> &table, Filter<T> *filter) {
+  if (filter->index < 0 || filter->index >= table.getTupleWidth()) {
+    throw std::invalid_argument("Error! Invalid attribute index!");
+  }
 
-        RowStoreTable<T> *result = new RowStoreTable<T>(table.numberOfAttributes, 0);
-        for (int i = 0; i < table.data.size(); ++i) {
-                if (predicate->match(table[i][predicate->index])) {
-                        // more efficient approach: use tuple-pointer and add the whole tuple to the result table
-                        result->addTuple(table[i]);
-                }
-        }
-        return result;
-}*/
+  // Get pointer to table data
+  auto data = table.getData();
+
+  // Create empty intermediate table
+  auto result = new IntermediateTable<T>(table.getTupleWidth());
+
+  // Iterate over table rows
+  for (int i = 0; i < table.count(); ++i) {
+    // Add matching rows to result table
+    if (filter->match((*data)[i][filter->index])) {
+      result->addRow((*data)[i]);
+    }
+  }
+
+  return result;
+}
+
+template <typename T>
+IntermediateTable<T> *apply_filters(IntermediateTable<T> &table, std::vector<Filter<T> *> &filters) {
+  // Create empty intermediate table
+  auto result = new IntermediateTable<T>(table.getTupleWidth(), (*table.getData()));
+
+  for (int i = 0; i < filters.size(); i++) {
+    result = apply_filter((*result), filters[i]);
+  }
+
+  return result;
+}
+
+} // namespace RowStore

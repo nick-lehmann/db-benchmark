@@ -38,7 +38,7 @@ IntermediateTable<T> *projection(IntermediateTable<T> &table, std::vector<unsign
 
     // Fill tuple with data from every row of table
     for (int j = 0; j < projectionParameters.size(); j++) {
-      tuple[j] = (* data)[i][projectionParameters[j]];
+      tuple[j] = (*data)[i][projectionParameters[j]];
     }
 
     // Add tuple to result table

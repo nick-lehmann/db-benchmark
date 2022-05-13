@@ -43,16 +43,16 @@ public:
 
   T **query_table(std::vector<unsigned> &projectionAttributes, std::vector<Filter<T> *> &filters,
                   unsigned &numberOfRows, unsigned &numberOfColumns) override {
-    RowStore::IntermediateTable<T> result(this->numberOfAttributes, data);
-    auto projectedResult = RowStore::projection(result, projectionAttributes);
-    projectedResult->printTableOutput();
-    // auto filteredResult = RowStore::apply_filters();
-    numberOfColumns = projectedResult->getTupleWidth();
-    return projectedResult->table(numberOfRows);
+    IntermediateTable<T> result(this->numberOfAttributes, data);
+    auto projectedResult = projection(result, projectionAttributes);
+    auto filteredResult = apply_filters((*projectedResult), filters);
+    filteredResult->printTableOutput();
+    numberOfColumns = filteredResult->getTupleWidth();
+    return filteredResult->table(numberOfRows);
   }
 
   uint64_t query_count(std::vector<unsigned> &projection, std::vector<Filter<T> *> &filters) override {
-    RowStore::IntermediateTable<T> result(this->numberOfAttributes, data);
+    IntermediateTable<T> result(this->numberOfAttributes, data);
     // TODO
     return result.count();
   }
