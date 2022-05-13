@@ -43,15 +43,15 @@ public:
 
   T *getRow(unsigned rowIndex) override { return data[rowIndex]; }
 
-  T **query_table(std::vector<unsigned> &projection, std::vector<Filter<T> *> &filters, unsigned &numberOfRows,
-                  unsigned &numberOfColumns) override {
+  T **query_table(std::vector<unsigned> &projectionAttributes, std::vector<Filter<T> *> &filters,
+                  unsigned &numberOfRows, unsigned &numberOfColumns) override {
     RowStore::IntermediateTable<T> result(this->numberOfAttributes, data);
 
-    //  TODO
+    auto projectedResult = RowStore::projection(result, projectionAttributes);
 
-    result.printTableOutput();
+    projectedResult->printTableOutput();
 
-    numberOfColumns = result.tupleWidth;
+    numberOfColumns = result.getTupleWidth();
     return result.table(numberOfRows);
   }
 
@@ -59,16 +59,6 @@ public:
     RowStore::IntermediateTable<T> result(this->numberOfAttributes, data);
     //  TODO
     return result.count();
-  }
-
-  bool columnIndicesValid(std::vector<int> columnIndices, int tupleSize) {
-    // check for each column index if it is in range of 0 and tupleSize
-    for (uint64_t i = 0; i < columnIndices.size(); i++) {
-      if (columnIndices[i] < 0 || columnIndices[i] >= tupleSize) {
-        return false;
-      }
-    }
-    return true;
   }
 };
 } // namespace RowStore

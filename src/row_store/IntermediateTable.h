@@ -7,14 +7,11 @@
 
 namespace RowStore {
 template <typename T> class IntermediateTable {
-public:
-  uint32_t tupleWidth = 0;
-
 private:
   std::vector<T *> data;
-
   T **tableOutput = nullptr;
   uint64_t tableOutputSize = 0;
+  uint32_t tupleWidth = 0;
 
 public:
   // Constructor: creates an empty Intermediate Table
@@ -52,6 +49,8 @@ public:
     return data.size(); // is this sufficient to avoid the compiler from removing the data?
   }
 
+  uint32_t getTupleWidth() { return tupleWidth; }
+
   // frees tableOutput if it already exists and resets tableOutputSize
   void freeTableOutput() {
     if (tableOutput) {
@@ -79,6 +78,8 @@ public:
     return tableOutput;
   }
 
+  std::vector<T *> getData() { return data; }
+
   void printTableOutput() {
     for (uint64_t row = 0; row < data.size(); ++row) {
       for (uint32_t col = 0; col < tupleWidth; ++col) {
@@ -90,6 +91,7 @@ public:
       }
       std::cout << std::endl;
     }
+    std::cout << std::endl;
   }
 };
 } // namespace RowStore

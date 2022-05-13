@@ -25,24 +25,12 @@ int main(int argc, char **argv) {
   uint64_t size = 0;
   interTable.printTableOutput();
 
+  std::cout << "Print Test-Query: \n" << std::endl;
   std::vector<unsigned> projectionAttributes = {0, 2, 3};
 
   std::vector<Filter<int> *> filters;
   unsigned numRow = 0, numCol = 0;
   baseTable.query_table(projectionAttributes, filters, numRow, numCol);
-
-  /*RowStore::IntermediateTable<int> result = RowStore::projection(interTable, projectionAttributes);
-  RowStore::printTableOutput(projectionAttributes.size(), size, result.table(size));*/
-
-  /*std::vector<int> projectionAttributes = {0, 2, 3};
-  std::vector<Filter<Type> *> filters;
-  filters.push_back(new LessThan<Type>(2, 42));*/
-
-  /* commented out until implementation of baseTable & IntermediateTable is complete and working
-  auto result = baseTable->query(projectionAttributes, filters);
-
-  result->print();
-  */
 
   return 0;
 }
