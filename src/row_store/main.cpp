@@ -25,6 +25,10 @@ int main(int argc, char **argv) {
   uint64_t size = 0;
   RowStore::printTableOutput(5, size, interTable.table(size));
 
+  std::vector<int> projectionAttributes = {0, 2, 3};
+  RowStore::IntermediateTable<int> result = RowStore::projection(&baseTable, &projectionAttributes);
+  RowStore::printTableOutput(projectionAttributes.size(), size, result.table(size));
+
   /*std::vector<int> projectionAttributes = {0, 2, 3};
   std::vector<Filter<Type> *> filters;
   filters.push_back(new LessThan<Type>(2, 42));*/
