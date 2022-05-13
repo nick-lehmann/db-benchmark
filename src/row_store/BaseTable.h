@@ -8,10 +8,10 @@
 #include <stdexcept>
 #include <vector>
 
-#include "Table.h"
-#include "IntermediateTable.h"
 #include "Filter.h"
+#include "IntermediateTable.h"
 #include "Projection.h"
+#include "Table.h"
 
 namespace RowStore {
 template <typename T> class BaseTable : public Table<T> {
@@ -66,4 +66,4 @@ public:
     return true;
   }
 };
-}
+} // namespace RowStore
