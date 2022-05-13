@@ -2,7 +2,8 @@
   "makefile.extensionOutputFolder": "./.vscode",
   "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
   "files.associations": {
-    "iostream": "cpp"
+    "iostream": "cpp",
+    "stdexcept": "cpp"
   },
   "C_Cpp.clang_format_fallbackStyle": "LLVM"
 }

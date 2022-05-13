@@ -27,7 +27,6 @@ int main(int argc, char **argv) {
 
   std::cout << "Print Test-Query: \n" << std::endl;
   std::vector<unsigned> projectionAttributes = {0, 2, 3};
-
   std::vector<Filter<int> *> filters;
   unsigned numRow = 0, numCol = 0;
   baseTable.query_table(projectionAttributes, filters, numRow, numCol);

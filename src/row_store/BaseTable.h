@@ -20,11 +20,9 @@ public:
   std::vector<T *> data;
 
 public:
-  // constructor for BaseTable
+  // Constructor for BaseTable
   BaseTable(unsigned numAttributes, unsigned numRows, const T **initialData)
       : Table<T>(numAttributes, numRows, initialData) {
-
-    // data = new std::vector<T>[numAttributes];
     for (unsigned row = 0; row < numRows; row++) {
       data.push_back(static_cast<T *>(malloc(sizeof(T) * numAttributes)));
       for (unsigned column = 0; column < numAttributes; column++) {
@@ -33,9 +31,9 @@ public:
     }
   }
 
-  // destructor for BaseTable
+  // Destructor for BaseTable
   ~BaseTable() override {
-    // delete the tuple of the base table
+    // Delete the tuple of the base table
     for (uint64_t i = 0; i < data.size(); ++i) {
       free(data[i]);
     }
@@ -46,18 +44,16 @@ public:
   T **query_table(std::vector<unsigned> &projectionAttributes, std::vector<Filter<T> *> &filters,
                   unsigned &numberOfRows, unsigned &numberOfColumns) override {
     RowStore::IntermediateTable<T> result(this->numberOfAttributes, data);
-
     auto projectedResult = RowStore::projection(result, projectionAttributes);
-
     projectedResult->printTableOutput();
-
-    numberOfColumns = result.getTupleWidth();
-    return result.table(numberOfRows);
+    // auto filteredResult = RowStore::apply_filters();
+    numberOfColumns = projectedResult->getTupleWidth();
+    return projectedResult->table(numberOfRows);
   }
 
   uint64_t query_count(std::vector<unsigned> &projection, std::vector<Filter<T> *> &filters) override {
     RowStore::IntermediateTable<T> result(this->numberOfAttributes, data);
-    //  TODO
+    // TODO
     return result.count();
   }
 };
