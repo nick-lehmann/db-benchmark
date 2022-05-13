@@ -18,9 +18,9 @@ public:
   // Constructor: creates an empty Intermediate Table
   IntermediateTable(uint32_t tupleWidth) : tupleWidth(tupleWidth) {}
   // Constructor: creates an Intermediate Table and copies all data from a BaseTable
-  IntermediateTable(uint32_t tupleWidth, std::vector<T *> &data) : tupleWidth(tupleWidth) {
-    for (uint64_t i = 0; i < data.size(); ++i) {
-      addRow(data[i]);
+  IntermediateTable(uint32_t tupleWidth, std::vector<T *> &initData) : tupleWidth(tupleWidth) {
+    for (uint64_t i = 0; i < initData.size(); ++i) {
+      addRow(initData[i]);
     }
   }
 

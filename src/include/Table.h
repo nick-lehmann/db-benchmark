@@ -11,6 +11,10 @@
 /// \tparam T the type of stored data
 template <typename T> class Table {
 public:
+  const unsigned numberOfAttributes;
+  const unsigned numberOfRows;
+  const T **initialData;
+
   /// Initializes the table with a given size and initial data
   /// \param numberOfAttributes number of columns
   /// \param numberOfRows number of rows
@@ -29,12 +33,15 @@ public:
   /// Queries the table and returns a 2-dimensional C-array representing the table.
   /// \param projection column indices to project
   /// \param filters filters to apply
-  virtual T **query_table(std::vector<unsigned> &projection, std::vector<Filter<T>> &filters) = 0;
+  /// \param numberOfRows contains the number of rows of the resulting table
+  /// \param numberOfColumns contains the number of columns of the resulting table
+  virtual T **query_table(std::vector<unsigned> &projection, std::vector<Filter<T> *> &filters, unsigned &numberOfRows,
+                          unsigned &numberOfColumns) = 0;
 
   /// Queries the table and returns the amount of rows in the result.
   /// \param projection column indices to project
   /// \param filters filters to apply
-  virtual uint64_t query_count(std::vector<unsigned> &projection, std::vector<Filter<T>> &filters) = 0;
+  virtual uint64_t query_count(std::vector<unsigned> &projection, std::vector<Filter<T> *> &filters) = 0;
 
   /// Prints the entire table.
   void print() {
@@ -51,9 +58,4 @@ public:
     }
     std::cout << std::endl;
   }
-
-public:
-  const unsigned numberOfAttributes;
-  const unsigned numberOfRows;
-  const T **initialData;
 };
