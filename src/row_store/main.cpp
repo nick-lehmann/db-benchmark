@@ -23,11 +23,16 @@ int main(int argc, char **argv) {
   std::cout << "Print Test-IntermediateTable: \n" << std::endl;
   RowStore::IntermediateTable<int> interTable(5, baseTable.data);
   uint64_t size = 0;
-  RowStore::printTableOutput(5, size, interTable.table(size));
+  interTable.printTableOutput();
 
-  std::vector<int> projectionAttributes = {0, 2, 3};
-  RowStore::IntermediateTable<int> result = RowStore::projection(&baseTable, &projectionAttributes);
-  RowStore::printTableOutput(projectionAttributes.size(), size, result.table(size));
+  std::vector<unsigned> projectionAttributes = {0, 2, 3};
+
+  std::vector<Filter<int> *> filters;
+  unsigned numRow = 0, numCol = 0;
+  baseTable.query_table(projectionAttributes, filters, numRow, numCol);
+
+  /*RowStore::IntermediateTable<int> result = RowStore::projection(interTable, projectionAttributes);
+  RowStore::printTableOutput(projectionAttributes.size(), size, result.table(size));*/
 
   /*std::vector<int> projectionAttributes = {0, 2, 3};
   std::vector<Filter<Type> *> filters;

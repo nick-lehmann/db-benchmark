@@ -7,8 +7,10 @@
 
 namespace RowStore {
 template <typename T> class IntermediateTable {
-private:
+public:
   uint32_t tupleWidth = 0;
+
+private:
   std::vector<T *> data;
 
   T **tableOutput = nullptr;
@@ -63,7 +65,7 @@ public:
   }
 
   // transforms data to T ** to output it
-  T **table(uint64_t &outputSize) {
+  T **table(unsigned &outputSize) {
     freeTableOutput();
 
     tableOutput = static_cast<T **>(malloc(sizeof(T *) * data.size()));
@@ -72,22 +74,22 @@ public:
       tableOutput[i] = static_cast<T *>(malloc(sizeof(T) * tupleWidth));
       std::memcpy(tableOutput[i], data[i], sizeof(T) * tupleWidth);
     }
-    outputSize = tableOutputSize;
+    outputSize = (unsigned)tableOutputSize;
 
     return tableOutput;
   }
-};
 
-template <typename T> void printTableOutput(uint32_t tupleSize, uint64_t rowCount, T **tableData) {
-  for (uint64_t row = 0; row < rowCount; ++row) {
-    for (uint32_t col = 0; col < tupleSize; ++col) {
-      // prepend a column separator except for the first column
-      if (col) {
-        std::cout << " | ";
+  void printTableOutput() {
+    for (uint64_t row = 0; row < data.size(); ++row) {
+      for (uint32_t col = 0; col < tupleWidth; ++col) {
+        // prepend a column separator except for the first column
+        if (col) {
+          std::cout << " | ";
+        }
+        std::cout << data[row][col];
       }
-      std::cout << tableData[row][col];
+      std::cout << std::endl;
     }
-    std::cout << std::endl;
   }
-}
+};
 } // namespace RowStore

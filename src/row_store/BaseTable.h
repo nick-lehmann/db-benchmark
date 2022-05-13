@@ -43,14 +43,19 @@ public:
 
   T *getRow(unsigned rowIndex) override { return data[rowIndex]; }
 
-  T **query_table(std::vector<unsigned> &projection, std::vector<Filter<T>> &filters) override {
+  T **query_table(std::vector<unsigned> &projection, std::vector<Filter<T> *> &filters, unsigned &numberOfRows,
+                  unsigned &numberOfColumns) override {
     RowStore::IntermediateTable<T> result(this->numberOfAttributes, data);
+
     //  TODO
-    uint64_t a = 0;
-    return result.table(a);
+
+    result.printTableOutput();
+
+    numberOfColumns = result.tupleWidth;
+    return result.table(numberOfRows);
   }
 
-  uint64_t query_count(std::vector<unsigned> &projection, std::vector<Filter<T>> &filters) override {
+  uint64_t query_count(std::vector<unsigned> &projection, std::vector<Filter<T> *> &filters) override {
     RowStore::IntermediateTable<T> result(this->numberOfAttributes, data);
     //  TODO
     return result.count();

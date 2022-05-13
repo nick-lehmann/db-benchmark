@@ -1,5 +1,5 @@
 #pragma once
-#include "BaseTable.h"
+
 #include "IntermediateTable.h"
 #include "RowStoreTable.h"
 #include <algorithm>
@@ -42,7 +42,8 @@ RowStoreTable<T> *projection(RowStoreTable<T> &table, std::vector<int> &projecti
     return result;
 }*/
 
-template <typename T> IntermediateTable<T> *projection(BaseTable<T> &table, std::vector<int> &projectionParameters) {
+template <typename T>
+IntermediateTable<T> *projection(IntermediateTable<T> &table, std::vector<int> &projectionParameters) {
   // check for valid projection parameters
   if (!columnIndicesValid(projection, table.numberOfAttributes)) {
     throw std::invalid_argument("Error! Invalid column indices!");
