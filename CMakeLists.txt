@@ -19,7 +19,7 @@ set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 # include directories
 include_directories(src/include)
 
-# specify executable to build   TODO make cariable specifiying common build files
-add_executable(row_store src/row_store/main.cpp src/row_store/BaseTable.h src/row_store/IntermediateTable.h)
+# specify executable to build
+add_executable(row_store src/row_store/main.cpp)
 add_executable(column_store src/column_store/main.cpp)
 add_executable(pax_store src/pax_store/main.cpp)

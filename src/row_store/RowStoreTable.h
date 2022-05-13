@@ -99,9 +99,6 @@ public:
     	return result;
     }
 
-
-
-
     Table<T>* query(std::vector<int> &projectionColumns, std::vector<Filter<T>  *> &filters) {
         //TODO: for highest performance do projections as early as possible
         //(AQP WiSe19/20, Lecture 8 Query Processing, Slide 23)
@@ -130,8 +127,8 @@ RowStoreTable<T> * createSortedTestTable(const int tupleSize, const int tupleCou
 	for(int i = 0; i < tupleCount; ++i) {
     //create empty tuple
     T *tuple = (T *) malloc(tupleSize * sizeof(T));
-		// fill tuple with data
-		for(int j = 0; j < tupleSize; ++j){
+    // fill tuple with data
+    for(int j = 0; j < tupleSize; ++j){
       tuple[j] = i*tupleSize + j;
     }
     // append tuple to table
