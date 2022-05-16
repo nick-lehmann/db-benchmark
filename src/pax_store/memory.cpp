@@ -37,27 +37,8 @@ Buffer allocateAlignedBuffer(long pagesize) {
   }
 
   // Initialize with zeros
-  for (unsigned long i = 0; i < pagesize / sizeof(Buffer); i++) {
+  for (unsigned long i = 0; i < pagesize; i++) {
     *(buffer + i) = 0;
   }
   return buffer;
-}
-
-// PaxPage createPage() {
-//   long pagesize = getPagesize();
-//   Buffer buffer = allocateAlignedBuffer(pagesize);
-//   return Page((Header *)buffer, pagesize, 3);
-// }
-
-/**
- * @brief Fill the page with random data
- *
- * @tparam T
- * @param page
- */
-template <typename T> void fillPage(PaxPage<T> *page) {
-  for (int i = 0; i < 10; i++) {
-    T record[] = {i, 42 + i, 69 + i};
-    page->writeRecord(record);
-  }
 }
