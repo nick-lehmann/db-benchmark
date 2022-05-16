@@ -44,7 +44,6 @@ class PaxPage {
   PaxPage(Header *start, long int pagesize, Header attributes) {
     this->start = start;
     this->pagesize = pagesize;
-    clear();
 
     numberOfAttributes = start;
     *(numberOfAttributes) = attributes;
@@ -97,12 +96,6 @@ class PaxPage {
       cout << std::setw(8) << start[i] << " ";
     }
     cout << endl;
-  }
-
-  void clear() {
-    for (int i = 0; i < pagesize / sizeof(unsigned short); i++) {
-      *(start + i) = 0;
-    }
   }
 
   T *readRow(RowIndex index) {
