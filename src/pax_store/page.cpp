@@ -50,9 +50,7 @@ class PaxPage {
     *(numberOfAttributes) = attributes;
     initHeaderLocations();
 
-    cout << "Writing new page" << endl;
     this->start = start;
-
     *numberOfAttributes = attributes;
 
     for (int i = 0; i < attributes; i++) *(attributeSizes++) = sizeof(T);
@@ -60,11 +58,7 @@ class PaxPage {
     unsigned short headerLength = (3 + 2 * attributes) * sizeof(Header);
     unsigned short freeBytes = pagesize - headerLength;
     unsigned short recordSize = *numberOfAttributes * sizeof(T);
-    cout << "Freespace: " << freeBytes << " (" << freeBytes / recordSize
-         << " records)" << endl;
-
     unsigned short minipageSize = freeBytes / attributes;
-    cout << "Minipage size: " << minipageSize << endl;
 
     for (int i = 0; i < attributes; i++) {
       unsigned short offset = headerLength + (i * minipageSize);
@@ -100,7 +94,7 @@ class PaxPage {
     int lineWidth = 8;
     for (int i = 0; i < pagesize / sizeof(unsigned short); i++) {
       if (i % lineWidth == 0) cout << endl << &start[i] << "  ";
-      cout << std::setw(4) << start[i] << " ";
+      cout << std::setw(8) << start[i] << " ";
     }
     cout << endl;
   }
@@ -111,66 +105,76 @@ class PaxPage {
     }
   }
 
-  vector<T> readRow(RowIndex index) {
-    vector<T> result;
-
-    for (int i = 0; i < *numberOfAttributes; i++) {
+  T *readRow(RowIndex index) {
+    T *returnRow = new T[*(this->numberOfAttributes)];
+    for (unsigned i = 0; i < *(this->numberOfAttributes); i++) {
       Header offset = *(minipageOffsets + i);
 
       T *minipage = (T *)(start + offset / 2);
       T *location = minipage + index;
-
-      result.push_back(*location);
+      returnRow[i] = *location;
     }
-
-    return result;
+    return returnRow;
   }
 
-  void writeRecord(T *record) {
+  T *projectRow(RowIndex index, std::vector<unsigned> &projection) {
+    T *returnRow = new T[projection.size()];
+    for (unsigned i = 0; i < projection.size(); i++) {
+      Header offset = *(minipageOffsets + projection[i]);
+
+      T *minipage = (T *)(start + offset / 2);
+      T *location = minipage + index;
+      returnRow[i] = *location;
+    }
+    return returnRow;
+  }
+
+  void writeRecord(const T *record) {
     unsigned short recordSize = *numberOfAttributes * sizeof(T);
     if (*freeSpace < recordSize) {
       cout << "Page is full" << endl;
-      return;
+      throw;
     }
 
+    cout << "Write: ";
     for (int i = 0; i < *numberOfAttributes; i++) {
       Header offset = *(minipageOffsets + i);
 
       T *minipage = (T *)(start + offset / 2);
       T *location = minipage + *numberOfRecords;
-      cout << "Writing attribute " << i << " to offset " << offset << " at "
-           << location << endl;
+      cout << record[i] << " (" << location << ") ";
       *(location) = record[i];
     };
+    cout << endl;
     (*numberOfRecords)++;
     (*freeSpace) -= recordSize;
   }
 
-  void process(vector<Filter<T> *> filters) {
-    vector<vector<T>> results = {};
-    for (RowIndex index = 0; index < *numberOfRecords; index++) {
-      vector<T> record = readRow(index);
+  vector<unsigned> query(std::vector<Filter<T> *> &filters) {
+    vector<unsigned> positions;
+    bool firstRun = true;
 
-      bool fits = true;
-      for (auto &filter : filters) {
-        T cell = record.at(filter.index);
-        if (!filter.match(&cell)) {
-          fits = false;
-          break;
+    for (auto &filter : filters) {
+      // Find the minipage for the attribute to which the filter applies.
+      Header offset = *(minipageOffsets + filter->index);
+      T *minipage = (T *)((char *)start + offset);
+
+      if (firstRun) {
+        // On the first run, we need to go through all records.
+        for (RowIndex index = 0; index < *numberOfRecords; index++) {
+          T cell = *(minipage + index);
+          if (filter->match(cell)) positions.push_back(index);
+        }
+      } else {
+        // On subsequent runs, we only need to go through the positions where
+        // all previous filters already matched.
+        for (auto &position : positions) {
+          T cell = *(minipage + position);
+          if (filter->match(cell)) positions.push_back(position);
         }
       }
-      if (fits) {
-        // cout << "Row " << index << " fits" << endl;
-        results.push_back(record);
-      }
     }
 
-    cout << "Found " << results.size() << " results:" << endl;
-    for (auto &record : results) {
-      for (auto &cell : record) {
-        cout << cell << ", ";
-      }
-      cout << endl;
-    }
+    return positions;
   }
 };

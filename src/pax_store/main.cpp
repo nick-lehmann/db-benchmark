@@ -7,6 +7,7 @@
 #include <iterator>
 #include <vector>
 
+#include "Filters.h"
 #include "Helper.h"
 #include "memory.cpp"
 #include "page.cpp"
@@ -15,36 +16,129 @@
 
 using namespace std;
 
-int main() {
-  uint16_t lowerBound = 0;
-  uint16_t upperBound = 100;
-  const uint16_t **data =
-      TableHelper::generateRandomData<uint16_t>(3, 3, lowerBound, upperBound);
+template <typename T>
+const T** getData(const int numberOfRows) {
+  T** data = (T**)malloc(numberOfRows * sizeof(T*));
 
-  PaxTable<uint16_t> table(3, 3, data);
+  for (unsigned row = 0; row < numberOfRows; row++) {
+    T* rowData = (T*)malloc(3 * sizeof(T));
+    data[row] = rowData;
+    data[row][0] = row;
+    data[row][1] = 42 + row;
+    data[row][2] = 200 + row;
+  }
 
-  unsigned numberOfRows = 0;
-  unsigned numberOfColumns = 0;
-  std::vector<unsigned> projection;
-  std::vector<Filter<uint16_t> *> filters;
-  auto result =
-      table.query_table(projection, filters, numberOfRows, numberOfColumns);
+  return const_cast<const T**>(data);
+}
 
-  // Page page = createPage();
-  // fillPage(&page);
+template <typename T>
+void testGetData() {
+  const int numberOfRows = 10;
+  const T** data = getData<T>(numberOfRows);
+  cout << data << endl;
+}
 
+/**
+ * Inspect the memory layout of a single PAX page.
+ */
+template <typename T>
+void testPagePageManual() {
+  unsigned numberOfRows = 300;
+  unsigned numberOfAttributes = 3;
+
+  const T** data = getData<T>(numberOfRows);
+
+  auto pagesize = getPagesize();
+  Buffer buffer = allocateAlignedBuffer(pagesize);
+
+  PaxPage<T> page = PaxPage<T>((Header*)buffer, pagesize, numberOfAttributes);
+
+  for (unsigned row = 0; row < numberOfRows; row++) page.writeRecord(data[row]);
+
+  page.print();
+}
+
+/**
+ * Inspect the memory layout of a table with a
+ * single page.
+ */
+template <typename T>
+void testPaxTableSinglePageMemory() {
+  unsigned numberOfRows = 10;
+  unsigned numberOfAttributes = 3;
+
+  const T** data = getData<T>(numberOfRows);
+
+  PaxTable<T> table(numberOfAttributes, numberOfRows, data);
+
+  table.pages[0].print();
+}
+
+/**
+ * Inspect the memory layout of a table with a two
+ * pages.
+ */
+template <typename T>
+void testPaxTableTwoPagesMemory() {
+  unsigned numberOfRows = 1000;
+  unsigned numberOfAttributes = 3;
+
+  const T** data = getData<T>(numberOfRows);
+
+  PaxTable<T> table(numberOfAttributes, numberOfRows, data);
+
+  table.pages[0].print();
+  table.pages[1].print();
+}
+
+/**
+ * Print a sample table to console.
+ */
+template <typename T>
+void testPaxTablePrint() {
+  unsigned numberOfRows = 1000;
+  unsigned numberOfAttributes = 3;
+
+  const T** data = getData<T>(numberOfRows);
+
+  PaxTable<T> table(numberOfAttributes, numberOfRows, data);
+
+  table.pages[0].print();
   table.print();
-  // page.print();
+}
 
-  // cout << "Reading vector 4" << endl;
-  // vector<Data> record = page.readRecord(4);
-  // for (const auto& x : record) {
-  //   cout << x << "\n";
-  // }
+/**
+ * Test a single filter on a table with a single
+ * page.
+ */
+template <typename T>
+void testBasicFilter() {
+  unsigned numberOfRows = 10;
+  unsigned numberOfAttributes = 3;
 
-  // vector<Equal> filters;
-  // Equal f1(2, 69);
-  // filters.push_back(f1);
+  const T** data = getData<T>(numberOfRows);
 
-  // page.process(filters);
+  PaxTable<T> table(numberOfAttributes, numberOfRows, data);
+
+  unsigned returnedRows = 0;
+  unsigned returnedColumns = 0;
+  std::vector<unsigned> projection = {1, 2, 3};
+  std::vector<Filter<T>*> filters = {new Equal<T>(0, (T)2)};
+
+  T** result =
+      table.query_table(projection, filters, returnedRows, returnedColumns);
+
+  for (unsigned row = 0; row < returnedRows; row++) {
+    for (unsigned column = 0; column < returnedColumns; column++) {
+      cout << result[row][column] << " ";
+    }
+    cout << endl;
+  }
+
+  cout << "Count: " << table.query_count(projection, filters) << endl;
+}
+
+int main() {
+  testBasicFilter<uint16_t>();
+  return 0;
 }
