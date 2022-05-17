@@ -20,16 +20,17 @@ IntermediateTable<T> *apply_filters(IntermediateTable<T> &table, std::vector<Fil
 
   // Iterate over table rows
   for (int i = 0; i < table.count(); ++i) {
+    T *row = (*data)[i];
     bool match = true;
     // Iterate over filters and match
     for (int j = 0; j < filters.size(); ++j) {
-      if (!filters[j]->match((*data)[i][filters[j]->index])) {
+      if (!filters[j]->match(row[filters[j]->index])) {
         match = false;
         break;
       }
     }
     if (match) {
-      result->addRow((*data)[i]);
+      result->addRow(row);
     }
   }
 
