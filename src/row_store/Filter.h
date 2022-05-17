@@ -25,6 +25,7 @@ IntermediateTable<T> *apply_filters(IntermediateTable<T> &table, std::vector<Fil
     for (int j = 0; j < filters.size(); ++j) {
       if (!filters[j]->match((*data)[i][filters[j]->index])) {
         match = false;
+        break;
       }
     }
     if (match) {
