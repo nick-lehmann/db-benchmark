@@ -5,6 +5,11 @@
 #include <stdexcept>
 
 namespace RowStore {
+
+/// Selects these tuples of table that match all Filter-objects in filters and returns the address of the newly created
+/// result table that contains exactly the selected tuples
+/// \param table intermediateTable that is filtered
+/// \param filters vector of filters that are applied conjunctive
 template <typename T>
 IntermediateTable<T> *apply_filters(IntermediateTable<T> &table, std::vector<Filter<T> *> &filters) {
   // Validate filters

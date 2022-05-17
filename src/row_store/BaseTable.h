@@ -46,16 +46,25 @@ public:
     IntermediateTable<T> result(this->numberOfAttributes, data);
     auto projectedResult = projection(result, projectionAttributes);
     auto filteredResult = apply_filters((*projectedResult), filters);
-    filteredResult->printTableOutput();
+    delete projectedResult;
+
+    // filteredResult->printTableOutput();
     numberOfColumns = filteredResult->getTupleWidth();
-    return filteredResult->table(numberOfRows);
+    filteredResult->table(numberOfRows);
+    T **tmp = filteredResult->detachTableOutput(numberOfRows);
+    delete filteredResult;
+    return tmp;
   }
 
-  uint64_t query_count(std::vector<unsigned> &projection, std::vector<Filter<T> *> &filters) override {
+  uint64_t query_count(std::vector<unsigned> &projectionAttributes, std::vector<Filter<T> *> &filters) override {
     IntermediateTable<T> result(this->numberOfAttributes, data);
     auto projectedResult = projection(result, projectionAttributes);
     auto filteredResult = apply_filters((*projectedResult), filters);
-    return filteredResult->data.count();
+
+    auto tmp = filteredResult->getData()->size();
+    delete projectedResult;
+    delete filteredResult;
+    return tmp;
   }
 };
 } // namespace RowStore
