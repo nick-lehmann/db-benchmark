@@ -19,7 +19,7 @@ public:
   // Constructor: creates an Intermediate Table and copies all data from a BaseTable
   IntermediateTable(uint32_t tupleWidth, std::vector<T *> &initData) : tupleWidth(tupleWidth) {
     for (uint64_t i = 0; i < initData.size(); ++i) {
-      addRow(initData[i]);
+      addRowCopy(initData[i]);
     }
   }
 
@@ -31,8 +31,11 @@ public:
     }
   }
 
+  // Append a pre-filled row to the end of the table
+  void addRow(T *row) { data.push_back(row); }
+
   // Append a row to the end of the table and copies the content from row
-  void addRow(T *row) {
+  void addRowCopy(T *row) {
     data.push_back(static_cast<T *>(malloc(sizeof(T) * tupleWidth)));
     std::memcpy(data.back(), row, sizeof(T) * tupleWidth);
   }
@@ -50,8 +53,8 @@ public:
   }
 
   uint32_t getTupleWidth() { return tupleWidth; }
-  
-  std::vector<T *> * getData() { return &data; }
+
+  std::vector<T *> *getData() { return &data; }
 
   // Frees tableOutput if it already exists and resets tableOutputSize
   void freeTableOutput() {

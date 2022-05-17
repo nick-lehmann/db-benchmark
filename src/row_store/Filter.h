@@ -19,21 +19,20 @@ IntermediateTable<T> *apply_filters(IntermediateTable<T> &table, std::vector<Fil
   auto result = new IntermediateTable<T>(table.getTupleWidth());
 
   // Iterate over table rows
-  for (int i = 0; i < table.count(); ++i) {
+  int i = 0;
+row_iterator: // create label to be able to use goto
+  for (; i < table.count(); ++i) {
     T *row = (*data)[i];
-    bool match = true;
     // Iterate over filters and match
     for (int j = 0; j < filters.size(); ++j) {
       if (!filters[j]->match(row[filters[j]->index])) {
-        match = false;
-        break;
+        ++i;               // increment i for next iteration of row_iterator loop
+        goto row_iterator; // continues outer loop
       }
     }
-    if (match) {
-      result->addRow(row);
-    }
+    // this is only executed, when all fillters match; otherwise the loop is continued to the next iteration
+    result->addRowCopy(row);
   }
-
   return result;
 }
 } // namespace RowStore

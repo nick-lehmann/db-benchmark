@@ -53,8 +53,9 @@ public:
 
   uint64_t query_count(std::vector<unsigned> &projection, std::vector<Filter<T> *> &filters) override {
     IntermediateTable<T> result(this->numberOfAttributes, data);
-    // TODO
-    return result.count();
+    auto projectedResult = projection(result, projectionAttributes);
+    auto filteredResult = apply_filters((*projectedResult), filters);
+    return filteredResult->data.count();
   }
 };
 } // namespace RowStore

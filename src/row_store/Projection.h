@@ -34,7 +34,7 @@ IntermediateTable<T> *projection(IntermediateTable<T> &table, std::vector<unsign
   // Iterate over given table tuples
   for (int i = 0; i < table.count(); i++) {
     // Create empty (temporary) tuple
-    auto tuple = (T *)calloc(projectionParameters.size(), sizeof(T));
+    auto tuple = (T *)malloc(projectionParameters.size() * sizeof(T));
 
     // Fill tuple with data from every row of table
     for (int j = 0; j < projectionParameters.size(); j++) {
