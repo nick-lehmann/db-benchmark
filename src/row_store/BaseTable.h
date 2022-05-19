@@ -21,9 +21,11 @@ public:
   std::vector<T *> data;
 
 public:
-  // Constructor for BaseTable
-  BaseTable(unsigned numAttributes, unsigned numRows, const T **initialData)
-      : Table<T>(numAttributes, numRows, initialData) {
+  /// Constructor for BaseTable
+  /// \param numAttributes number of attributes (columns)
+  /// \param numRows number of tuples (rows)
+  /// \param initialData data to fill the table with
+  BaseTable(unsigned numAttributes, unsigned numRows, const T **initialData) : Table<T>(numAttributes, numRows, initialData) {
     for (unsigned row = 0; row < numRows; row++) {
       data.push_back(static_cast<T *>(malloc(sizeof(T) * numAttributes)));
       for (unsigned column = 0; column < numAttributes; column++) {
@@ -32,7 +34,7 @@ public:
     }
   }
 
-  // Destructor for BaseTable
+  /// Destructor for BaseTable
   ~BaseTable() override {
     // Delete the tuple of the base table
     for (uint64_t i = 0; i < data.size(); ++i) {
@@ -40,17 +42,25 @@ public:
     }
   }
 
+  /// Get a certain tuple of the table
+  /// \param rowIndex index of tuple in table
   T *getRow(unsigned rowIndex) override { return data[rowIndex]; }
 
-  std::tuple<T **, unsigned, unsigned> query_table(std::vector<unsigned> &projectionAttributes,
-                                                   std::vector<Filter<T> *> &filters, unsigned numberOfRows,
-                                                   unsigned numberOfColumns) override {
+  /// Perform a query on the table and return a tuple containing the data, the number of rows and the number of columns.
+  /// \param projectionAttributes column indices used for projection
+  /// \param filters vector of filters used for the query
+  /// \param numberOfRows number of rows of the current table
+  /// \param numberOfColumns number of columns of the current table
+  std::tuple<T **, unsigned, unsigned> query_table(std::vector<unsigned> &projectionAttributes, std::vector<Filter<T> *> &filters,
+                                                   unsigned numberOfRows, unsigned numberOfColumns) override {
+    // convert BaseTable to InterMediateTable for query
     IntermediateTable<T> result(this->numberOfAttributes, data);
+    // apply query
     auto projectedResult = projection(result, projectionAttributes);
     auto filteredResult = apply_filters((*projectedResult), filters);
     delete projectedResult;
 
-    // filteredResult->printTableOutput();
+    // get result and free memory
     numberOfColumns = filteredResult->getTupleWidth();
     filteredResult->table(numberOfRows);
     T **tmp = filteredResult->detachTableOutput(numberOfRows);
@@ -59,15 +69,22 @@ public:
     return std::make_tuple(tmp, numberOfRows, numberOfColumns);
   }
 
+  /// Perform a query on the table and return the number of rows of the queried table.
+  /// \param projectionAttributes column indices used for projection
+  /// \param filters vector of filters used for the query
   uint64_t query_count(std::vector<unsigned> &projectionAttributes, std::vector<Filter<T> *> &filters) override {
+    // convert BaseTable to InterMediateTable for query
     IntermediateTable<T> result(this->numberOfAttributes, data);
+    // apply query
     auto projectedResult = projection(result, projectionAttributes);
     auto filteredResult = apply_filters((*projectedResult), filters);
 
-    auto tmp = filteredResult->getData()->size();
+    // get row count and free memory
+    auto resultRowCount = filteredResult->getData()->size();
     delete projectedResult;
     delete filteredResult;
-    return tmp;
+
+    return resultRowCount;
   }
 };
 } // namespace RowStore

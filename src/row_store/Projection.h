@@ -21,10 +21,10 @@ bool columnIndicesValid(std::vector<unsigned> columnIndices, uint32_t tupleSize)
 }
 
 /// Copies the content of the columns that are referred in projectionParameters to a new intermediateTable-Objects and
-/// returns its address
-/// projected \param projectionParameters vector of column indices that are contained in the result
-template <typename T>
-IntermediateTable<T> *projection(IntermediateTable<T> &table, std::vector<unsigned> &projectionParameters) {
+/// returns its address projected
+/// \param table table data of the original table
+/// \param projectionParameters vector of column indices that are contained in the result
+template <typename T> IntermediateTable<T> *projection(IntermediateTable<T> &table, std::vector<unsigned> &projectionParameters) {
   // Check for valid projection parameters
   if (!columnIndicesValid(projectionParameters, table.getTupleWidth())) {
     throw std::invalid_argument("Error! Invalid column indices!");

@@ -28,6 +28,7 @@ public:
     }
   }
 
+  /// Destructor
   ~IntermediateTable() {
     freeTableOutput();
     for (uint64_t i = 0; i < data.size(); ++i) {
@@ -59,8 +60,10 @@ public:
     return data.size(); // TODO Is this sufficient to avoid the compiler from removing the data?
   }
 
+  /// Returns the number of values in a tuple, aka number of attributes of the table.
   uint32_t getTupleWidth() { return tupleWidth; }
 
+  /// Returns the data of the table.
   std::vector<T *> *getData() { return &data; }
 
   /// Frees tableOutput if it already exists and resets tableOutputSize
