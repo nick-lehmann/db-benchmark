@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "BaseTable.h"
+#include "Benchmark.h"
 #include "Filter.h"
 #include "Filters.h"
 #include "Helper.h"
@@ -26,9 +27,11 @@ int main(int argc, char **argv) {
   std::vector<Filter<Type> *> filters = {new GreaterThan<Type>(1, 6), new LessThan<Type>(2, 9)};
   unsigned numRow = 0, numCol = 0;
   auto query_result = baseTable.query_table(projectionAttributes, filters, numRow, numCol);
-  RowStore::IntermediateTable<Type>::printTableOutput(std::get<0>(query_result), std::get<1>(query_result),
-                                                      std::get<2>(query_result));
+  RowStore::IntermediateTable<Type>::printTableOutput(std::get<0>(query_result), std::get<1>(query_result), std::get<2>(query_result));
   RowStore::IntermediateTable<Type>::deleteDetachedTableOutput(std::get<0>(query_result), std::get<1>(query_result));
+
+  std::cout << "Print benchmark: " << std::endl << std::endl;
+  auto benchmarkResult = Benchmark::measureTime(baseTable, projectionAttributes, filters);
 
   return 0;
 }
