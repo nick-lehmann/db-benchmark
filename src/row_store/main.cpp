@@ -12,7 +12,9 @@
 #include "Projection.h"
 #include "Table.h"
 
-int main(int argc, char **argv) {
+/// Run a demo of the Row-Store database.
+/// Creates a small example BaseTable and applies a simple query on it. Afterwards run a benchmark with the same query on the same table.
+void demo() {
   // define data type of table data
   using Type = int32_t;
 
@@ -35,8 +37,13 @@ int main(int argc, char **argv) {
   // delete result table and free memory
   RowStore::IntermediateTable<Type>::deleteDetachedTableOutput(queryResult, resultRowCount);
 
+  // run benchmark of same query
   std::cout << "Print benchmark: " << std::endl << std::endl;
   auto benchmarkResult = Benchmark::measureTime(baseTable, projectionAttributes, filters);
+}
+
+int main(int argc, char **argv) {
+  demo();
 
   return 0;
 }
