@@ -21,18 +21,14 @@ int main(int argc, char **argv) {
   std::cout << "Print Test-BaseTable: \n" << std::endl;
   baseTable.print();
 
-  /*std::cout << "Print Test-IntermediateTable: \n" << std::endl;
-  RowStore::IntermediateTable<Type> interTable(5, baseTable.data);
-  uint64_t size = 0;
-  interTable.printTableOutput();*/
-
   std::cout << "Print Test-Query: \n" << std::endl;
   std::vector<unsigned> projectionAttributes = {0, 2, 3};
   std::vector<Filter<Type> *> filters = {new GreaterThan<Type>(1, 6), new LessThan<Type>(2, 9)};
   unsigned numRow = 0, numCol = 0;
-  Type **tableOut = baseTable.query_table(projectionAttributes, filters, numRow, numCol);
-  RowStore::IntermediateTable<Type>::printTableOutput(tableOut, numRow, numCol);
-  RowStore::IntermediateTable<Type>::deleteDetachedTableOutput(tableOut, numRow);
+  auto query_result = baseTable.query_table(projectionAttributes, filters, numRow, numCol);
+  RowStore::IntermediateTable<Type>::printTableOutput(std::get<0>(query_result), std::get<1>(query_result),
+                                                      std::get<2>(query_result));
+  RowStore::IntermediateTable<Type>::deleteDetachedTableOutput(std::get<0>(query_result), std::get<1>(query_result));
 
   return 0;
 }

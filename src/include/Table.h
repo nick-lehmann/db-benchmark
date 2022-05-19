@@ -35,8 +35,9 @@ public:
   /// \param filters filters to apply
   /// \param numberOfRows contains the number of rows of the resulting table
   /// \param numberOfColumns contains the number of columns of the resulting table
-  virtual T **query_table(std::vector<unsigned> &projection, std::vector<Filter<T> *> &filters, unsigned &numberOfRows,
-                          unsigned &numberOfColumns) = 0;
+  virtual std::tuple<T **, unsigned, unsigned> query_table(std::vector<unsigned> &projection,
+                                                           std::vector<Filter<T> *> &filters, unsigned numberOfRows,
+                                                           unsigned numberOfColumns) = 0;
 
   /// Queries the table and returns the amount of rows in the result.
   /// \param projection column indices to project

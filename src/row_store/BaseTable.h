@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <stdexcept>
+#include <tuple>
 #include <vector>
 
 #include "Filter.h"
@@ -41,8 +42,9 @@ public:
 
   T *getRow(unsigned rowIndex) override { return data[rowIndex]; }
 
-  T **query_table(std::vector<unsigned> &projectionAttributes, std::vector<Filter<T> *> &filters,
-                  unsigned &numberOfRows, unsigned &numberOfColumns) override {
+  std::tuple<T **, unsigned, unsigned> query_table(std::vector<unsigned> &projectionAttributes,
+                                                   std::vector<Filter<T> *> &filters, unsigned numberOfRows,
+                                                   unsigned numberOfColumns) override {
     IntermediateTable<T> result(this->numberOfAttributes, data);
     auto projectedResult = projection(result, projectionAttributes);
     auto filteredResult = apply_filters((*projectedResult), filters);
@@ -53,7 +55,8 @@ public:
     filteredResult->table(numberOfRows);
     T **tmp = filteredResult->detachTableOutput(numberOfRows);
     delete filteredResult;
-    return tmp;
+
+    return std::make_tuple(tmp, numberOfRows, numberOfColumns);
   }
 
   uint64_t query_count(std::vector<unsigned> &projectionAttributes, std::vector<Filter<T> *> &filters) override {

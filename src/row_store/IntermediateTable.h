@@ -77,7 +77,7 @@ public:
 
   /// Creates a table data structure of type T** and assignes the number of tuples to outputSize
   /// \param outputSize number of tuple in the output
-  T **table(unsigned &outputSize) {
+  std::tuple<T **, unsigned> table(unsigned outputSize) {
     freeTableOutput();
 
     tableOutput = static_cast<T **>(malloc(sizeof(T *) * data.size()));
@@ -86,9 +86,10 @@ public:
       tableOutput[i] = static_cast<T *>(malloc(sizeof(T) * tupleWidth));
       std::memcpy(tableOutput[i], data[i], sizeof(T) * tupleWidth);
     }
+
     outputSize = (unsigned)tableOutputSize;
 
-    return tableOutput;
+    return std::make_tuple(tableOutput, outputSize);
   }
 
   /// Detaches the table data structure of type T** from this IntermediateTable-Object and returns its address.
