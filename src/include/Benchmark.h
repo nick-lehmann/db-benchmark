@@ -13,24 +13,23 @@ namespace Benchmark {
 /// \param projection projection attributes for the query
 /// \param filters filters to apply for the query
 template <typename T>
-std::tuple<uint64_t, double, double> measureTime(Table<T> *table, std::vector<unsigned> &projection, std::vector<Filter<T> *> &filters) {
+std::tuple<uint64_t, uint64_t, double> measureTime(Table<T> &table, std::vector<unsigned> &projection, std::vector<Filter<T> *> &filters) {
   // measure both cpu time and real time
   auto clockStartTime = std::clock();
   auto realStartTime = std::chrono::steady_clock::now();
 
   // call query count function
-  uint64_t count = table->query_count(projection, filters);
+  uint64_t count = table.query_count(projection, filters);
 
   auto clockEndTime = std::clock();
   auto realEndTime = std::chrono::steady_clock::now();
 
   // store results
-  double clockDuration = 1000 * (clockEndTime - clockStartTime) / CLOCKS_PER_SEC;
+  uint64_t clockDuration = clockEndTime - clockStartTime;
   double realDuration = std::chrono::duration<double, std::milli>(realEndTime - realStartTime).count();
 
   // print result
-  std::cout << std::fixed << std::setprecision(8) << "Query time: " << 1000 * (clockEndTime - clockStartTime) / CLOCKS_PER_SEC << " ms"
-            << std::endl
+  std::cout << std::fixed << std::setprecision(8) << "CPU cycles: " << clockEndTime - clockStartTime << std::endl
             << "Real time: " << std::chrono::duration<double, std::milli>(realEndTime - realStartTime).count() << " ms" << std::endl
             << "Row Count: " << count << std::endl;
 
