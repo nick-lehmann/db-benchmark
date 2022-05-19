@@ -4,10 +4,8 @@
 
 typedef char* Buffer;
 
-typedef unsigned char ColumnIndex;
-typedef unsigned char RowIndex;
-
-typedef uint64_t Data;
+typedef unsigned int ColumnIndex;
+typedef unsigned int RowIndex;
 
 typedef char byte;
 typedef unsigned char ubyte;
