@@ -1,7 +1,7 @@
 #include <chrono>
 #include <iomanip>
 #include <iostream>
-#include <string.h>
+#include <string>
 #include <tuple>
 #include <vector>
 
