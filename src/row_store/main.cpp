@@ -31,7 +31,7 @@ void demo() {
   std::vector<unsigned> projectionAttributes = {0, 2, 3};
   std::vector<Filter<Type> *> filters = {new GreaterThan<Type>(1, 6), new LessThan<Type>(2, 9)};
   unsigned numRow = 0, numCol = 0;
-  auto [queryResult, resultRowCount, resultColumnCount] = baseTable.query_table(projectionAttributes, filters, numRow, numCol);
+  auto [queryResult, resultRowCount, resultColumnCount] = baseTable.query_table(projectionAttributes, filters);
   RowStore::IntermediateTable<Type>::printTableOutput(queryResult, resultRowCount, resultColumnCount);
 
   // delete result table and free memory
