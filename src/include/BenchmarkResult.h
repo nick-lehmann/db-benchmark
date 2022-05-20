@@ -68,14 +68,16 @@ class BenchmarkResult {
         // iterate over result map
         for (auto const& entry : result) {
             // separate key and value of map
-            std::tuple<int, unsigned, unsigned, T, T> key = result.first;
-            std::tuple<uint64_t, uint64_t, double> value = result.second;
+            std::tuple<int, unsigned, unsigned, T, T> key = entry.first;
+            std::tuple<uint64_t, uint64_t, double> value = entry.second;
 
             // add values to file
             file << std::get<0>(key) << "," << std::get<1>(key) << "," << std::get<2>(key) << "," << std::get<3>(key) << ","
                  << std::get<4>(key) << ",";
             file << std::get<0>(value) << "," << std::get<1>(value) << "," << std::get<2>(value) << "\n";
         }
+
+        std::cout << "File exported to " << filepath << "!" << std::endl;
 
         file.close();
     }

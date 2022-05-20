@@ -17,7 +17,8 @@ namespace Benchmark {
 /// \param projection projection attributes for the query
 /// \param filters filters to apply for the query
 template <typename T>
-std::tuple<uint64_t, uint64_t, double> measureTime(Table<T> &table, std::vector<unsigned> &projection, std::vector<Filter<T> *> &filters) {
+std::tuple<uint64_t, uint64_t, double> measureTime(Table<T> &table, std::vector<unsigned> &projection, std::vector<Filter<T> *> &filters,
+                                                   bool enablePrint = true) {
     // measure both cpu time and real time
     auto clockStartTime = std::clock();
     auto realStartTime = std::chrono::steady_clock::now();
@@ -33,9 +34,11 @@ std::tuple<uint64_t, uint64_t, double> measureTime(Table<T> &table, std::vector<
     double realDuration = std::chrono::duration<double, std::milli>(realEndTime - realStartTime).count();
 
     // print result
-    std::cout << std::fixed << std::setprecision(8) << "CPU cycles: " << clockEndTime - clockStartTime << std::endl
-              << "Real time: " << std::chrono::duration<double, std::milli>(realEndTime - realStartTime).count() << " ms" << std::endl
-              << "Row Count: " << count << std::endl;
+    if (enablePrint) {
+        std::cout << std::fixed << std::setprecision(8) << "CPU cycles: " << clockEndTime - clockStartTime << std::endl
+                  << "Real time: " << std::chrono::duration<double, std::milli>(realEndTime - realStartTime).count() << " ms" << std::endl
+                  << "Row Count: " << count << std::endl;
+    }
 
     return std::make_tuple(count, clockDuration, realDuration);
 }
@@ -66,41 +69,46 @@ unsigned incrementValue(unsigned value, bool exponentialGrowth, unsigned growthF
 /// \param lowerBound lower bound of values stored in table cells
 /// \param upperBound upper bound of values stored in table cells
 /// \param seed used for data generation
+/// \param filepath if specified export results to filepath. filepath should include filename and ending (e.g. .csv)
 template <typename T>
 void runBenchmark(int tableStoreId, std::vector<unsigned> &projectionAttributes, std::vector<Filter<T> *> &filters, unsigned rowCount = 10,
-                  unsigned columnCount = 10, bool exponentialGrowth = false, unsigned growthFactor = 10, unsigned iterations = 100,
-                  T lowerBound = 0, T upperBound = 1000, unsigned seed = 42) {
+                  unsigned columnCount = 10, bool exponentialGrowth = false, unsigned growthFactor = 50, unsigned iterations = 300,
+                  T lowerBound = 0, T upperBound = 1000, unsigned seed = 42, const std::string &filepath = "benchmark.csv") {
     // initialize store for result
     BenchmarkResult<T> result;
 
     for (int iterationCounter = 0; iterationCounter < iterations; iterationCounter++) {
+        std::cout << "Processing iteration " << iterationCounter + 1 << "/" << iterations << std::endl;
+
         // create data
         const T **tableData = TableHelper::generateRandomData<int>(columnCount, rowCount, lowerBound, upperBound, seed);
 
-        // initialize table
-        Table<T> table;
-
         // create table
         switch (tableStoreId) {
-            case 0:
+            case 0: {
                 // row store
-                table = RowStore::BaseTable(columnCount, rowCount, tableData);
+                RowStore::BaseTable<T> table(columnCount, rowCount, tableData);
+
+                // run benchmark
+                auto [resultRowCount, resultCpuTime, resultRealTime] = Benchmark::measureTime(table, projectionAttributes, filters, false);
+                // store benchmark in result
+                result.addBenchmark(tableStoreId, rowCount, columnCount, lowerBound, upperBound, resultRowCount, resultCpuTime,
+                                    resultRealTime);
                 break;
-            case 1:
+            }
+            case 1: {
                 // column store
                 break;
-            case 2:
+            }
+            case 2: {
                 // pax store
                 break;
-            default:
+            }
+            default: {
                 std::cout << "Invalid table store ID used!" << std::endl;
                 return;
+            }
         }
-
-        // run benchmark
-        auto [resultRowCount, resultCpuTime, resultRealTime] = Benchmark::measureTime(table, projectionAttributes, filters);
-        // store benchmark in result
-        result.addBenchmark(tableStoreId, rowCount, columnCount, lowerBound, upperBound, resultRowCount, resultCpuTime, resultRealTime);
 
         // increment row-/columnCount
         if (iterationCounter % 2 == 0) {
@@ -108,6 +116,14 @@ void runBenchmark(int tableStoreId, std::vector<unsigned> &projectionAttributes,
         } else {
             columnCount = incrementValue(columnCount, exponentialGrowth, growthFactor);
         }
+    }
+
+    // print result
+    result.printBenchmarkResult();
+
+    // if filepath specified export result
+    if (filepath != "") {
+        result.exportBenchmarkResult(filepath);
     }
 }
 
