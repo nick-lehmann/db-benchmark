@@ -1,3 +1,4 @@
+#include <fstream>
 #include <iostream>
 #include <map>
 #include <tuple>
@@ -13,9 +14,17 @@ class BenchmarkResult {
   BenchmarkResult() {}
 
   /// Add benchmark result to result map
-  void addBenchmark(int tableIndex, unsigned rowCount, unsigned columnCount, T lowerBound, T upperBound, uint64_t resultRowCount,
+  /// \param tableStoreId ID determines which kind of store is used. 0 -> Row-Store, 1-> Column-Store, 2-> PAX-Store
+  /// \param rowCount number of rows of original table
+  /// \param columnCount number of columns of original table
+  /// \param lowerBound lower bound for table cell values
+  /// \param upperBound upper bound for table cell values
+  /// \param resultRowCount number of rows in queried table
+  /// \param resultCpuTime CPU cycles needed for query
+  /// \param resultRealTime time needed for query in ms
+  void addBenchmark(int tableStoreId, unsigned rowCount, unsigned columnCount, T lowerBound, T upperBound, uint64_t resultRowCount,
                     uint64_t resultCpuTime, double resultRealTime) {
-    std::tuple<int, unsigned, unsigned, T, T> key = {tableIndex, rowCount, columnCount, lowerBound, upperBound};
+    std::tuple<int, unsigned, unsigned, T, T> key = {tableStoreId, rowCount, columnCount, lowerBound, upperBound};
     std::tuple<uint64_t, uint64_t, double> value = {resultRowCount, resultCpuTime, resultRealTime};
 
     result.insert(std::pair{key, value});
@@ -49,5 +58,28 @@ class BenchmarkResult {
   }
 
   /// Export the benchmark results to a file.
-  void exportBenchmarkResult() {}
+  /// \param filepath Path to store the file. Should also include the filename and the file ending (e.g. .csv)
+  void exportBenchmarkResult(const std::string& filepath) {
+    // open file
+    std::ofstream file;
+    file.open(filepath);
+
+    // add header to file
+    file << "tableStoreId,rowCount,columnCount,lowerBound,upperBound,resultRowCount,resultCpuTime,resultRealTime\n";
+
+    // iterate over result map
+    std::map<std::tuple<int, unsigned, unsigned, T, T>, std::tuple<uint64_t, uint64_t, double>>::iterator iterator;
+    for (iterator = result.begin(); iterator != result.end(); iterator++) {
+      // separate key and value of map
+      std::tuple<int, unsigned, unsigned, T, T> key = iterator->first;
+      std::tuple<uint64_t, uint64_t, double> value = iterator->second;
+
+      // add values to file
+      file << std::get<0>(key) << "," << std::get<1>(key) << "," << std::get<2>(key) << "," << std::get<3>(key) << "," << std::get<4>(key)
+           << ",";
+      file << std::get<0>(value) << "," << std::get<1>(value) << "," << std::get<2>(value) << "\n";
+    }
+
+    file.close();
+  }
 };
