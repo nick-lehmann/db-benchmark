@@ -1,33 +1,49 @@
-#include <iostream>
-#include <vector>
 #include <array>
 #include <cstdlib>
+#include <iostream>
+#include <vector>
 
-#include "Table.h"
-#include "Projection.h"
+#include "BaseTable.h"
+#include "Benchmark.h"
 #include "Filter.h"
+#include "Filters.h"
+#include "Helper.h"
+#include "IntermediateTable.h"
+#include "Projection.h"
+#include "Table.h"
 
-int main(int argc, char ** argv) {
-    /*std::cout << "Row-Store Code" << std::endl;
-    auto baseTable = *createSortedTestTable<uint64_t>(5, 100, 50);
+/// Run a demo of the Row-Store database.
+/// Creates a small example BaseTable and applies a simple query on it. Afterwards run a benchmark with the same query on the same table.
+void demo() {
+  // define data type of table data
+  using Type = int32_t;
 
-    baseTable.print();
-    std::cout << "_____________________" << std::endl;
+  std::cout << "Row-Store Code" << std::endl;
 
-    int projectionAttributes[] = {0, 2, 3};
-    auto result = *projection(baseTable, projectionAttributes, 3);
+  // generate example table and print
+  const Type **initialData = TableHelper::generateRandomData<int>(5, 20, 1, 10);
+  RowStore::BaseTable<Type> baseTable(5, 20, initialData);
+  std::cout << "Print Test-BaseTable: \n" << std::endl;
+  baseTable.print();
 
-    result.print();
+  // perform a query on base table and print result
+  std::cout << "Print Test-Query: \n" << std::endl;
+  std::vector<unsigned> projectionAttributes = {0, 2, 3};
+  std::vector<Filter<Type> *> filters = {new GreaterThan<Type>(1, 6), new LessThan<Type>(2, 9)};
+  unsigned numRow = 0, numCol = 0;
+  auto [queryResult, resultRowCount, resultColumnCount] = baseTable.query_table(projectionAttributes, filters, numRow, numCol);
+  RowStore::IntermediateTable<Type>::printTableOutput(queryResult, resultRowCount, resultColumnCount);
 
-    auto result2 = *filter_basic(result, 1, 42);
+  // delete result table and free memory
+  RowStore::IntermediateTable<Type>::deleteDetachedTableOutput(queryResult, resultRowCount);
 
-    result2.print();
+  // run benchmark of same query
+  std::cout << "Print benchmark: " << std::endl << std::endl;
+  auto benchmarkResult = Benchmark::measureTime(baseTable, projectionAttributes, filters);
+}
 
+int main(int argc, char **argv) {
+  demo();
 
-    //destruct tables -> free allocated memory
-    delete &result;
-    delete &result2;
-    delete &baseTable;*/
-
-	return 0;
+  return 0;
 }

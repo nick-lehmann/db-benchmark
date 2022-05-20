@@ -1,52 +1,43 @@
 #pragma once
+#include "Filters.h"
+#include "IntermediateTable.h"
 #include <cstdint>
 #include <stdexcept>
-#include "RowStoreTable.h"
-#include "Filters.h"
 
-/**
-This filter method requires the Table to be sorted over the selected attribute
-*/
-/*template<typename T, int S>
-Table<T, S> * filter_binary_search(Table<T, S> &table, const int attribute, const T value) {
-    if (attribute < 0 || attribute >= S) {
-        throw std::invalid_argument("Error! Invalid attribute index!");
+namespace RowStore {
+
+/// Selects these tuples of table that match all Filter-objects in filters and returns the address of the newly created
+/// result table that contains exactly the selected tuples
+/// \param table intermediateTable that is filtered
+/// \param filters vector of filters that are applied conjunctive
+template <typename T>
+IntermediateTable<T> *apply_filters(IntermediateTable<T> &table, std::vector<Filter<T> *> &filters) {
+  // Validate filters
+  for (int i = 0; i < filters.size(); ++i) {
+    if (filters[i]->index < 0 || filters[i]->index >= table.getTupleWidth()) {
+      throw std::invalid_argument("Error! Invalid attribute index!");
     }
+  }
+  // Get pointer to table data
+  std::vector<T *> *data = table.getData();
+  // Create empty intermediate table
+  auto result = new IntermediateTable<T>(table.getTupleWidth());
 
-    int index = table.data.size() / 2;
-    int step = index / 2;
-
-    while(step > 0) {
-        if(table[index][attribute] < value) index -= step;
-        else if(table[index][attribute] > value) index += step;
-        else break;
+  // Iterate over table rows
+  int i = 0;
+row_iterator: // create label to be able to use goto
+  for (; i < table.count(); ++i) {
+    T *row = (*data)[i];
+    // Iterate over filters and match
+    for (int j = 0; j < filters.size(); ++j) {
+      if (!filters[j]->match(row[filters[j]->index])) {
+        ++i;               // increment i for next iteration of row_iterator loop
+        goto row_iterator; // continues outer loop
+      }
     }
-    if(step == 0) return new Table<T, S>();
-    //I assume there are not that many tuples that match the value
-    //(otherwise binary search to find the boundaries may be more efficient)
-    //find lower boundary
-
-    auto result = new Table<T, S>();
-
-    while(table.data[--index][attribute] == value);
-    while(table.data[++index][attribute] == value) {
-        result->addTuple(table.getTuple(index));
-    }
-    return result;
-}*/
-
-template<typename T>
-Table<T> * filter_basic(Table<T> &table, Filter<T> *predicate) {
-	if (predicate->index < 0 || predicate->index >= table.numberOfAttributes) {
-		throw std::invalid_argument("Error! Invalid attribute index!");
-	}
-
-	auto result = new Table<T>(table.numberOfAttributes);
-	for (int i = 0; i < table.data.size(); ++i) {
-		if (predicate->match(table[i][predicate->index])) {
-			// more efficient approach: use tuple-pointer and add the whole tuple to the result table
-			result->addTuple(table[i]);
-		}
-	}
-	return result;
+    // this is only executed, when all fillters match; otherwise the loop is continued to the next iteration
+    result->addRowCopy(row);
+  }
+  return result;
 }
+} // namespace RowStore
