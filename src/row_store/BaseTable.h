@@ -51,8 +51,7 @@ public:
   /// \param filters vector of filters used for the query
   /// \param numberOfRows number of rows of the current table
   /// \param numberOfColumns number of columns of the current table
-  std::tuple<T **, unsigned, unsigned> query_table(std::vector<unsigned> &projectionAttributes, std::vector<Filter<T> *> &filters,
-                                                   unsigned numberOfRows, unsigned numberOfColumns) override {
+  std::tuple<T **, unsigned, unsigned> query_table(std::vector<unsigned> &projectionAttributes, std::vector<Filter<T> *> &filters) override {
     // convert BaseTable to InterMediateTable for query
     IntermediateTable<T> result(this->numberOfAttributes, data);
     // apply query

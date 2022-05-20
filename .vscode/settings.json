@@ -70,5 +70,7 @@
     "utility": "cpp",
     "__availability": "cpp"
   },
-  "C_Cpp.clang_format_fallbackStyle": "LLVM"
+  "C_Cpp.clang_format_fallbackStyle": "LLVM",
+  "editor.rulers": [140],
+  "editor.formatOnSave": true
 }
