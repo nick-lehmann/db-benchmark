@@ -1,10 +1,13 @@
 #include <chrono>
 #include <iomanip>
 #include <iostream>
+#include <stdexcept>
 #include <string>
 #include <tuple>
 #include <vector>
 
+#include "../column_store/ColumnStoreTable.h"
+#include "../pax_store/table.cpp"
 #include "../row_store/BaseTable.h"
 #include "BenchmarkResult.h"
 #include "Helper.h"
@@ -56,66 +59,85 @@ unsigned incrementValue(unsigned value, bool exponentialGrowth, unsigned growthF
     }
 }
 
+/// Run a benchmark for specified table implementation and parameters.
+/// \param tableStoreId ID determines which kind of store is used. 0 -> Row-Store, 1-> Column-Store, 2-> PAX-Store
+/// \param tableData data to fill table with
+/// \param projection projection attributes for the query
+/// \param filters filters to apply for the query
+/// \param rowCount initial number of rows
+/// \param columnCount initial number of columns
+/// \param lowerBound lower bound of values stored in table cells
+/// \param upperBound upper bound of values stored in table cells
+/// \param seed used for data generation
+template <typename T>
+std::tuple<uint64_t, uint64_t, double> benchmarkTableImplementation(int tableStoreId, std::vector<unsigned> &projectionAttributes,
+                                                                    std::vector<Filter<T> *> &filters, unsigned rowCount,
+                                                                    unsigned columnCount, T lowerBound, T upperBound, unsigned seed) {
+    // create data
+    const T **tableData = TableHelper::generateRandomData<T>(columnCount, rowCount, lowerBound, upperBound, seed);
+
+    // create table
+    switch (tableStoreId) {
+        case 0: {
+            // row store
+            RowStore::BaseTable<T> table(columnCount, rowCount, tableData);
+
+            // run benchmark and return
+            return Benchmark::measureTime(table, projectionAttributes, filters, false);
+        }
+        case 1: {
+            // column store
+            ColumnStore::ColumnStoreTable<T> table(columnCount, rowCount, tableData);
+
+            // run benchmark and return
+            return Benchmark::measureTime(table, projectionAttributes, filters, false);
+        }
+        case 2: {
+            // pax store
+            PaxTable<T> table(columnCount, rowCount, tableData);
+
+            // run benchmark and return
+            return Benchmark::measureTime(table, projectionAttributes, filters, false);
+        }
+        default: {
+            throw std::invalid_argument("Invalid table store ID used!");
+        }
+    }
+}
+
 /// Run a benchmark performing multiple time measurements on table with different parameters.
 /// \param tableStoreId ID determines which kind of store is used. 0 -> Row-Store, 1-> Column-Store, 2-> PAX-Store
 /// \param projection projection attributes for the query
 /// \param filters filters to apply for the query
 /// \param rowCount initial number of rows
 /// \param columnCount initial number of columns
-/// \param exponentialGrowth if true the number of rows/columns grows exponentially, if false linear growth is applied
-/// \param growthFactor determines how much number of rows/columns grows. if exponentialGrowth = true growthFactor multiplies current number
+/// \param exponentialGrowth if true the number of rows grows exponentially, if false linear growth is applied
+/// \param growthFactor determines how much number of rows grows. if exponentialGrowth = true growthFactor multiplies current number
 /// of rows/columns, else it is added
-/// \param iterations number of measurements performed. each measurement increments either rowCount or columnCount
+/// \param iterations number of measurements performed. each measurement increments rowCount
 /// \param lowerBound lower bound of values stored in table cells
 /// \param upperBound upper bound of values stored in table cells
 /// \param seed used for data generation
 /// \param filepath if specified export results to filepath. filepath should include filename and ending (e.g. .csv)
 template <typename T>
-void runBenchmark(int tableStoreId, std::vector<unsigned> &projectionAttributes, std::vector<Filter<T> *> &filters, unsigned rowCount = 10,
-                  unsigned columnCount = 10, bool exponentialGrowth = false, unsigned growthFactor = 50, unsigned iterations = 300,
-                  T lowerBound = 0, T upperBound = 1000, unsigned seed = 42, const std::string &filepath = "benchmark.csv") {
+void benchmarkRows(int tableStoreId, std::vector<unsigned> &projectionAttributes, std::vector<Filter<T> *> &filters, unsigned rowCount = 10,
+                   unsigned columnCount = 10, bool exponentialGrowth = false, unsigned growthFactor = 50, unsigned iterations = 300,
+                   T lowerBound = 0, T upperBound = 1000, unsigned seed = 42, const std::string &filepath = "benchmark.csv") {
     // initialize store for result
     BenchmarkResult<T> result;
 
     for (int iterationCounter = 0; iterationCounter < iterations; iterationCounter++) {
         std::cout << "Processing iteration " << iterationCounter + 1 << "/" << iterations << std::endl;
 
-        // create data
-        const T **tableData = TableHelper::generateRandomData<int>(columnCount, rowCount, lowerBound, upperBound, seed);
+        // run benchmark
+        auto [resultRowCount, resultCpuTime, resultRealTime] = Benchmark::benchmarkTableImplementation(
+            tableStoreId, projectionAttributes, filters, rowCount, columnCount, lowerBound, upperBound, seed);
 
-        // create table
-        switch (tableStoreId) {
-            case 0: {
-                // row store
-                RowStore::BaseTable<T> table(columnCount, rowCount, tableData);
+        // store benchmark in result
+        result.addBenchmark(tableStoreId, rowCount, columnCount, lowerBound, upperBound, resultRowCount, resultCpuTime, resultRealTime);
 
-                // run benchmark
-                auto [resultRowCount, resultCpuTime, resultRealTime] = Benchmark::measureTime(table, projectionAttributes, filters, false);
-                // store benchmark in result
-                result.addBenchmark(tableStoreId, rowCount, columnCount, lowerBound, upperBound, resultRowCount, resultCpuTime,
-                                    resultRealTime);
-                break;
-            }
-            case 1: {
-                // column store
-                break;
-            }
-            case 2: {
-                // pax store
-                break;
-            }
-            default: {
-                std::cout << "Invalid table store ID used!" << std::endl;
-                return;
-            }
-        }
-
-        // increment row-/columnCount
-        if (iterationCounter % 2 == 0) {
-            rowCount = incrementValue(rowCount, exponentialGrowth, growthFactor);
-        } else {
-            columnCount = incrementValue(columnCount, exponentialGrowth, growthFactor);
-        }
+        // increment row-count
+        rowCount = incrementValue(rowCount, exponentialGrowth, growthFactor);
     }
 
     // print result

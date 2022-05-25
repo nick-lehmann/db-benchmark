@@ -52,7 +52,7 @@ void benchmark() {
     std::vector<Filter<Type> *> filters = {new GreaterThan<Type>(1, 400), new LessThan<Type>(2, 600)};
 
     // run benchmarks
-    Benchmark::runBenchmark(0, projectionAttributes, filters);
+    Benchmark::benchmarkRows(0, projectionAttributes, filters);
 }
 
 int main(int argc, char **argv) {
