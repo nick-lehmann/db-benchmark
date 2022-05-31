@@ -30,28 +30,28 @@ namespace ColumnStore::Basic {
         }
 
         std::tuple<T **, uint64_t, uint64_t>
-        query_table(std::vector<uint64_t> &projection, std::vector<Filters::Basic::Filter<T> *> &filters) override {
+        queryTable(std::vector<uint64_t> &projection, std::vector<Filters::Basic::Filter<T> *> &filters) override {
             std::vector<uint64_t> *filter_indices = nullptr;
             for (const auto &filter: filters) {
-                filter_indices = filter_basic(filter, filter_indices);
+                filter_indices = filterBasic(filter, filter_indices);
             }
 
-            return std::make_tuple(reconstruct_table(projection, filter_indices),
+            return std::make_tuple(reconstructTable(projection, filter_indices),
                                    (uint64_t) filter_indices->size(), (uint64_t) projection.size());
         }
 
         uint64_t
-        query_count(std::vector<uint64_t> &projection, std::vector<Filters::Basic::Filter<T> *> &filters) override {
+        queryCount(std::vector<uint64_t> &projection, std::vector<Filters::Basic::Filter<T> *> &filters) override {
             // the first list of filtered indices is empty
             std::vector<uint64_t> *filter_indices = nullptr;
 
             // apply each filter, (hopefully) reducing the index vector each iteration
             for (const auto &filter: filters) {
-                filter_indices = filter_basic(filter, filter_indices);
+                filter_indices = filterBasic(filter, filter_indices);
             }
 
             // accessing a portion of the memory (if possible) to avoid compiler optimizations
-            auto final_result = reconstruct_table(projection, filter_indices);
+            auto final_result = reconstructTable(projection, filter_indices);
             if (!filter_indices->empty()) {
                 auto access = final_result[filter_indices->size() - 1][projection.size() - 1];
             }
@@ -65,7 +65,7 @@ namespace ColumnStore::Basic {
         /// \param input_indices the vector of indices that are still in the filtering. This can be a nullptr in which case the entire set of data is accessed.
         /// \return a (reduced) vector of indices for rows that match this filter
         std::vector<uint64_t> *
-        filter_basic(const Filters::Basic::Filter<T> *filter, std::vector<uint64_t> *input_indices = nullptr) {
+        filterBasic(const Filters::Basic::Filter<T> *filter, std::vector<uint64_t> *input_indices = nullptr) {
             auto output_indices = new std::vector<uint64_t>();
             auto filter_col = data[filter->index];
 
@@ -89,7 +89,7 @@ namespace ColumnStore::Basic {
         /// Constructs and returns a table (2-dimensional C-array) based on prior filtering and using projection.
         /// \param projection the columns to pack into the table
         /// \param row_indices the rows to pack into the table
-        T **reconstruct_table(std::vector<uint64_t> &projection, std::vector<uint64_t> *row_indices) {
+        T **reconstructTable(std::vector<uint64_t> &projection, std::vector<uint64_t> *row_indices) {
             T **to_return = (T **) malloc(row_indices->size() * sizeof(T *));
 
             for (uint64_t row = 0; row < row_indices->size(); row++) {

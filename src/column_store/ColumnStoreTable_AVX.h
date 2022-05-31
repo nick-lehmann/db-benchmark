@@ -6,7 +6,7 @@
 #include "ITable_AVX.h"
 #include "ColumnStoreHelper.h"
 
-// whether to check the remainder in the filter_basic()-method
+// whether to check the remainder in the filterBasic()-method
 // this could have an impact on performance due to unfortunate branch prediction
 // TODO benchmark performance
 #define WITH_R_0_CHECK 1
@@ -39,35 +39,30 @@ namespace ColumnStore::AVX {
         }
 
         std::tuple<T **, uint64_t, uint64_t>
-        query_table(std::vector<uint64_t> &projection, std::vector<Filters::AVX::Filter<T> *> &filters) override {
+        queryTable(std::vector<uint64_t> &projection, std::vector<Filters::AVX::Filter<T> *> &filters) override {
             // reset the index storage
             sizeOfIndexStorage = -1;
 
             // apply each filter, (hopefully) reducing the index vector each iteration
             for (const auto &filter: filters) {
-                filter_basic(filter);
-
-                std::cout << sizeOfIndexStorage << std::endl;
-//                for (int i = 0; i < sizeOfIndexStorage; i++) {
-//                    std::cout << indexStorage[i] << ",";
-//                }
+                filterBasic(filter);
             }
 
-            return std::make_tuple(reconstruct_table(projection),
+            return std::make_tuple(reconstructTable(projection),
                                    (uint64_t) sizeOfIndexStorage, (uint64_t) projection.size());
         }
 
-        uint64_t query_count(std::vector<uint64_t> &projection, std::vector<Filters::AVX::Filter<T> *> &filters) override {
+        uint64_t queryCount(std::vector<uint64_t> &projection, std::vector<Filters::AVX::Filter<T> *> &filters) override {
             // reset the index storage
             sizeOfIndexStorage = -1;
 
             // apply each filter, (hopefully) reducing the index vector each iteration
             for (const auto &filter: filters) {
-                filter_basic(filter);
+                filterBasic(filter);
             }
 
             // accessing a portion of the memory (if possible) to avoid compiler optimizations
-            auto final_result = reconstruct_table(projection);
+            auto final_result = reconstructTable(projection);
             if (sizeOfIndexStorage != 0) {
                 auto access = final_result[sizeOfIndexStorage - 1][projection.size() - 1];
             }
@@ -79,7 +74,7 @@ namespace ColumnStore::AVX {
         /// Applies a single filter on the stored data based the currently stored filter indices from previous
         /// iterations (if there was a previous iteration).
         /// \param filter the filter to apply
-        void filter_basic(const Filters::AVX::Filter<T> *filter) {
+        void filterBasic(const Filters::AVX::Filter<T> *filter) {
             auto integerAmount = (unsigned) 64 / sizeof(T);
             auto filterColIterator = data[filter->index].begin();
             auto *currentIndexStorage = indexStorage;
@@ -134,7 +129,7 @@ namespace ColumnStore::AVX {
 
         /// Constructs and returns a table (2-dimensional C-array) based on prior filtering and using projection.
         /// \param projection the columns to pack into the table
-        T **reconstruct_table(std::vector<uint64_t> &projection) {
+        T **reconstructTable(std::vector<uint64_t> &projection) {
             T **to_return = (T **) malloc(sizeOfIndexStorage * sizeof(T *));
 
             for (uint64_t row = 0; row < sizeOfIndexStorage; row++) {

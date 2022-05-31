@@ -36,13 +36,13 @@ namespace Tables::Basic {
         /// \param projection column indices to project
         /// \param filters filters to apply
         virtual std::tuple<T **, uint64_t, uint64_t>
-        query_table(std::vector<uint64_t> &projection, std::vector<Filters::Basic::Filter<T> *> &filters) = 0;
+        queryTable(std::vector<uint64_t> &projection, std::vector<Filters::Basic::Filter<T> *> &filters) = 0;
 
         /// Queries the table and returns the amount of rows in the result.
         /// \param projection column indices to project
         /// \param filters filters to apply
         virtual uint64_t
-        query_count(std::vector<uint64_t> &projection, std::vector<Filters::Basic::Filter<T> *> &filters) = 0;
+        queryCount(std::vector<uint64_t> &projection, std::vector<Filters::Basic::Filter<T> *> &filters) = 0;
 
         /// Prints the entire table.
         void print() {

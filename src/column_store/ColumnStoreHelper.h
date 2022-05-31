@@ -62,7 +62,12 @@ namespace ColumnStore::Helper {
     /// \param mask whether an index should be stored or not
     /// \param baseAddr start of the C-array
     /// \return amount of stored elements (amount of 1-bits in the mask)
-    uint64_t store(__m512i indexRegister, __mmask8 mask, uint64_t *baseAddr) {
+    uint64_t store(__m512i indexRegister, __mmask16 mask, uint64_t *baseAddr) {
+        // FIXME
+        // this method currently only works for 64-bit integers since for others since the amount of data would
+        // otherwise exceed the amount of indices (indices are uint64_t, meaning a maximum of 8 in an AVX-512 register,
+        // with a 32-bit data type in the table there would be 16 elements in a register)
+
         _mm512_mask_compressstoreu_epi64(baseAddr, mask, indexRegister);
         return _mm512_mask_reduce_add_epi64(mask, ONE_REGISTER_64);
     }
