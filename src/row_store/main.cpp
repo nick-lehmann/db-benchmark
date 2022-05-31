@@ -10,7 +10,7 @@
 #include "Helper.h"
 #include "IntermediateTable.h"
 #include "Projection.h"
-#include "Table.h"
+#include "ITable.h"
 
 /// Run a demo of the Row-Store database.
 /// Creates a small example BaseTable and applies a simple query on it. Afterwards run a benchmark with the same query on the same table.

@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "../column_store/ColumnStoreTable.h"
-#include "../pax_store/table.cpp"
+#include "../pax_store/Table.cpp"
 #include "../row_store/BaseTable.h"
 #include "BenchmarkResult.h"
 #include "Helper.h"
