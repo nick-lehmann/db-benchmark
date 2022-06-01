@@ -16,8 +16,10 @@ cmake --build .
 
 Builden einer Executable:
 ```
-cmake --build . --taget <executable-name>
+cmake --build . --config Debug --taget <executable-name>
 ```
+
+Soll mit `-03` compiliert werden muss `Debug` entsprechend durch Release ersetzt werden.
 
 Es stehen folgende Executable-names zur Verfügung: 
     * row_store
