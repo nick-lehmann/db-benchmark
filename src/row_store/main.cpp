@@ -11,6 +11,12 @@
 #include "ITable.h"
 #include "IntermediateTable.h"
 #include "Projection.h"
+#include "ITable_AVX.h"
+#include "IntermediateTable_AVX.h"
+#include "Projection_AVX.h"
+#include "Filter_AVX.h"
+#include "Filters_AVX.h"
+#include "Projection_AVX.h"
 
 /// Run a demo of the Row-Store database.
 /// Creates a small example BaseTable and applies a simple query on it. Afterwards run a benchmark with the same query on the same table.
