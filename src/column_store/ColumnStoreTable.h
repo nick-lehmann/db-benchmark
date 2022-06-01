@@ -5,12 +5,12 @@
 
 #include "ITable.h"
 
-namespace ColumnStore::Basic {
+namespace ColumnStore::Scalar {
     template<typename T>
-    class Table : public Tables::Basic::ITable<T> {
+    class Table : public Tables::Scalar::ITable<T> {
     public:
         Table(uint64_t numAttributes, uint64_t numRows, const T **initialData)
-                : Tables::Basic::ITable<T>(numAttributes, numRows, initialData) {
+                : Tables::Scalar::ITable<T>(numAttributes, numRows, initialData) {
             data = new std::vector<T>[numAttributes];
             for (uint64_t row = 0; row < numRows; row++) {
                 for (uint64_t column = 0; column < numAttributes; column++) {
@@ -30,7 +30,7 @@ namespace ColumnStore::Basic {
         }
 
         std::tuple<T **, uint64_t, uint64_t>
-        queryTable(std::vector<uint64_t> &projection, std::vector<Filters::Basic::Filter<T> *> &filters) override {
+        queryTable(std::vector<uint64_t> &projection, std::vector<Filters::Scalar::Filter<T> *> &filters) override {
             std::vector<uint64_t> *filter_indices = nullptr;
             for (const auto &filter: filters) {
                 filter_indices = filterBasic(filter, filter_indices);
@@ -41,7 +41,7 @@ namespace ColumnStore::Basic {
         }
 
         uint64_t
-        queryCount(std::vector<uint64_t> &projection, std::vector<Filters::Basic::Filter<T> *> &filters) override {
+        queryCount(std::vector<uint64_t> &projection, std::vector<Filters::Scalar::Filter<T> *> &filters) override {
             // the first list of filtered indices is empty
             std::vector<uint64_t> *filter_indices = nullptr;
 
@@ -65,7 +65,7 @@ namespace ColumnStore::Basic {
         /// \param input_indices the vector of indices that are still in the filtering. This can be a nullptr in which case the entire set of data is accessed.
         /// \return a (reduced) vector of indices for rows that match this filter
         std::vector<uint64_t> *
-        filterBasic(const Filters::Basic::Filter<T> *filter, std::vector<uint64_t> *input_indices = nullptr) {
+        filterBasic(const Filters::Scalar::Filter<T> *filter, std::vector<uint64_t> *input_indices = nullptr) {
             auto output_indices = new std::vector<uint64_t>();
             auto filter_col = data[filter->index];
 

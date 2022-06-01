@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Filters::Basic {
+namespace Filters::Scalar {
     template <typename T>
     class Filter {
     public:

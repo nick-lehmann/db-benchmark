@@ -33,16 +33,16 @@ void printFilterInfo(std::vector<Filters::AVX::Filter<T>*> filters) {
 
 void debugTest() {
     const int** initialData = TableHelper::generateRandomData<int>(COLUMNS, ROWS, 1, 10);
-    ColumnStore::Basic::Table<int> testTable(COLUMNS, ROWS, initialData);
+    ColumnStore::Scalar::Table<int> testTable(COLUMNS, ROWS, initialData);
 
     std::cout << "Test table: \n" << std::endl;
 
     testTable.print();
 
-    auto equalFilter = new Filters::Basic::Equal<int>(0, 4);
-    auto greaterFilter = new Filters::Basic::GreaterThan<int>(4, 4);
+    auto equalFilter = new Filters::Scalar::Equal<int>(0, 4);
+    auto greaterFilter = new Filters::Scalar::GreaterThan<int>(4, 4);
 
-    std::vector<Filters::Basic::Filter<int>*> filters {equalFilter, greaterFilter};
+    std::vector<Filters::Scalar::Filter<int>*> filters {equalFilter, greaterFilter};
     std::vector<uint64_t> projection {0, 2, 4};
 
     auto [queried, rows, columns] = testTable.queryTable(projection, filters);
