@@ -12,7 +12,7 @@
 #include "Filter.h"
 #include "IntermediateTable.h"
 #include "Projection.h"
-#include "Table.h"
+#include "ITable.h"
 
 namespace RowStore {
 template <typename T> class BaseTable : public Table<T> {

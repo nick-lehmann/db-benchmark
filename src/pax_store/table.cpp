@@ -1,5 +1,5 @@
 #pragma once
-#include "Table.h"
+#include "ITable.h"
 
 #include <functional>
 #include <vector>

@@ -42,7 +42,7 @@ class BenchmarkResult {
 
             // print key values
             std::cout << "Query parameters: " << std::endl;
-            std::cout << "Table Store ID: " << std::get<0>(key) << ", ";
+            std::cout << "ITable Store ID: " << std::get<0>(key) << ", ";
             std::cout << "Rows: " << std::get<1>(key) << ", ";
             std::cout << "Columns: " << std::get<2>(key) << ", ";
             std::cout << "Lower bound: " << std::get<3>(key) << ", ";

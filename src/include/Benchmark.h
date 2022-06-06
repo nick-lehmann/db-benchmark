@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "../column_store/ColumnStoreTable.h"
-#include "../pax_store/table.cpp"
+#include "../pax_store/Table.cpp"
 #include "../row_store/BaseTable.h"
 #include "BenchmarkResult.h"
 #include "Helper.h"
@@ -27,7 +27,7 @@ std::tuple<uint64_t, uint64_t, double> measureTime(Table<T> &table, std::vector<
     auto realStartTime = std::chrono::steady_clock::now();
 
     // call query count function
-    uint64_t count = table.query_count(projection, filters);
+    uint64_t count = table.queryCount(projection, filters);
 
     auto clockEndTime = std::clock();
     auto realEndTime = std::chrono::steady_clock::now();
