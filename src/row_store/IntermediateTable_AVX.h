@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <tuple>
 #include <vector>
 
 #include "Constants.h"
@@ -71,6 +72,20 @@ class IntermediateTable_AVX {
         }
         return count;
     }
+
+    /// Getter for data storage of the table. Attetion: After adding tuples manually to the data storage, it is mandatory to manipulate the
+    /// rowCount. It is not recommendet nor intendet to delete tuples.
+    /// \return address of the data storage
+    T *getData() { return data; }
+
+    /// Getter for first not occupied position in the data storage.
+    /// \return address of the first not occupied position in the data storage.
+    T *getDataEnd() { return data + (rowCount * tupleWidth); }
+
+    /// Access method to manually add rows to the rowCount. Attetion: It is only recommendet to use this method after adding tuples manually
+    /// to the data storage of the table. It is not intendet to reduce the number of tules.
+    /// \param addedRows number of rows to add to the rowCount
+    void manipulateRowCount(size_t addedRows) { rowCount += addedRows; };
 
     /// Calculates the address of a tuple specified by its position in the table
     /// \param index position of a tuple in the table

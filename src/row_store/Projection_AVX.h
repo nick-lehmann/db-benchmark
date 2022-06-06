@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <vector>
 
-#include "IntermediateTable.h"
+#include "IntermediateTable_AVX.h"
 
 namespace RowStore {
 /// Cecks whether all column indices are vallid for the given tupleSize
@@ -27,10 +27,29 @@ bool columnIndicesValid(std::vector<uint64_t> columnIndices, uint32_t tupleSize)
 /// \param projectionParameters vector of column indices that are contained in the result
 template <typename T>
 IntermediateTable_AVX<T> *projection_AVX(IntermediateTable_AVX<T> &table, std::vector<uint64_t> &projectionParameters) {
-    
-    // TODO : Add Code for projection_AVX() (Copy from Projection.h and adjust to AVX interface)
+    // Check for valid projection parameters
+    if (!columnIndicesValid(projectionParameters, table.getTupleWidth())) {
+        throw std::invalid_argument("Error! Invalid column indices!");
+    }
 
-    // TODO : Change return value back to "result" of type IntermediateTable_AVX
-    return nullptr;
+    // Create empty intermediate table
+    auto result = new IntermediateTable_AVX<T>(projectionParameters.size(), table.getRowCount());
+
+    // Iterate over given table tuples
+    for (int i = 0; i < table.count(); i++) {
+        // Create empty (temporary) tuple
+        auto tuple = (T *)malloc(projectionParameters.size() * sizeof(T));
+
+        // Fill tuple with data from every row of table
+        for (int j = 0; j < projectionParameters.size(); j++) {
+            tuple[j] = table[i][projectionParameters[j]];
+        }
+
+        // Add tuple to result table
+        result->addRow(tuple);
+        free(tuple);
+    }
+
+    return result;
 }
 }  // namespace RowStore

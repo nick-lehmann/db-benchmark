@@ -4,10 +4,11 @@
 
 ### Build
 
-Zum Initailisieren von CMake folgenden Befehl in diesme Ordner ausführen.
+Zum Initailisieren von CMake folgenden Befehl in diesem Ordner ausführen. An dieser stelle muss bereits angegben werden, ob CMake im Release- (mit `-03`) oder Debug-Mode builden soll.
 ```
-cmake .
+cmake -DCMAKE_BUILD_TYPE=Release .
 ```
+Um im Debug-Mode zu compilieren muss `Release` im obenstehenden Befehl durch `Debug` ersetzt werden.
 
 Builden aller Executables:
 ```
@@ -16,12 +17,10 @@ cmake --build .
 
 Builden einer Executable:
 ```
-cmake --build . --config Debug --taget <executable-name>
+cmake --build . --taget <executable-name>
 ```
 
-Soll mit `-03` compiliert werden muss `Debug` entsprechend durch Release ersetzt werden.
-
-Es stehen folgende Executable-names zur Verfügung: 
+Es stehen folgende `executable-name`s zur Verfügung: 
     * row_store
     * column_store
     * pax_store
