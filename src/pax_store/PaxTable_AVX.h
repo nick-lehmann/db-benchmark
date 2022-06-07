@@ -3,8 +3,8 @@
 #include <vector>
 
 #include "ITable_AVX.h"
-#include "Memory.cpp"
-#include "Page.cpp"
+#include "Memory.h"
+#include "Page.h"
 #include "Types.h"
 
 template <typename T>

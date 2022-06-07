@@ -4,7 +4,7 @@
 #include <iostream>
 #include <memory>
 
-#include "Page.cpp"
+#include "Page.h"
 #include "Types.h"
 
 using namespace std;
