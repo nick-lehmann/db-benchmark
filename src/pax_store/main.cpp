@@ -112,7 +112,7 @@ void testPaxTablePrint() {
  * page.
  */
 template <typename T>
-void testBasicFilter() {
+void testBasicScalarFilters() {
     unsigned numberOfRows = 10;
     unsigned numberOfAttributes = 3;
 
@@ -120,10 +120,10 @@ void testBasicFilter() {
 
     PaxTable<T> table(numberOfAttributes, numberOfRows, data);
 
-    std::vector<unsigned> projection = {1, 2, 3};
-    std::vector<Filter<T>*> filters = {new Equal<T>(0, (T)2)};
+    std::vector<uint64_t> projection = {1, 2, 3};
+    std::vector<Filters::Scalar::Filter<T>*> filters = {new Filters::Scalar::Equal<T>(0, (T)2)};
 
-    auto result = table.query_table(projection, filters);
+    auto result = table.queryTable(projection, filters);
     auto result_data = std::get<0>(result);
     auto returnedRows = std::get<1>(result);
     auto returnedColumns = std::get<2>(result);
@@ -135,10 +135,10 @@ void testBasicFilter() {
         cout << endl;
     }
 
-    cout << "Count: " << table.query_count(projection, filters) << endl;
+    cout << "Count: " << table.queryCount(projection, filters) << endl;
 }
 
 int main() {
-    testBasicFilter<uint16_t>();
+    testBasicScalarFilters<uint16_t>();
     return 0;
 }
