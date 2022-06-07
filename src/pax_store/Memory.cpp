@@ -4,8 +4,8 @@
 #include <iostream>
 #include <memory>
 
-#include "page.cpp"
-#include "types.h"
+#include "Page.cpp"
+#include "Types.h"
 
 using namespace std;
 

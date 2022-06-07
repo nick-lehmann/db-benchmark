@@ -2,13 +2,13 @@
 #include <functional>
 #include <vector>
 
-#include "ITable.h"
-#include "memory.cpp"
-#include "page.cpp"
-#include "types.h"
+#include "ITable_AVX.h"
+#include "Memory.cpp"
+#include "Page.cpp"
+#include "Types.h"
 
 template <typename T>
-class PaxTable : public Tables::Scalar::ITable<T> {
+class PaxTableAVX : public Tables::AVX::ITable<T> {
    private:
     unsigned int rowsPerPage;
     unsigned int numberOfPages;
@@ -24,8 +24,8 @@ class PaxTable : public Tables::Scalar::ITable<T> {
    public:
     PaxPage<T> *pages;
 
-    PaxTable(int numberOfAttributes, int numberOfRows, const T **initialData)
-        : Tables::Scalar::ITable<T>(numberOfAttributes, numberOfRows, initialData) {
+    PaxTableAVX(int numberOfAttributes, int numberOfRows, const T **initialData)
+        : Tables::AVX::ITable<T>(numberOfAttributes, numberOfRows, initialData) {
         auto pagesize = getPagesize();
         this->rowsPerPage = PaxPage<T>::getMaximumRows(pagesize, numberOfAttributes);
 
@@ -51,7 +51,7 @@ class PaxTable : public Tables::Scalar::ITable<T> {
     }
 
     // TODO: Free memory
-    virtual ~PaxTable() { cout << "Destroy pax table" << endl; }
+    virtual ~PaxTableAVX() { cout << "Destroy pax table" << endl; }
 
     T *getRow(uint64_t rowIndex) override {
         PaxPage<T> &page = pages[pageIndex(rowIndex)];

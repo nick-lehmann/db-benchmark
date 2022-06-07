@@ -9,10 +9,11 @@
 
 #include "Filters.h"
 #include "Helper.h"
-#include "memory.cpp"
-#include "page.cpp"
-#include "table.cpp"
-#include "types.h"
+#include "Memory.cpp"
+#include "Page.cpp"
+#include "PaxTable.cpp"
+#include "PaxTable_AVX.cpp"
+#include "Types.h"
 
 using namespace std;
 

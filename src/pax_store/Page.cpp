@@ -11,8 +11,8 @@
 #include <memory>
 #include <vector>
 
-#include "../include/Filters.h"
-#include "types.h"
+#include "Filters.h"
+#include "Types.h"
 
 using namespace std;
 
