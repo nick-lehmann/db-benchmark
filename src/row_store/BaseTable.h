@@ -12,7 +12,7 @@
 #include "Filter.h"
 #include "IntermediateTable.h"
 #include "Projection.h"
-#include "Table.h"
+#include "ITable.h"
 
 namespace RowStore {
 template <typename T> class BaseTable : public Table<T> {
@@ -53,19 +53,19 @@ public:
   /// \param numberOfColumns number of columns of the current table
   std::tuple<T **, unsigned, unsigned> query_table(std::vector<unsigned> &projectionAttributes, std::vector<Filter<T> *> &filters) override {
     // convert BaseTable to InterMediateTable for query
-    IntermediateTable<T> result(this->numberOfAttributes, data);
+    IntermediateTable<T> interTable(this->numberOfAttributes, data);
     // apply query
-    auto projectedResult = projection(result, projectionAttributes);
+    auto projectedResult = projection(interTable, projectionAttributes);
     auto filteredResult = apply_filters((*projectedResult), filters);
     delete projectedResult;
 
     // get result and free memory
-    numberOfColumns = filteredResult->getTupleWidth();
-    filteredResult->table(numberOfRows);
-    T **tmp = filteredResult->detachTableOutput(numberOfRows);
+    unsigned numberOfColumns = filteredResult->getTupleWidth();
+    auto [ table, numberOfRows ] = filteredResult->table();
+    filteredResult->detachTableOutput(numberOfRows);
     delete filteredResult;
 
-    return std::make_tuple(tmp, numberOfRows, numberOfColumns);
+    return std::make_tuple(table, numberOfRows, numberOfColumns);
   }
 
   /// Perform a query on the table and return the number of rows of the queried table.
@@ -73,9 +73,9 @@ public:
   /// \param filters vector of filters used for the query
   uint64_t query_count(std::vector<unsigned> &projectionAttributes, std::vector<Filter<T> *> &filters) override {
     // convert BaseTable to InterMediateTable for query
-    IntermediateTable<T> result(this->numberOfAttributes, data);
+    IntermediateTable<T> interTable(this->numberOfAttributes, data);
     // apply query
-    auto projectedResult = projection(result, projectionAttributes);
+    auto projectedResult = projection(interTable, projectionAttributes);
     auto filteredResult = apply_filters((*projectedResult), filters);
 
     // get row count and free memory

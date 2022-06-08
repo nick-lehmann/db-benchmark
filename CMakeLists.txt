@@ -7,10 +7,13 @@ project(DB-Benchmark VERSION 1.0)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-set(CFLAGS -O3 -fno-tree-vectorize)
+set(CFLAGS -fno-tree-vectorize)
+#available avx flags for knights landing (KNL) architecture
+set(PHI_FLAGS -mavx512f -mavx512cd -mavx512er -mavx512pf)
 
 # pass flags to compiler
-add_definitions(${CFLAGS})
+add_compile_options("$<$<CONFIG:RELEASE>:-O3;${CFLAGS};${PHI_FLAGS}>")
+add_compile_options("$<$<CONFIG:DEBUG>:${CFLAGS};${PHI_FLAGS}>")
 
 # build directory
 set(CMAKE_BINARY_DIR "bin")
