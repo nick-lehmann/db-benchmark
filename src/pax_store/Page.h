@@ -180,8 +180,7 @@ class PaxPage {
         bool firstRun = true;
         auto rowsPerRegister = (unsigned)64 / sizeof(T);
 
-        uint64_t totalPositions = 0;
-        RowIndex numberOfRemainingRecords = *numberOfRecords;
+        uint64_t positionsCounter = *numberOfRecords;
 
         for (auto &filter : filters) {
             // Find the minipage for the attribute to which the filter applies.
@@ -190,16 +189,17 @@ class PaxPage {
             T *minipage = (T *)((char *)start + offset);
 
             auto *positionsTail = positions;
+            uint64_t newPositionsCounter = 0;
 
             if (firstRun) {
                 // On the first run, we need to go through all records.
-                for (RowIndex rowIndex = 0; rowIndex < *numberOfRecords; rowIndex += rowsPerRegister) {
+                for (RowIndex rowIndex = 0; rowIndex < positionsCounter; rowIndex += rowsPerRegister) {
                     __mmask16 mask;
-                    if (rowIndex + rowsPerRegister <= *numberOfRecords) {
+                    if (rowIndex + rowsPerRegister <= positionsCounter) {
                         mask = ONE_MASK;
                     } else {
                         // Last run for this row and there are less cells remaining then there are integers in an AVX512 register
-                        auto remaining = *numberOfRecords % rowsPerRegister;
+                        auto remaining = positionsCounter % rowsPerRegister;
                         mask = _mm512_int2mask(~(0xffffffff << remaining));
                     }
 
@@ -211,18 +211,17 @@ class PaxPage {
 
                     auto addedElements = ColumnStore::Helper::store(indicesRegister, filterResult, positionsTail);
                     positionsTail += addedElements;
-                    totalPositions += addedElements;
+                    newPositionsCounter += addedElements;
                 }
                 firstRun = false;
             } else {
-                auto remainingPositions = 0;
-                for (RowIndex rowIndex = 0; rowIndex < totalPositions; rowIndex += rowsPerRegister) {
+                for (RowIndex rowIndex = 0; rowIndex < positionsCounter; rowIndex += rowsPerRegister) {
                     __mmask16 mask;
-                    if (rowIndex + rowsPerRegister <= totalPositions) {
+                    if (rowIndex + rowsPerRegister <= positionsCounter) {
                         mask = ONE_MASK;
                     } else {
                         // Last run for this row and there are less cells remaining then there are integers in an AVX512 register
-                        auto remaining = totalPositions % rowsPerRegister;
+                        auto remaining = positionsCounter % rowsPerRegister;
                         mask = _mm512_int2mask(~(0xffffffff << remaining));
                     }
 
@@ -231,12 +230,12 @@ class PaxPage {
 
                     auto addedElements = ColumnStore::Helper::store(indicesRegister, filterResult, positionsTail);
                     positionsTail += addedElements;
-                    remainingPositions += addedElements;
+                    newPositionsCounter += addedElements;
                 }
-                totalPositions = remainingPositions;
             }
+            positionsCounter = newPositionsCounter;
         }
 
-        return std::make_tuple(positions, totalPositions);
+        return std::make_tuple(positions, positionsCounter);
     }
 };
