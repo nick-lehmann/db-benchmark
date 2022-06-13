@@ -220,19 +220,18 @@ class PaxPage {
 
                 // Load the indices of the rows
                 uint64_t *vindex;
+                std::pair<__m512i, __m512i> loadResult;
                 if (firstRun) {
-                    // On the first run, the positions array contains only zeros. Therefore, we simply compute the indicies of the
-                    // succeeding rows that fit in an AVX512 register.
-                    uint64_t accessedIndices[] = {rowIndex,     rowIndex + 1, rowIndex + 2, rowIndex + 3,
-                                                  rowIndex + 4, rowIndex + 5, rowIndex + 6, rowIndex + 7};
-                    vindex = accessedIndices;
+                    // On the first run, the positions array contains only zeros. Since all rows are still valid, we can simply load the
+                    // next batch of rows starting from the current `rowIndex`.
+                    loadResult = ColumnStore::Helper::load(minipage, rowIndex);
                 } else {
-                    vindex = positions + rowIndex;
+                    loadResult = ColumnStore::Helper::gather(positions + rowIndex, minipage);
                 }
 
                 // Load the cells of a row into the data register. `vindex` is the absolute index of the row and we, therefore, gather from
                 // the start of the minipage.
-                auto [dataRegister, indicesRegister] = ColumnStore::Helper::gather(vindex, minipage);
+                auto [dataRegister, indicesRegister] = loadResult;
                 auto filterResult = filter->match(dataRegister, mask);
 
                 // Store the successfully matched at the current end of the positions array.
