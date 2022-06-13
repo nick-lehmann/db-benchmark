@@ -121,25 +121,52 @@ void testBasicScalarFilters() {
 
     PaxTable<T> table(numberOfAttributes, numberOfRows, data);
 
-    std::vector<uint64_t> projection = {1, 2, 3};
+    std::vector<uint64_t> projection = {0, 1, 2};
     std::vector<Filters::Scalar::Filter<T>*> filters = {new Filters::Scalar::Equal<T>(0, (T)2)};
 
-    auto result = table.queryTable(projection, filters);
-    auto result_data = std::get<0>(result);
-    auto returnedRows = std::get<1>(result);
-    auto returnedColumns = std::get<2>(result);
+    auto [result, rows, columns] = table.queryTable(projection, filters);
 
-    for (unsigned row = 0; row < returnedRows; row++) {
-        for (unsigned column = 0; column < returnedColumns; column++) {
-            cout << result_data[row][column] << " ";
+    for (unsigned row = 0; row < rows; row++) {
+        for (unsigned column = 0; column < columns; column++) {
+            cout << result[row][column] << " ";
         }
         cout << endl;
     }
 
-    cout << "Count: " << table.queryCount(projection, filters) << endl;
+    cout << "Count: " << rows << endl;
+}
+
+/**
+ * Test a single filter on a table with a single
+ * page.
+ */
+template <typename T>
+void testBasicAVXFilters() {
+    unsigned numberOfRows = 10;
+    unsigned numberOfAttributes = 3;
+
+    const T** data = getData<T>(numberOfRows);
+
+    PaxTableAVX<T> table(numberOfAttributes, numberOfRows, data);
+
+    std::vector<uint64_t> projection = {0, 1, 2};
+    std::vector<Filters::AVX::Filter<T>*> filters = {new Filters::AVX::LessEqual<T>(0, 3), new Filters::AVX::GreaterEqual<T>(0, 1),
+                                                     new Filters::AVX::Equal<T>(0, 2)};
+    // std::vector<Filters::AVX::Filter<T>*> filters = {new Filters::AVX::LessEqual<T>(0, 3)};
+
+    auto [result, rows, columns] = table.queryTable(projection, filters);
+
+    for (unsigned row = 0; row < rows; row++) {
+        for (unsigned column = 0; column < columns; column++) {
+            cout << result[row][column] << " ";
+        }
+        cout << endl;
+    }
+
+    cout << "Count: " << rows << endl;
 }
 
 int main() {
-    testBasicScalarFilters<uint16_t>();
+    testBasicAVXFilters<uint64_t>();
     return 0;
 }

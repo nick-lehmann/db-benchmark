@@ -29,11 +29,11 @@ class PaxTableAVX : public Tables::AVX::ITable<T> {
         auto pagesize = getPagesize();
         this->rowsPerPage = PaxPage<T>::getMaximumRows(pagesize, numberOfAttributes);
 
-        cout << "Rows per page: " << rowsPerPage << endl;
+        // cout << "Rows per page: " << rowsPerPage << endl;
 
         // Resize vector to contain all needed pages
         this->numberOfPages = (numberOfRows + (rowsPerPage - 1)) / rowsPerPage;  // Rounding up
-        cout << "Needed pages: " << this->numberOfPages << endl;
+        // cout << "Needed pages: " << this->numberOfPages << endl;
         this->pages = (PaxPage<T> *)malloc(this->numberOfPages * sizeof(PaxPage<T>));
 
         // Initialize all pages
@@ -69,14 +69,14 @@ class PaxTableAVX : public Tables::AVX::ITable<T> {
     }
 
     virtual std::tuple<T **, uint64_t, uint64_t> queryTable(std::vector<uint64_t> &projection,
-                                                            std::vector<Filters::Scalar::Filter<T> *> &filters) override {
-        vector<unsigned> positions;
+                                                            std::vector<Filters::AVX::Filter<T> *> &filters) override {
+        vector<uint64_t> positions;
 
         // Find positions of all rows that match the given filters.
         for (unsigned pageIndex = 0; pageIndex < this->numberOfPages; pageIndex++) {
             PaxPage<T> page = this->pages[pageIndex];
-            vector<unsigned> newPositions = page.query(filters);
-            positions.insert(positions.end(), newPositions.begin(), newPositions.end());
+            auto [pagePositions, count] = page.queryAVX(filters);
+            positions.insert(positions.end(), pagePositions, pagePositions + count);
         }
 
         // Allocate enough memory for all rows.
@@ -86,7 +86,7 @@ class PaxTableAVX : public Tables::AVX::ITable<T> {
         return std::make_tuple(data, positions.size(), projection.size());
     };
 
-    virtual uint64_t queryCount(std::vector<uint64_t> &projection, std::vector<Filters::Scalar::Filter<T> *> &filters) override {
+    virtual uint64_t queryCount(std::vector<uint64_t> &projection, std::vector<Filters::AVX::Filter<T> *> &filters) override {
         auto result = queryTable(projection, filters);
         uint64_t rows = get<1>(result);
         return rows;

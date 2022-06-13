@@ -11,7 +11,10 @@
 #include <memory>
 #include <vector>
 
+#include "../column_store/ColumnStoreHelper.h"
+#include "Constants.h"
 #include "Filters.h"
+#include "Filters_AVX.h"
 #include "Types.h"
 
 using namespace std;
@@ -61,7 +64,7 @@ class PaxPage {
 
         for (int i = 0; i < attributes; i++) {
             unsigned short offset = headerLength + (i * minipageSize);
-            cout << "Page " << i << " has offset " << offset << endl;
+            // cout << "Page " << i << " has offset " << offset << endl;
             *(minipageOffsets + i) = offset;
         }
 
@@ -129,16 +132,16 @@ class PaxPage {
             throw;
         }
 
-        cout << "Write: ";
+        // cout << "Write: ";
         for (int i = 0; i < *numberOfAttributes; i++) {
             Header offset = *(minipageOffsets + i);
 
             T *minipage = (T *)(start + offset / 2);
             T *location = minipage + *numberOfRecords;
-            cout << record[i] << " (" << location << ") ";
+            // cout << record[i] << " (" << location << ") ";
             *(location) = record[i];
         };
-        cout << endl;
+        // cout << endl;
         (*numberOfRecords)++;
         (*freeSpace) -= recordSize;
     }
@@ -158,6 +161,7 @@ class PaxPage {
                     T cell = *(minipage + index);
                     if (filter->match(cell)) positions.push_back(index);
                 }
+                firstRun = false;
             } else {
                 // On subsequent runs, we only need to go through the positions where
                 // all previous filters already matched.
@@ -169,5 +173,70 @@ class PaxPage {
         }
 
         return positions;
+    }
+
+    std::tuple<uint64_t *, uint64_t> queryAVX(std::vector<Filters::AVX::Filter<T> *> &filters) {
+        auto positions = new uint64_t[*numberOfRecords];
+        bool firstRun = true;
+        auto rowsPerRegister = (unsigned)64 / sizeof(T);
+
+        uint64_t totalPositions = 0;
+        RowIndex numberOfRemainingRecords = *numberOfRecords;
+
+        for (auto &filter : filters) {
+            // Find the minipage for the attribute to which the filter applies.
+            Header offset = *(minipageOffsets + filter->index);
+            // T *minipageIterator = (T *)((char *)start + offset);
+            T *minipage = (T *)((char *)start + offset);
+
+            auto *positionsTail = positions;
+
+            if (firstRun) {
+                // On the first run, we need to go through all records.
+                for (RowIndex rowIndex = 0; rowIndex < *numberOfRecords; rowIndex += rowsPerRegister) {
+                    __mmask16 mask;
+                    if (rowIndex + rowsPerRegister <= *numberOfRecords) {
+                        mask = ONE_MASK;
+                    } else {
+                        // Last run for this row and there are less cells remaining then there are integers in an AVX512 register
+                        auto remaining = *numberOfRecords % rowsPerRegister;
+                        mask = _mm512_int2mask(~(0xffffffff << remaining));
+                    }
+
+                    uint64_t accessedIndices[] = {rowIndex,     rowIndex + 1, rowIndex + 2, rowIndex + 3,
+                                                  rowIndex + 4, rowIndex + 5, rowIndex + 6, rowIndex + 7};
+                    auto [dataRegister, indicesRegister] = ColumnStore::Helper::gather(accessedIndices, minipage);
+                    // auto [dataRegister, indicesRegister] = ColumnStore::Helper::load(minipageIterator, rowIndex);
+                    auto filterResult = filter->match(dataRegister, mask);
+
+                    auto addedElements = ColumnStore::Helper::store(indicesRegister, filterResult, positionsTail);
+                    positionsTail += addedElements;
+                    totalPositions += addedElements;
+                }
+                firstRun = false;
+            } else {
+                auto remainingPositions = 0;
+                for (RowIndex rowIndex = 0; rowIndex < totalPositions; rowIndex += rowsPerRegister) {
+                    __mmask16 mask;
+                    if (rowIndex + rowsPerRegister <= totalPositions) {
+                        mask = ONE_MASK;
+                    } else {
+                        // Last run for this row and there are less cells remaining then there are integers in an AVX512 register
+                        auto remaining = totalPositions % rowsPerRegister;
+                        mask = _mm512_int2mask(~(0xffffffff << remaining));
+                    }
+
+                    auto [dataRegister, indicesRegister] = ColumnStore::Helper::gather(positions + rowIndex, minipage);
+                    auto filterResult = filter->match(dataRegister, mask);
+
+                    auto addedElements = ColumnStore::Helper::store(indicesRegister, filterResult, positionsTail);
+                    positionsTail += addedElements;
+                    remainingPositions += addedElements;
+                }
+                totalPositions = remainingPositions;
+            }
+        }
+
+        return std::make_tuple(positions, totalPositions);
     }
 };
