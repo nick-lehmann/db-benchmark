@@ -4,7 +4,7 @@
 
 ### Build
 
-Zum Initailisieren von CMake folgenden Befehl in diesem Ordner ausführen. An dieser stelle muss bereits angegben werden, ob CMake im Release- (mit `-03`) oder Debug-Mode builden soll.
+Zum Initailisieren von CMake folgenden Befehl in diesem Ordner ausführen. An dieser stelle muss bereits angegeben werden, ob CMake im Release- (mit `-03`) oder Debug-Mode builden soll.
 ```
 cmake -DCMAKE_BUILD_TYPE=Release .
 ```
