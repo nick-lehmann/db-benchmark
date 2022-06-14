@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <vector>
 
-#include "IntermediateTable.h"
+#include "IntermediateTable_AVX.h"
 
 namespace RowStore {
 /// Cecks whether all column indices are vallid for the given tupleSize
@@ -26,14 +26,14 @@ bool columnIndicesValid(std::vector<uint64_t> columnIndices, uint32_t tupleSize)
 /// \param table table data of the original table
 /// \param projectionParameters vector of column indices that are contained in the result
 template <typename T>
-IntermediateTable<T> *projection(IntermediateTable<T> &table, std::vector<uint64_t> &projectionParameters) {
+IntermediateTable_AVX<T> *projection_AVX(IntermediateTable_AVX<T> &table, std::vector<uint64_t> &projectionParameters) {
     // Check for valid projection parameters
     if (!columnIndicesValid(projectionParameters, table.getTupleWidth())) {
         throw std::invalid_argument("Error! Invalid column indices!");
     }
 
     // Create empty intermediate table
-    auto result = new IntermediateTable<T>(projectionParameters.size(), table.getRowCount());
+    auto result = new IntermediateTable_AVX<T>(projectionParameters.size(), table.getRowCount());
 
     // Iterate over given table tuples
     for (int i = 0; i < table.count(); i++) {

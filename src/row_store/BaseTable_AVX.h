@@ -9,25 +9,25 @@
 #include <tuple>
 #include <vector>
 
-#include "Filter.h"
-#include "ITable.h"
-#include "IntermediateTable.h"
-#include "Projection.h"
+#include "Filter_AVX.h"
+#include "ITable_AVX.h"
+#include "IntermediateTable_AVX.h"
+#include "Projection_AVX.h"
 
 namespace RowStore {
 
 template <typename T>
-class BaseTable : public Tables::Scalar::ITable<T> {
+class BaseTable_AVX : public Tables::AVX::ITable<T> {
    public:
     std::vector<T *> data;
 
    public:
-    /// Constructor for BaseTable
+    /// Constructor for BaseTable_AVX - same functional idea as BaseTable but adapted to the AVX interface
     /// \param numAttributes number of attributes (columns)
     /// \param numRows number of tuples (rows)
     /// \param initialData data to fill the table with
-    BaseTable(unsigned numAttributes, unsigned numRows, const T **initialData)
-        : Tables::Scalar::ITable<T>(numAttributes, numRows, initialData) {
+    BaseTable_AVX(unsigned numAttributes, unsigned numRows, const T **initialData)
+        : Tables::AVX::ITable<T>(numAttributes, numRows, initialData) {
         for (unsigned row = 0; row < numRows; row++) {
             data.push_back(static_cast<T *>(malloc(sizeof(T) * numAttributes)));
             for (unsigned column = 0; column < numAttributes; column++) {
@@ -36,8 +36,8 @@ class BaseTable : public Tables::Scalar::ITable<T> {
         }
     }
 
-    /// Destructor for BaseTable
-    ~BaseTable() override {
+    /// Destructor for BaseTable_AVX
+    ~BaseTable_AVX() override {
         // Delete the tuple of the base table
         for (uint64_t i = 0; i < data.size(); ++i) {
             free(data[i]);
@@ -54,12 +54,12 @@ class BaseTable : public Tables::Scalar::ITable<T> {
     /// \param numberOfRows number of rows of the current table
     /// \param numberOfColumns number of columns of the current table
     std::tuple<T **, uint64_t, uint64_t> queryTable(std::vector<uint64_t> &projectionAttributes,
-                                                    std::vector<Filters::Scalar::Filter<T> *> &filters) override {
+                                                    std::vector<Filters::AVX::Filter<T> *> &filters) override {
         // convert BaseTable to InterMediateTable for query
-        IntermediateTable<T> interTable(this->numberOfAttributes, data);
+        IntermediateTable_AVX<T> interTableAVX(this->numberOfAttributes, data);
         // apply query
-        auto projectedResult = projection(interTable, projectionAttributes);
-        auto filteredResult = apply_filters((*projectedResult), filters);
+        auto projectedResult = projection_AVX(interTableAVX, projectionAttributes);
+        auto filteredResult = apply_filters_AVX((*projectedResult), filters);
         delete projectedResult;
 
         // get result and free memory
@@ -74,12 +74,12 @@ class BaseTable : public Tables::Scalar::ITable<T> {
     /// Perform a query on the table and return the number of rows of the queried table.
     /// \param projectionAttributes column indices used for projection
     /// \param filters vector of filters used for the query
-    uint64_t queryCount(std::vector<uint64_t> &projectionAttributes, std::vector<Filters::Scalar::Filter<T> *> &filters) override {
+    uint64_t queryCount(std::vector<uint64_t> &projectionAttributes, std::vector<Filters::AVX::Filter<T> *> &filters) override {
         // convert BaseTable to InterMediateTable for query
-        IntermediateTable<T> interTable(this->numberOfAttributes, data);
+        IntermediateTable_AVX<T> interTableAVX(this->numberOfAttributes, data);
         // apply query
-        auto projectedResult = projection(interTable, projectionAttributes);
-        auto filteredResult = apply_filters((*projectedResult), filters);
+        auto projectedResult = projection_AVX(interTableAVX, projectionAttributes);
+        auto filteredResult = apply_filters_AVX((*projectedResult), filters);
 
         // get row count and free memory
         auto resultRowCount = filteredResult->count();
