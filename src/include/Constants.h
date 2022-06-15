@@ -1,4 +1,7 @@
 #pragma once
+#include <immintrin.h>
+
+#include <cstdlib>
 
 const size_t PAGE_SIZE = 4096;  // in bytes
 

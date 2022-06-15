@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <tuple>
 #include <vector>
 
 #include "Constants.h"
@@ -10,7 +11,7 @@
 namespace RowStore {
 
 template <typename T>
-class IntermediateTable {
+class IntermediateTable_AVX {
    private:
     size_t capacity;
     size_t rowCount = 0;
@@ -22,9 +23,10 @@ class IntermediateTable {
     uint32_t tupleWidth = 0;
 
    public:
-    /// Initializes the intermediateTable with a given tuple width.
+    /// Same functional idea as IntermediateTable but adapted to the AVX interface
+    /// Initializes the IntermediateTable_AVX with a given tuple width.
     /// \param tupleWidth number of attributes per tuple
-    IntermediateTable(uint32_t tupleWidth, size_t tupleCapacity) : tupleWidth(tupleWidth), capacity(tupleCapacity) {
+    IntermediateTable_AVX(uint32_t tupleWidth, size_t tupleCapacity) : tupleWidth(tupleWidth), capacity(tupleCapacity) {
         size_t pageCapacity = PAGE_SIZE / (sizeof(T) * tupleCapacity);
         //               number of complete pages         add 1 if the tuple capacity does not fill complete pages
         allocatedPages = (tupleCapacity / pageCapacity) + ((tupleCapacity % pageCapacity) != 0);
@@ -33,11 +35,11 @@ class IntermediateTable {
         data = static_cast<T *>(aligned_alloc(PAGE_SIZE, allocatedPages * PAGE_SIZE));
     }
 
-    /// Initializes the intermediateTable with a given tuple width and initial data. The content of the inital data vector
+    /// Initializes the IntermediateTable_AVX with a given tuple width and initial data. The content of the inital data vector
     /// is copied to the table's data storage
     /// \param tupleWidth number of attributes per tuple
     /// \param initData data that is copied into the table
-    IntermediateTable(uint32_t tupleWidth, std::vector<T *> &initData) : IntermediateTable(tupleWidth, initData.size()) {
+    IntermediateTable_AVX(uint32_t tupleWidth, std::vector<T *> &initData) : IntermediateTable_AVX(tupleWidth, initData.size()) {
         // the constructor above handles all the stroage allocation
         for (uint64_t i = 0; i < initData.size(); ++i) {
             addRow(initData[i]);
@@ -45,7 +47,7 @@ class IntermediateTable {
     }
 
     /// Destructor
-    ~IntermediateTable() {
+    ~IntermediateTable_AVX() {
         freeTableOutput();
         free(data);
     }
@@ -70,6 +72,20 @@ class IntermediateTable {
         }
         return count;
     }
+
+    /// Getter for data storage of the table. Attetion: After adding tuples manually to the data storage, it is mandatory to manipulate the
+    /// rowCount. It is not recommendet nor intendet to delete tuples.
+    /// \return address of the data storage
+    T *getData() { return data; }
+
+    /// Getter for first not occupied position in the data storage.
+    /// \return address of the first not occupied position in the data storage.
+    T *getDataEnd() { return data + (rowCount * tupleWidth); }
+
+    /// Access method to manually add rows to the rowCount. Attetion: It is only recommendet to use this method after adding tuples manually
+    /// to the data storage of the table. It is not intendet to reduce the number of tules.
+    /// \param addedRows number of rows to add to the rowCount
+    void manipulateRowCount(size_t addedRows) { rowCount += addedRows; };
 
     /// Calculates the address of a tuple specified by its position in the table
     /// \param index position of a tuple in the table

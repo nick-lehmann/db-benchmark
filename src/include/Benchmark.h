@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "../column_store/ColumnStoreTable.h"
-#include "../pax_store/Table.cpp"
+//#include "../pax_store/table.cpp"
 #include "../row_store/BaseTable.h"
 #include "BenchmarkResult.h"
 #include "Helper.h"
@@ -20,8 +20,8 @@ namespace Benchmark {
 /// \param projection projection attributes for the query
 /// \param filters filters to apply for the query
 template <typename T>
-std::tuple<uint64_t, uint64_t, double> measureTime(Table<T> &table, std::vector<unsigned> &projection, std::vector<Filter<T> *> &filters,
-                                                   bool enablePrint = true) {
+std::tuple<uint64_t, uint64_t, double> measureTime(Table<T> &table, std::vector<unsigned> &projection,
+                                                   std::vector<Filters::Scalar::Filter<T> *> &filters, bool enablePrint = true) {
     // measure both cpu time and real time
     auto clockStartTime = std::clock();
     auto realStartTime = std::chrono::steady_clock::now();
@@ -71,7 +71,7 @@ unsigned incrementValue(unsigned value, bool exponentialGrowth, unsigned growthF
 /// \param seed used for data generation
 template <typename T>
 std::tuple<uint64_t, uint64_t, double> benchmarkTableImplementation(int tableStoreId, std::vector<unsigned> &projectionAttributes,
-                                                                    std::vector<Filter<T> *> &filters, unsigned rowCount,
+                                                                    std::vector<Filters::Scalar::Filter<T> *> &filters, unsigned rowCount,
                                                                     unsigned columnCount, T lowerBound, T upperBound, unsigned seed) {
     // create data
     const T **tableData = TableHelper::generateRandomData<T>(columnCount, rowCount, lowerBound, upperBound, seed);
