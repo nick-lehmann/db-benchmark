@@ -1,15 +1,14 @@
 #pragma once
-#include "ITable.h"
-
 #include <functional>
 #include <vector>
 
-#include "memory.cpp"
-#include "page.cpp"
-#include "types.h"
+#include "ITable.h"
+#include "Memory.h"
+#include "Page.h"
+#include "Types.h"
 
 template <typename T>
-class PaxTable : public Table<T> {
+class PaxTable : public Tables::Scalar::ITable<T> {
    private:
     unsigned int rowsPerPage;
     unsigned int numberOfPages;
@@ -25,7 +24,8 @@ class PaxTable : public Table<T> {
    public:
     PaxPage<T> *pages;
 
-    PaxTable(int numberOfAttributes, int numberOfRows, const T **initialData) : Table<T>(numberOfAttributes, numberOfRows, initialData) {
+    PaxTable(int numberOfAttributes, int numberOfRows, const T **initialData)
+        : Tables::Scalar::ITable<T>(numberOfAttributes, numberOfRows, initialData) {
         auto pagesize = getPagesize();
         this->rowsPerPage = PaxPage<T>::getMaximumRows(pagesize, numberOfAttributes);
 
@@ -53,12 +53,12 @@ class PaxTable : public Table<T> {
     // TODO: Free memory
     virtual ~PaxTable() { cout << "Destroy pax table" << endl; }
 
-    T *getRow(unsigned rowIndex) override {
+    T *getRow(uint64_t rowIndex) override {
         PaxPage<T> &page = pages[pageIndex(rowIndex)];
         return page.readRow(rowIndex % this->rowsPerPage);
     }
 
-    T *projectRow(unsigned rowIndex, std::vector<unsigned> &projection) {
+    T *projectRow(unsigned rowIndex, std::vector<uint64_t> &projection) {
         PaxPage<T> &page = pages[pageIndex(rowIndex)];
         return page.projectRow(rowIndex % this->rowsPerPage, projection);
     }
@@ -68,8 +68,8 @@ class PaxTable : public Table<T> {
         return row + columnIndex;
     }
 
-    virtual std::tuple<T **, unsigned, unsigned> query_table(std::vector<unsigned> &projection,
-                                                             std::vector<Filter<T> *> &filters) override {
+    virtual std::tuple<T **, uint64_t, uint64_t> queryTable(std::vector<uint64_t> &projection,
+                                                            std::vector<Filters::Scalar::Filter<T> *> &filters) override {
         vector<unsigned> positions;
 
         // Find positions of all rows that match the given filters.
@@ -86,8 +86,8 @@ class PaxTable : public Table<T> {
         return std::make_tuple(data, positions.size(), projection.size());
     };
 
-    virtual uint64_t query_count(std::vector<unsigned> &projection, std::vector<Filter<T> *> &filters) override {
-        auto result = query_table(projection, filters);
+    virtual uint64_t queryCount(std::vector<uint64_t> &projection, std::vector<Filters::Scalar::Filter<T> *> &filters) override {
+        auto result = queryTable(projection, filters);
         uint64_t rows = get<1>(result);
         return rows;
     }
