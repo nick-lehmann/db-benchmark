@@ -1,4 +1,6 @@
 #pragma once
+#include <immintrin.h>
+
 #include "SIMD.h"
 
 namespace Filter {
@@ -14,7 +16,7 @@ class Filter<uint32_t, SIMD::AVX512> {
     __m512i value_register;
 
     Filter(unsigned index, uint32_t value) : index(index), value(value), value_register(_mm512_set1_epi32(value)) {}
-    virtual __mmask16 match(__m512i reg, __mmask16 mask = ONE_MASK) = 0;
+    virtual __mmask16 match(__m512i reg, __mmask16 mask = ONE_MASK) const = 0;
 };
 
 template <>
@@ -37,4 +39,4 @@ class Filter<T, SIMD::Scalar> {
     Filter(unsigned index, T value) : index(index), value(value) {}
     virtual bool match(T value) = 0;
 };
-}
+}  // namespace Filter
