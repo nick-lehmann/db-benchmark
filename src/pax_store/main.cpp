@@ -10,12 +10,14 @@
 
 #include "Constants.h"
 #include "Filters.h"
-#include "Filters2.h"
+#include "Filters/Equal.h"
+#include "Filters/LessThan.h"
 #include "Helper.h"
 #include "Memory.h"
 #include "Page.h"
 #include "PaxTable.h"
 #include "PaxTable_AVX.h"
+#include "SIMD.h"
 #include "Types.h"
 
 using namespace std;
@@ -155,7 +157,6 @@ void testBasicAVXFilters() {
     std::vector<uint64_t> projection = {0, 1, 2};
     std::vector<Filters::AVX::Filter<T>*> filters = {new Filters::AVX::LessEqual<T>(0, 3), new Filters::AVX::GreaterEqual<T>(0, 1),
                                                      new Filters::AVX::Equal<T>(0, 2)};
-    // std::vector<Filters::AVX::Filter<T>*> filters = {new Filters::AVX::LessEqual<T>(0, 3)};
 
     auto [result, rows, columns] = table.queryTable(projection, filters);
 
@@ -169,99 +170,23 @@ void testBasicAVXFilters() {
     cout << "Count: " << rows << endl;
 }
 
-enum class SIMD { Scalar, AVX512 };
-
-template <typename T, SIMD Variant>
-class Filter {};
-
-template <>
-class Filter<uint32_t, SIMD::AVX512> {
-   public:
-    const unsigned index;
-    const uint32_t value;
-    __m512i value_register;
-
-    Filter(unsigned index, uint32_t value) : index(index), value(value), value_register(_mm512_set1_epi32(value)) {}
-    virtual __mmask16 match(__m512i reg, __mmask16 mask = ONE_MASK) = 0;
-};
-
-template <>
-class Filter<uint64_t, SIMD::AVX512> {
-   public:
-    const unsigned index;
-    const uint64_t value;
-    __m512i value_register;
-
-    Filter(unsigned index, uint64_t value) : index(index), value(value), value_register(_mm512_set1_epi64(value)) {}
-    virtual __mmask8 match(__m512i reg, __mmask8 mask = ONE_MASK) const = 0;
-};
-
 template <typename T>
-class Filter<T, SIMD::Scalar> {
-   public:
-    unsigned index;
-    const T value;
-
-    Filter(unsigned index, T value) : index(index), value(value) {}
-    virtual bool match(T value) = 0;
-};
-
-template <typename T, SIMD Variant>
-class Equal : public Filter<T, Variant> {};
-
-template <>
-class Equal<uint32_t, SIMD::AVX512> : public Filter<uint32_t, SIMD::AVX512> {
-   public:
-    using Filter<uint32_t, SIMD::AVX512>::Filter;
-
-    __mmask16 match(__m512i reg, __mmask16 mask = ONE_MASK) {
-        cout << "Equal AVX with 32bit" << endl;
-        return _mm512_mask_cmpeq_epi32_mask(mask, reg, value_register);
-    }
-};
-
-template <typename T>
-class Equal<T, SIMD::Scalar> : public Filter<T, SIMD::Scalar> {
-   public:
-    using Filter<T, SIMD::Scalar>::Filter;
-
-    bool match(T value) override {
-        cout << "Equal Scalar with T" << endl;
-        return this->value == value;
-    }
-};
-
-template <typename T, SIMD Variant>
-class LessThan : public Filter<T, Variant> {};
-
-template <>
-class LessThan<uint32_t, SIMD::AVX512> : public Filter<uint32_t, SIMD::AVX512> {
-   public:
-    using Filter<uint32_t, SIMD::AVX512>::Filter;
-
-    __mmask16 match(__m512i reg, __mmask16 mask = ONE_MASK) {
-        cout << "LessThan AVX with 32bit" << endl;
-        return _mm512_mask_cmpeq_epi32_mask(mask, reg, value_register);
-    }
-};
-
-template <typename T>
-void queryAVX(Filter<T, SIMD::AVX512>& filter) {
+void queryAVX(Filter::Filter<T, SIMD::AVX512>& filter) {
     __m512i reg32bit = _mm512_set1_epi32(1);
     auto mask = filter.match(reg32bit);
 }
 
 template <typename T>
-void queryNormal(Filter<T, SIMD::Scalar>& filter) {
+void queryNormal(Filter::Filter<T, SIMD::Scalar>& filter) {
     T value = 1;
     auto result = filter.match(value);
     cout << "Scalar operations says: " << result << endl;
 }
 
 int main() {
-    Equal<uint32_t, SIMD::AVX512> equal32bitAVX(1, 1);
-    LessThan<uint32_t, SIMD::AVX512> lessThan32bitAVX(1, 1);
-    Equal<uint32_t, SIMD::Scalar> equal32bitScalar(1, 1);
+    Filter::Equal<uint32_t, SIMD::AVX512> equal32bitAVX(1, 1);
+    Filter::LessThan<uint32_t, SIMD::AVX512> lessThan32bitAVX(1, 1);
+    Filter::Equal<uint32_t, SIMD::Scalar> equal32bitScalar(1, 1);
 
     queryAVX(equal32bitAVX);
     queryAVX(lessThan32bitAVX);
