@@ -5,10 +5,11 @@
 #include "ITable.h"
 #include "Memory.h"
 #include "Page.h"
+#include "SIMD.h"
 #include "Types.h"
 
 template <typename T>
-class PaxTable : public Tables::Scalar::ITable<T> {
+class PaxTable : public Tables::ITable<T> {
    private:
     unsigned int rowsPerPage;
     unsigned int numberOfPages;
@@ -25,7 +26,7 @@ class PaxTable : public Tables::Scalar::ITable<T> {
     PaxPage<T> *pages;
 
     PaxTable(int numberOfAttributes, int numberOfRows, const T **initialData)
-        : Tables::Scalar::ITable<T>(numberOfAttributes, numberOfRows, initialData) {
+        : Tables::ITable<T>(numberOfAttributes, numberOfRows, initialData) {
         auto pagesize = getPagesize();
         this->rowsPerPage = PaxPage<T>::getMaximumRows(pagesize, numberOfAttributes);
 
@@ -68,8 +69,9 @@ class PaxTable : public Tables::Scalar::ITable<T> {
         return row + columnIndex;
     }
 
-    virtual std::tuple<T **, uint64_t, uint64_t> queryTable(std::vector<uint64_t> &projection,
-                                                            std::vector<Filters::Scalar::Filter<T> *> &filters) override {
+    // Scalar query
+    std::tuple<T **, uint64_t, uint64_t> queryTable(std::vector<uint64_t> &projection,
+                                                    std::vector<Filters::Filter<T, SIMD::None> *> &filters) override {
         vector<unsigned> positions;
 
         // Find positions of all rows that match the given filters.
@@ -86,9 +88,30 @@ class PaxTable : public Tables::Scalar::ITable<T> {
         return std::make_tuple(data, positions.size(), projection.size());
     };
 
-    virtual uint64_t queryCount(std::vector<uint64_t> &projection, std::vector<Filters::Scalar::Filter<T> *> &filters) override {
-        auto result = queryTable(projection, filters);
-        uint64_t rows = get<1>(result);
-        return rows;
+    // AVX512 query
+    std::tuple<T **, uint64_t, uint64_t> queryTable(std::vector<uint64_t> &projection,
+                                                    std::vector<Filters::Filter<T, SIMD::AVX512> *> &filters) override {
+        vector<uint64_t> positions;
+
+        // Find positions of all rows that match the given filters.
+        for (unsigned pageIndex = 0; pageIndex < this->numberOfPages; pageIndex++) {
+            PaxPage<T> page = this->pages[pageIndex];
+            auto [pagePositions, count] = page.queryAVX(filters);
+            positions.insert(positions.end(), pagePositions, pagePositions + count);
+        }
+
+        // Allocate enough memory for all rows.
+        T **data = (T **)malloc(positions.size() * sizeof(T *));
+        for (int i = 0; i < positions.size(); i++) data[i] = this->projectRow(positions[i], projection);
+
+        return std::make_tuple(data, positions.size(), projection.size());
+    };
+
+    uint64_t queryCount(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T, SIMD::None> *> &filters) override {
+        return get<1>(queryTable(projection, filters));
+    }
+
+    uint64_t queryCount(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T, SIMD::AVX512> *> &filters) override {
+        return get<1>(queryTable(projection, filters));
     }
 };

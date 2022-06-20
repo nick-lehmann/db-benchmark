@@ -5,7 +5,7 @@
 #include "Constants.h"
 #include "SIMD.h"
 
-namespace Filter {
+namespace Filters {
 
 template <typename T, SIMD Variant>
 class NotEqual : public Filter<T, Variant> {};
@@ -36,4 +36,4 @@ class NotEqual<T, SIMD::None> : public Filter<T, SIMD::None> {
 
     bool match(T value) override { return this->value != value; }
 };
-};  // namespace Filter
+};  // namespace Filters

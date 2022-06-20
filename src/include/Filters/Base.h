@@ -3,7 +3,7 @@
 
 #include "SIMD.h"
 
-namespace Filter {
+namespace Filters {
 
 template <typename T, SIMD Variant>
 class Filter {};
@@ -39,4 +39,4 @@ class Filter<T, SIMD::None> {
     Filter(unsigned index, T value) : index(index), value(value) {}
     virtual bool match(T value) = 0;
 };
-}  // namespace Filter
+}  // namespace Filters

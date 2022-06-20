@@ -5,7 +5,7 @@
 #include "Constants.h"
 #include "SIMD.h"
 
-namespace Filter {
+namespace Filters {
 
 template <typename T, SIMD Variant>
 class GreaterThan : public Filter<T, Variant> {};
@@ -32,6 +32,6 @@ class GreaterThan<T, SIMD::None> : public Filter<T, SIMD::None> {
    public:
     using Filter<T, SIMD::None>::Filter;
 
-    bool match(T value) override { return value > this->value }
+    bool match(T value) override { return value > this->value; }
 };
-};  // namespace Filter
+};  // namespace Filters
