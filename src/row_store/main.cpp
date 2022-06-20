@@ -3,39 +3,36 @@
 #include <iostream>
 #include <vector>
 
-
 //#include "Benchmark.h"
 
-#include "Filters.h"
+#include "BaseTable.h"
+#include "Filters/All.h"
 #include "Helper.h"
 //#include "ITable.h"
 //#include "IntermediateTable.h"
 //#include "Filter.h"
 //#include "Projection.h"
-#include "ITable_AVX.h"
-#include "BaseTable_AVX.h"
-#include "IntermediateTable_AVX.h"
-#include "Filters_AVX.h"
+// #include "IntermediateTable_AVX.h"
+#include "SIMD.h"
 
 /// Run a demo of the Row-Store database.
 /// Creates a small example BaseTable and applies a simple query on it. Afterwards run a benchmark with the same query on the same table.
+// TODO: Probably only works for `Variant = SIMD::AVX512` as the AVX variant of the intermediate table is used
+template <typename T, SIMD Variant>
 void demo() {
-    // define data type of table data
-    using Type = uint32_t;
-
     std::cout << "Row-Store Code" << std::endl;
 
     // generate example table and print
-    const Type **initialData = TableHelper::generateRandomData<Type>(5, 32, 1, 10);
-    RowStore::BaseTable_AVX<Type> baseTable(5, 32, initialData);
+    const T **initialData = TableHelper::generateRandomData<T>(5, 32, 1, 10);
+    RowStore::BaseTable<T> baseTable(5, 32, initialData);
     std::cout << "Print Test-BaseTable: \n" << std::endl;
     baseTable.print();
 
     // perform a query on base table and print result
     std::cout << "Print Test-Query: \n" << std::endl;
     std::vector<uint64_t> projectionAttributes = {0, 2, 3};
-    std::vector<Filters::AVX::Filter<Type> *> filters = {new Filters::AVX::GreaterThan<Type>(1, 6),
-                                                            new Filters::AVX::LessThan<Type>(2, 9)};
+    std::vector<Filters::Filter<T, Variant> *> filters = {new Filters::GreaterThan<T, Variant>(1, 6),
+                                                          new Filters::LessThan<T, Variant>(2, 9)};
     unsigned numRow = 0, numCol = 0;
     auto [queryResult, resultRowCount, resultColumnCount] = baseTable.queryTable(projectionAttributes, filters);
     RowStore::IntermediateTable_AVX<Type>::printTableOutput(queryResult, resultRowCount, resultColumnCount);
@@ -62,7 +59,7 @@ void demo() {
 }*/
 
 int main(int argc, char **argv) {
-    demo();
+    demo<uint32_t, SIMD::AVX512>();
     // benchmark();
 
     return 0;

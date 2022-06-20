@@ -3,8 +3,9 @@
 #include <stdexcept>
 
 #include "Constants.h"
-#include "Filters_AVX.h"
+#include "Filters/All.h"
 #include "IntermediateTable_AVX.h"
+#include "SIMD.h"
 #include "copy_tuple_codegen/copyMaskedTuple.h"
 
 namespace RowStore {
@@ -62,7 +63,7 @@ class Filter_AVXHelper<uint32_t> {
 /// \param table intermediateTable that is filtered
 /// \param filters vector of filters that are applied conjunctive
 template <typename T>
-IntermediateTable_AVX<T> *apply_filters_AVX(IntermediateTable_AVX<T> &table, std::vector<Filters::AVX::Filter<T> *> &filters) {
+IntermediateTable_AVX<T> *apply_filters_AVX(IntermediateTable_AVX<T> &table, std::vector<Filters::Filter<T, SIMD::AVX512> *> &filters) {
     // Validate filters
     for (int i = 0; i < filters.size(); ++i) {
         if (filters[i]->index < 0 || filters[i]->index >= table.getTupleWidth()) {
