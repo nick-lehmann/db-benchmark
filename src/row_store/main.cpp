@@ -35,10 +35,10 @@ void demo() {
                                                           new Filters::LessThan<T, Variant>(2, 9)};
     unsigned numRow = 0, numCol = 0;
     auto [queryResult, resultRowCount, resultColumnCount] = baseTable.queryTable(projectionAttributes, filters);
-    RowStore::IntermediateTable_AVX<Type>::printTableOutput(queryResult, resultRowCount, resultColumnCount);
+    RowStore::IntermediateTable_AVX<T>::printTableOutput(queryResult, resultRowCount, resultColumnCount);
 
     // delete result table and free memory
-    RowStore::IntermediateTable_AVX<Type>::deleteDetachedTableOutput(queryResult, resultRowCount);
+    RowStore::IntermediateTable_AVX<T>::deleteDetachedTableOutput(queryResult, resultRowCount);
 
     // run benchmark of same query
     // std::cout << "Print benchmark: " << std::endl << std::endl;
