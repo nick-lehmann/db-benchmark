@@ -32,6 +32,6 @@ class GreaterThan<T, SIMD::Scalar> : public Filter<T, SIMD::Scalar> {
    public:
     using Filter<T, SIMD::Scalar>::Filter;
 
-    bool match(T value) override { return value > this->value }
+    bool match(T value) override { return value > this->value; }
 };
 };  // namespace Filter

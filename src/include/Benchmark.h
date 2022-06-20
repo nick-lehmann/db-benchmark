@@ -8,7 +8,7 @@
 
 #include "../column_store/ColumnStoreTable_AVX.h"
 #include "../pax_store/PaxTable_AVX.h"
-#include "../row_store/BaseTable.h"
+#include "../row_store/BaseTable_AVX.h"
 #include "BenchmarkResult.h"
 #include "Helper.h"
 #include "Filters/Base.h"
@@ -83,7 +83,7 @@ std::tuple<uint64_t, uint64_t, double> benchmarkTableImplementation(int tableSto
     switch (tableStoreId) {
         case 0: {
             // row store
-            RowStore::BaseTable<T> table(columnCount, rowCount, tableData);
+            RowStore::BaseTable_AVX<T> table(columnCount, rowCount, tableData);
 
             // run benchmark and return
             return Benchmark::measureTime(table, projectionAttributes, filters, false);
