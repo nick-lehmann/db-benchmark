@@ -1,6 +1,7 @@
 #pragma once
 #include <immintrin.h>
 
+#include "Constants.h"
 #include "SIMD.h"
 
 namespace Filters {

@@ -9,11 +9,7 @@
 #include <vector>
 
 #include "Constants.h"
-#include "Filters/Equal.h"
-#include "Filters/GreaterEqual.h"
-#include "Filters/GreaterThan.h"
-#include "Filters/LessEqual.h"
-#include "Filters/LessThan.h"
+#include "Filters/All.h"
 #include "Helper.h"
 #include "Memory.h"
 #include "Page.h"
