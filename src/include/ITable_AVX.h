@@ -6,7 +6,7 @@
 #include <vector>
 #include <iostream>
 
-#include "Filters_AVX.h"
+#include "Filters/Base.h"
 
 namespace Tables::AVX {
     /// Unified interface for all database tables.
@@ -37,13 +37,13 @@ namespace Tables::AVX {
         /// \param projection column indices to project
         /// \param filters filters to apply
         virtual std::tuple<T **, uint64_t, uint64_t>
-        queryTable(std::vector<uint64_t> &projection, std::vector<Filters::AVX::Filter<T> *> &filters) = 0;
+        queryTable(std::vector<uint64_t> &projection, std::vector<Filter::Filter<T, SIMD::AVX512> *> &filters) = 0;
 
         /// Queries the table and returns the amount of rows in the result.
         /// \param projection column indices to project
         /// \param filters filters to apply
         virtual uint64_t
-        queryCount(std::vector<uint64_t> &projection, std::vector<Filters::AVX::Filter<T> *> &filters) = 0;
+        queryCount(std::vector<uint64_t> &projection, std::vector<Filter::Filter<T, SIMD::AVX512> *> &filters) = 0;
 
         /// Prints the entire table.
         void print() {

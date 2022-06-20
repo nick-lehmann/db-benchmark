@@ -178,7 +178,7 @@ class PaxPage {
     // Note: This function currently only works when T is set to uint64_t. Otherwise, the `ColumStore::Helper::store` function does not
     // work.
     // TODO: Allow for uint32_t values
-    std::tuple<uint64_t *, uint64_t> queryAVX(std::vector<Filters::AVX::Filter<T> *> &filters) {
+    std::tuple<uint64_t *, uint64_t> queryAVX(std::vector<Filter::Filter<T, SIMD::AVX512> *> &filters) {
         // Array of all row indices which have passed all filters that were already applied. At the beginning, all rows all still present
         // because no filter has been applied yet. However, for performance reasons, we do not populate the array with all indicies but
         // rather compute the indices on the fly when the first filter is applied (firstRun=true).

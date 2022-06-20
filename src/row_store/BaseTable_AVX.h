@@ -13,6 +13,7 @@
 #include "ITable_AVX.h"
 #include "IntermediateTable_AVX.h"
 #include "Projection_AVX.h"
+#include "Filters/Base.h"
 
 namespace RowStore {
 
@@ -54,7 +55,7 @@ class BaseTable_AVX : public Tables::AVX::ITable<T> {
     /// \param numberOfRows number of rows of the current table
     /// \param numberOfColumns number of columns of the current table
     std::tuple<T **, uint64_t, uint64_t> queryTable(std::vector<uint64_t> &projectionAttributes,
-                                                    std::vector<Filters::AVX::Filter<T> *> &filters) override {
+                                                    std::vector<Filter::Filter<T, SIMD::AVX512> *> &filters) override {
         // convert BaseTable to InterMediateTable for query
         IntermediateTable_AVX<T> interTableAVX(this->numberOfAttributes, data);
         // apply query
@@ -74,7 +75,7 @@ class BaseTable_AVX : public Tables::AVX::ITable<T> {
     /// Perform a query on the table and return the number of rows of the queried table.
     /// \param projectionAttributes column indices used for projection
     /// \param filters vector of filters used for the query
-    uint64_t queryCount(std::vector<uint64_t> &projectionAttributes, std::vector<Filters::AVX::Filter<T> *> &filters) override {
+    uint64_t queryCount(std::vector<uint64_t> &projectionAttributes, std::vector<Filter::Filter<T, SIMD::AVX512> *> &filters) override {
         // convert BaseTable to InterMediateTable for query
         IntermediateTable_AVX<T> interTableAVX(this->numberOfAttributes, data);
         // apply query

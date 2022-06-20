@@ -6,6 +6,7 @@
 #include "Memory.h"
 #include "Page.h"
 #include "Types.h"
+#include "Filters/Base.h"
 
 template <typename T>
 class PaxTableAVX : public Tables::AVX::ITable<T> {
@@ -69,7 +70,7 @@ class PaxTableAVX : public Tables::AVX::ITable<T> {
     }
 
     virtual std::tuple<T **, uint64_t, uint64_t> queryTable(std::vector<uint64_t> &projection,
-                                                            std::vector<Filters::AVX::Filter<T> *> &filters) override {
+                                                            std::vector<Filter::Filter<T, SIMD::AVX512> *> &filters) override {
         vector<uint64_t> positions;
 
         // Find positions of all rows that match the given filters.
@@ -86,7 +87,7 @@ class PaxTableAVX : public Tables::AVX::ITable<T> {
         return std::make_tuple(data, positions.size(), projection.size());
     };
 
-    virtual uint64_t queryCount(std::vector<uint64_t> &projection, std::vector<Filters::AVX::Filter<T> *> &filters) override {
+    virtual uint64_t queryCount(std::vector<uint64_t> &projection, std::vector<Filter::Filter<T, SIMD::AVX512> *> &filters) override {
         auto result = queryTable(projection, filters);
         uint64_t rows = get<1>(result);
         return rows;

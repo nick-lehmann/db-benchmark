@@ -5,6 +5,7 @@
 
 #include "ITable_AVX.h"
 #include "ColumnStoreHelper.h"
+#include "Filters/Base.h"
 
 // whether to check the remainder in the filterBasic()-method
 // this could have an impact on performance due to unfortunate branch prediction
@@ -39,7 +40,7 @@ namespace ColumnStore::AVX {
         }
 
         std::tuple<T **, uint64_t, uint64_t>
-        queryTable(std::vector<uint64_t> &projection, std::vector<Filters::AVX::Filter<T> *> &filters) override {
+        queryTable(std::vector<uint64_t> &projection, std::vector<Filter::Filter<T, SIMD::AVX512> *> &filters) override {
             // reset the index storage
             sizeOfIndexStorage = -1;
 
@@ -52,7 +53,7 @@ namespace ColumnStore::AVX {
                                    (uint64_t) sizeOfIndexStorage, (uint64_t) projection.size());
         }
 
-        uint64_t queryCount(std::vector<uint64_t> &projection, std::vector<Filters::AVX::Filter<T> *> &filters) override {
+        uint64_t queryCount(std::vector<uint64_t> &projection, std::vector<Filter::Filter<T, SIMD::AVX512> *> &filters) override {
             // reset the index storage
             sizeOfIndexStorage = -1;
 
@@ -74,7 +75,7 @@ namespace ColumnStore::AVX {
         /// Applies a single filter on the stored data based the currently stored filter indices from previous
         /// iterations (if there was a previous iteration).
         /// \param filter the filter to apply
-        void filterBasic(const Filters::AVX::Filter<T> *filter) {
+        void filterBasic(const Filter::Filter<T, SIMD::AVX512> *filter) {
             auto integerAmount = (unsigned) 64 / sizeof(T);
             auto filterColIterator = data[filter->index].begin();
             auto *currentIndexStorage = indexStorage;

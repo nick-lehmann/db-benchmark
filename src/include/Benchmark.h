@@ -23,14 +23,14 @@ namespace Benchmark {
 /// \param projection projection attributes for the query
 /// \param filters filters to apply for the query
 template <typename T>
-std::tuple<uint64_t, uint64_t, double> measureTime(Tables::AVX::ITable<T> &table, std::vector<unsigned> &projection,
+std::tuple<uint64_t, uint64_t, double> measureTime(Tables::AVX::ITable<T> &table, std::vector<T> &projection,
                                                    std::vector<Filter::Filter<T, SIMD::AVX512> *> &filters, bool enablePrint = true) {
     // measure both cpu time and real time
     auto clockStartTime = std::clock();
     auto realStartTime = std::chrono::steady_clock::now();
 
     // call query count function
-    uint64_t count = table.queryCount(projection, filters);
+    auto count = table.queryCount(projection, filters);
 
     auto clockEndTime = std::clock();
     auto realEndTime = std::chrono::steady_clock::now();
@@ -73,7 +73,7 @@ unsigned incrementValue(unsigned value, bool exponentialGrowth, unsigned growthF
 /// \param upperBound upper bound of values stored in table cells
 /// \param seed used for data generation
 template <typename T>
-std::tuple<uint64_t, uint64_t, double> benchmarkTableImplementation(int tableStoreId, std::vector<unsigned> &projectionAttributes,
+std::tuple<uint64_t, uint64_t, double> benchmarkTableImplementation(int tableStoreId, std::vector<T> &projectionAttributes,
                                                                     std::vector<Filter::Filter<T, SIMD::AVX512> *> &filters, unsigned rowCount,
                                                                     unsigned columnCount, T lowerBound, T upperBound, unsigned seed) {
     // create data
@@ -123,7 +123,7 @@ std::tuple<uint64_t, uint64_t, double> benchmarkTableImplementation(int tableSto
 /// \param seed used for data generation
 /// \param filepath if specified export results to filepath. filepath should include filename and ending (e.g. .csv)
 template <typename T>
-void benchmarkRows(int tableStoreId, std::vector<unsigned> &projectionAttributes, std::vector<Filter::Filter<T, SIMD::AVX512> *> &filters, unsigned rowCount = 10,
+void benchmarkRows(int tableStoreId, std::vector<T> &projectionAttributes, std::vector<Filter::Filter<T, SIMD::AVX512> *> &filters, unsigned rowCount = 10,
                    unsigned columnCount = 10, bool exponentialGrowth = false, unsigned growthFactor = 50, unsigned iterations = 300,
                    T lowerBound = 0, T upperBound = 1000, unsigned seed = 42, const std::string &filepath = "benchmark.csv") {
     // initialize store for result

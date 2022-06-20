@@ -1,6 +1,11 @@
 #pragma once
 #include <immintrin.h>
 
+#include <cstdint>
+
+#include "Constants.h"
+
+
 #include "SIMD.h"
 
 namespace Filter {
