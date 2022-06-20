@@ -28,9 +28,9 @@ class GreaterEqual<uint64_t, SIMD::AVX512> : public Filter<uint64_t, SIMD::AVX51
 };
 
 template <typename T>
-class GreaterEqual<T, SIMD::Scalar> : public Filter<T, SIMD::Scalar> {
+class GreaterEqual<T, SIMD::None> : public Filter<T, SIMD::None> {
    public:
-    using Filter<T, SIMD::Scalar>::Filter;
+    using Filter<T, SIMD::None>::Filter;
 
     bool match(T value) override { return value >= this->value; }
 };

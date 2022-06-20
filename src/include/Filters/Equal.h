@@ -28,9 +28,9 @@ class Equal<uint64_t, SIMD::AVX512> : public Filter<uint64_t, SIMD::AVX512> {
 };
 
 template <typename T>
-class Equal<T, SIMD::Scalar> : public Filter<T, SIMD::Scalar> {
+class Equal<T, SIMD::None> : public Filter<T, SIMD::None> {
    public:
-    using Filter<T, SIMD::Scalar>::Filter;
+    using Filter<T, SIMD::None>::Filter;
 
     bool match(T value) override { return this->value == value; }
 };

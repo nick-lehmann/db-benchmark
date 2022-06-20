@@ -31,7 +31,7 @@ class Filter<uint64_t, SIMD::AVX512> {
 };
 
 template <typename T>
-class Filter<T, SIMD::Scalar> {
+class Filter<T, SIMD::None> {
    public:
     unsigned index;
     const T value;
