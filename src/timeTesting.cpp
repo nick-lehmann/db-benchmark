@@ -25,8 +25,8 @@ int main(int argc, char ** argv) {
 
     using Type = uint64_t;
 
-    std::vector<Filter::Filter<Type, SIMD::AVX512>*> filters  {new Filter::Equal<Type, SIMD::AVX512> (1, 1),new Filter::GreaterThan<Type, SIMD::AVX512> (0,31),new Filter::LessThan<Type, SIMD::AVX512> (3,76),
-                                                                 new Filter::Equal<Type, SIMD::AVX512> (4,42),new Filter::GreaterThan<Type, SIMD::AVX512> (8,42),new Filter::LessEqual<Type, SIMD::AVX512> (6,56)};
+    std::vector<Filters::Filter<Type, SIMD::AVX512>*> filters  {new Filters::Equal<Type, SIMD::AVX512> (1, 1),new Filters::GreaterThan<Type, SIMD::AVX512> (0,31),new Filters::LessThan<Type, SIMD::AVX512> (3,76),
+                                                                 new Filters::Equal<Type, SIMD::AVX512> (4,42),new Filters::GreaterThan<Type, SIMD::AVX512> (8,42),new Filters::LessEqual<Type, SIMD::AVX512> (6,56)};
     std::vector<Type> projection {0,1,2,4,8};
 
     //std::vector<Filter::Filter<Type, SIMD::AVX512> *> filters{gtAVX,eqAVX,ltAVX,
