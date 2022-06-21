@@ -44,12 +44,13 @@ int main(int argc, char ** argv) {
 
     Benchmark::runBenchmark<uint64_t>(2,projection,filters,10,10,false,50,300,1,
                             1000,0,"PSbenchmark.csv");*/
-    //Benchmark::benchmarkRows<Type>(0,projection,filters,100,50,false,100,250,0,
-    //                                100,42,"../output_files/RSbenchmark.csv");
-    Benchmark::benchmarkRows<Type>(1,projection,filters,100,50,false,100,250,1,
-                                     100,42,"../output_files/CSbenchmark.csv");
-    Benchmark::benchmarkRows<Type>(2,projection,filters,100,50,false,100,250,1,
-                                   100,42,"../output_files/PSbenchmark.csv");
+
+    //Benchmark::benchmarkRows<Type>(0,projection,filters,100,50,false,100,500,0,
+    //                                100,42,"../output_files/RSbenchmark_AVX.csv");
+    Benchmark::benchmarkRows<Type>(1,projection,filters,100,50,false,100,500,0,
+                                      100,42,"../output_files/CSbenchmark_AVX.csv");
+    Benchmark::benchmarkRows<Type>(2,projection,filters,100,50,false,100,500,0,
+                                   100,42,"../output_files/PSbenchmark_AVX.csv");
 
 
 

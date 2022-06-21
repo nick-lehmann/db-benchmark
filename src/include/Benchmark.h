@@ -90,7 +90,7 @@ std::tuple<uint64_t, uint64_t, double> benchmarkTableImplementation(int tableSto
         }
         case 1: {
             // column store
-            ColumnStore::Table table(columnCount, rowCount, tableData);
+            ColumnStore::Table<T> table(columnCount, rowCount, tableData);
 
             // run benchmark and return
             return Benchmark::measureTime(table, projectionAttributes, filters, false);
