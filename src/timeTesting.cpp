@@ -38,13 +38,17 @@ int main(int argc, char ** argv) {
 
     //array<const std::string,3> files={"RSbenchmark.csv","CSbenchmark.csv","PSbenchmark.csv"};
 
-    auto equalFilter = new Filters::GreaterThan<Type, SIMD::AVX512>(0, 2);
-    auto equalFilter2 = new Filters::NotEqual<Type, SIMD::AVX512>(1, 3);
-    auto equalFilter3 = new Filters::LessEqual<Type, SIMD::AVX512>(3, 4);
+//    auto equalFilter = new Filters::GreaterThan<Type, SIMD::AVX512>(0, 2);
+//    auto equalFilter2 = new Filters::NotEqual<Type, SIMD::AVX512>(1, 3);
+//    auto equalFilter3 = new Filters::LessEqual<Type, SIMD::AVX512>(3, 4);
+//
+//    std::vector<Filters::Filter<Type, SIMD::AVX512>*> filters{equalFilter, equalFilter2, equalFilter3};
+//    std::vector<Type> projection{0, 1, 2, 3, 4};
 
-    std::vector<Filters::Filter<Type, SIMD::AVX512>*> filters{equalFilter, equalFilter2, equalFilter3};
-    std::vector<Type> projection{0, 1, 2, 3, 4};
 
+    std::vector<uint64_t> projection = {0, 2, 3};
+    std::vector<Filters::Filter<Type, SIMD::AVX512> *> filters = {new Filters::GreaterThan<T, Variant>(1, 6),
+                                                          new Filters::LessThan<T, Variant>(2, 29)};
 
     /*
     Benchmark::runBenchmark<uint64_t>(0,projection,filters,10,10,false,50,300,1,
@@ -58,11 +62,11 @@ int main(int argc, char ** argv) {
 
     Benchmark::benchmarkRows<Type>(0,projection,filters,100,50,false,100,500,0,
                                     100,42,"../output_files/RSbenchmark_AVX.csv");
-
-    Benchmark::benchmarkRows<Type>(1,projection,filters,100,50,false,100,500,0,
-                                      100,42,"../output_files/CSbenchmark_AVX.csv");
     Benchmark::benchmarkRows<Type>(2,projection,filters,100,50,false,100,500,0,
                                    100,42,"../output_files/PSbenchmark_AVX.csv");
+    Benchmark::benchmarkRows<Type>(1,projection,filters,100,50,false,100,500,0,
+                                      100,42,"../output_files/CSbenchmark_AVX.csv");
+
 
 
 
