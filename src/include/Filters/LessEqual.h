@@ -5,7 +5,7 @@
 #include "Constants.h"
 #include "SIMD.h"
 
-namespace Filter {
+namespace Filters {
 
 template <typename T, SIMD Variant>
 class LessEqual : public Filter<T, Variant> {};
@@ -28,10 +28,10 @@ class LessEqual<uint64_t, SIMD::AVX512> : public Filter<uint64_t, SIMD::AVX512> 
 };
 
 template <typename T>
-class LessEqual<T, SIMD::Scalar> : public Filter<T, SIMD::Scalar> {
+class LessEqual<T, SIMD::None> : public Filter<T, SIMD::None> {
    public:
-    using Filter<T, SIMD::Scalar>::Filter;
+    using Filter<T, SIMD::None>::Filter;
 
     bool match(T value) override { return this->value == value; }
 };
-};  // namespace Filter
+};  // namespace Filters

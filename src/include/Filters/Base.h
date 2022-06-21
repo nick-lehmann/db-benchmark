@@ -1,14 +1,10 @@
 #pragma once
 #include <immintrin.h>
 
-#include <cstdint>
-
 #include "Constants.h"
-
-
 #include "SIMD.h"
 
-namespace Filter {
+namespace Filters {
 
 template <typename T, SIMD Variant>
 class Filter {};
@@ -36,7 +32,7 @@ class Filter<uint64_t, SIMD::AVX512> {
 };
 
 template <typename T>
-class Filter<T, SIMD::Scalar> {
+class Filter<T, SIMD::None> {
    public:
     unsigned index;
     const T value;
@@ -44,4 +40,4 @@ class Filter<T, SIMD::Scalar> {
     Filter(unsigned index, T value) : index(index), value(value) {}
     virtual bool match(T value) = 0;
 };
-}  // namespace Filter
+}  // namespace Filters

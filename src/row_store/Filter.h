@@ -2,8 +2,9 @@
 #include <cstdint>
 #include <stdexcept>
 
-#include "Filters.h"
+#include "Filters/All.h"
 #include "IntermediateTable.h"
+#include "SIMD.h"
 
 namespace RowStore {
 
@@ -12,7 +13,7 @@ namespace RowStore {
 /// \param table intermediateTable that is filtered
 /// \param filters vector of filters that are applied conjunctive
 template <typename T>
-IntermediateTable<T> *apply_filters(IntermediateTable<T> &table, std::vector<Filters::Scalar::Filter<T> *> &filters) {
+IntermediateTable<T> *apply_filters(IntermediateTable<T> &table, std::vector<Filters::Filter<T, SIMD::None> *> &filters) {
     // Validate filters
     for (int i = 0; i < filters.size(); ++i) {
         if (filters[i]->index < 0 || filters[i]->index >= table.getTupleWidth()) {

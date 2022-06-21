@@ -1,3 +1,3 @@
 #pragma once
 
-enum class SIMD { Scalar, AVX512 };
+enum class SIMD { None, AVX512 };
