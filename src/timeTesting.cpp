@@ -46,9 +46,14 @@ int main(int argc, char ** argv) {
 //    std::vector<Type> projection{0, 1, 2, 3, 4};
 
 
-    std::vector<uint64_t> projection = {0, 2, 3};
-    std::vector<Filters::Filter<Type, SIMD::AVX512> *> filters = {new Filters::GreaterThan<T, Variant>(1, 6),
-                                                          new Filters::LessThan<T, Variant>(2, 29)};
+    std::vector<uint64_t> projection = {0, 1, 2};
+    std::vector<Filters::Filter<Type, SIMD::AVX512>*> filters = {new Filters::LessEqual<Type, SIMD::AVX512>(0, 18),
+                                                              new Filters::GreaterEqual<Type, SIMD::AVX512>(0, 4),
+                                                              new Filters::Equal<Type, SIMD::AVX512>(0, 7)};
+
+//    std::vector<uint64_t> projection = {0, 2, 3};
+//    std::vector<Filters::Filter<Type, SIMD::AVX512> *> filters = {new Filters::GreaterThan<T, Variant>(1, 6),
+//                                                          new Filters::LessThan<T, Variant>(2, 29)};
 
     /*
     Benchmark::runBenchmark<uint64_t>(0,projection,filters,10,10,false,50,300,1,
