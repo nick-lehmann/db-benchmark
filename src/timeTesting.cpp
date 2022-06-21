@@ -38,12 +38,12 @@ int main(int argc, char ** argv) {
 
     //array<const std::string,3> files={"RSbenchmark.csv","CSbenchmark.csv","PSbenchmark.csv"};
 
-    auto equalFilter = new Filters::GreaterThan<T, SIMD::AVX512>(0, 2);
-    auto equalFilter2 = new Filters::NotEqual<T, SIMD::AVX512>(1, 3);
-    auto equalFilter3 = new Filters::LessEqual<T, SIMD::AVX512>(3, 4);
+    auto equalFilter = new Filters::GreaterThan<Type, SIMD::AVX512>(0, 2);
+    auto equalFilter2 = new Filters::NotEqual<Type, SIMD::AVX512>(1, 3);
+    auto equalFilter3 = new Filters::LessEqual<Type, SIMD::AVX512>(3, 4);
 
-    std::vector<Filters::Filter<T, SIMD::AVX512>*> filters{equalFilter, equalFilter2, equalFilter3};
-    std::vector<uint64_t> projection{0, 1, 2, 3, 4};
+    std::vector<Filters::Filter<Type, SIMD::AVX512>*> filters{equalFilter, equalFilter2, equalFilter3};
+    std::vector<Type> projection{0, 1, 2, 3, 4};
 
 
     /*
