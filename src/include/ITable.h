@@ -3,6 +3,7 @@
 #include <array>
 #include <cstdint>
 #include <cstdlib>
+#include <iostream>
 #include <vector>
 
 #include "Filters/Base.h"
