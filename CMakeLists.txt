@@ -31,6 +31,7 @@ add_executable(row_store src/row_store/main.cpp
                             src/row_store/IntermediateTable_AVX.h
                             src/row_store/BaseTable.h
                             src/row_store/Filter_AVX.h)
+
 add_executable(column_store src/column_store/main.cpp)
 add_executable(pax_store src/pax_store/main.cpp)
 add_executable(timeTesting src/timeTesting.cpp)
