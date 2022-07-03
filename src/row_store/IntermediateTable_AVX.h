@@ -27,7 +27,7 @@ class IntermediateTable_AVX {
     /// Initializes the IntermediateTable_AVX with a given tuple width.
     /// \param tupleWidth number of attributes per tuple
     IntermediateTable_AVX(uint32_t tupleWidth, size_t tupleCapacity) : tupleWidth(tupleWidth), capacity(tupleCapacity) {
-        size_t pageCapacity = PAGE_SIZE / (sizeof(T) * tupleCapacity);
+        size_t pageCapacity = PAGE_SIZE / (sizeof(T) * tupleWidth);
         //               number of complete pages         add 1 if the tuple capacity does not fill complete pages
         allocatedPages = (tupleCapacity / pageCapacity) + ((tupleCapacity % pageCapacity) != 0);
 

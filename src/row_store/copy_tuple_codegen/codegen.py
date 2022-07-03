@@ -3,8 +3,11 @@ def oneBits(number):
     bits = []
     for i in range (0, 8, 1):
         if (number % 2) == 1:
-            bits.append(i)
+            #bit position needs to be inverted, since AVX counts from the other side or someting (whatever bit order needs to be reversed for correct results)
+            bits.append(7-i)
         number = number // 2
+    #bit list needs to be reversed to have them in ascending order
+    bits.reverse()
     return bits
 
 
