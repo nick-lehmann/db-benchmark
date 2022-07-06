@@ -32,20 +32,20 @@ int main(int argc, char ** argv) {
     //std::vector<Filter::Filter<Type, SIMD::AVX512> *> filters{gtAVX,eqAVX,ltAVX,
     //                                                          eqAVX2,gtAVX2,ltAVX2};
 
-    std::vector<uint64_t> projection = {0, 1, 2};
-    std::vector<Filters::Filter<Type, SIMD::AVX512>*> filters = {new Filters::LessEqual<Type, SIMD::AVX512>(0, 3),
-                                                              new Filters::GreaterEqual<Type, SIMD::AVX512>(0, 1),
-                                                              new Filters::Equal<Type, SIMD::AVX512>(0, 2)};
+//    std::vector<uint64_t> projection = {0, 1, 2};
+//    std::vector<Filters::Filter<Type, SIMD::AVX512>*> filters = {new Filters::LessEqual<Type, SIMD::AVX512>(0, 3),
+//                                                              new Filters::GreaterEqual<Type, SIMD::AVX512>(0, 1),
+//                                                              new Filters::Equal<Type, SIMD::AVX512>(0, 2)};
 
 
     //array<const std::string,3> files={"RSbenchmark.csv","CSbenchmark.csv","PSbenchmark.csv"};
 
-//    auto equalFilter = new Filters::GreaterThan<Type, SIMD::AVX512>(0, 2);
-//    auto equalFilter2 = new Filters::NotEqual<Type, SIMD::AVX512>(1, 3);
-//    auto equalFilter3 = new Filters::LessEqual<Type, SIMD::AVX512>(3, 4);
+    auto equalFilter = new Filters::GreaterThan<Type, SIMD::AVX512>(0, 2);
+    auto equalFilter2 = new Filters::NotEqual<Type, SIMD::AVX512>(1, 3);
+    auto equalFilter3 = new Filters::LessEqual<Type, SIMD::AVX512>(3, 40);
 //
-//    std::vector<Filters::Filter<Type, SIMD::AVX512>*> filters{equalFilter, equalFilter2, equalFilter3};
-//    std::vector<Type> projection{0, 1, 2, 3, 4};
+    std::vector<Filters::Filter<Type, SIMD::AVX512>*> filters{equalFilter, equalFilter2, equalFilter3};
+    std::vector<Type> projection{0, 1, 2, 3, 4};
 
 
 //    std::vector<uint64_t> projection = {0, 1, 2};
@@ -71,12 +71,12 @@ int main(int argc, char ** argv) {
 
 
     Benchmark::benchmarkRows<Type>(2,projection,filters,100,50,false,100,500,0,
-                                   10,0,"../output_files/PSbenchmark_AVX.csv");
+                                   100,0,"../output_files/PSbenchmark_AVX.csv");
     Benchmark::benchmarkRows<Type>(1,projection,filters,100,50,false,100,500,0,
-                                      10,0,"../output_files/CSbenchmark_AVX.csv");
+                                      100,0,"../output_files/CSbenchmark_AVX.csv");
 
     Benchmark::benchmarkRows<Type>(0,projection,filters,100,50,false,100,500,0,
-                                    10,0,"../output_files/RSbenchmark_AVX.csv");
+                                    100,0,"../output_files/RSbenchmark_AVX.csv");
 
     return 0;
 }
