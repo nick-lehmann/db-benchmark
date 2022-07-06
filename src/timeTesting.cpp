@@ -13,7 +13,7 @@
 //#include "Table.h"
 #include "Helper.h"
 //#include "Filters.h"
-#include "BaseTable.h"
+#include "../row_store/BaseTable.h"
 #include "Filters/All.h"
 
 int main(int argc, char ** argv) {
@@ -25,13 +25,17 @@ int main(int argc, char ** argv) {
     //std::vector<Filters::Filter<Type, SIMD::AVX512>*> filters  {new Filters::Equal<Type, SIMD::AVX512> (1, 2), new Filters::LessThan<Type, SIMD::AVX512> (3,7)};
     //std::vector<Type> projection {0,1,2,3,4};
 
-    std::vector<uint64_t> projection = {0, 2, 3};
-    std::vector<Filters::Filter<Type, SIMD::AVX512> *> filters = {new Filters::GreaterThan<Type, SIMD::AVX512>(1, 6),
-                                                          new Filters::LessThan<Type, SIMD::AVX512>(2, 9)};
+    //std::vector<uint64_t> projection = {0, 2, 3};
+    //std::vector<Filters::Filter<Type, SIMD::AVX512> *> filters = {new Filters::GreaterThan<Type, SIMD::AVX512>(1, 6),
+    //                                                      new Filters::LessThan<Type, SIMD::AVX512>(2, 9)};
 
     //std::vector<Filter::Filter<Type, SIMD::AVX512> *> filters{gtAVX,eqAVX,ltAVX,
     //                                                          eqAVX2,gtAVX2,ltAVX2};
 
+    std::vector<uint64_t> projection = {0, 1, 2};
+    std::vector<Filters::Filter<Type, SIMD::AVX512>*> filters = {new Filters::LessEqual<Type, SIMD::AVX512>(0, 3),
+                                                              new Filters::GreaterEqual<Type, SIMD::AVX512>(0, 1),
+                                                              new Filters::Equal<Type, SIMD::AVX512>(0, 2)};
 
 
     //array<const std::string,3> files={"RSbenchmark.csv","CSbenchmark.csv","PSbenchmark.csv"};
@@ -70,13 +74,6 @@ int main(int argc, char ** argv) {
                                    10,0,"../output_files/PSbenchmark_AVX.csv");
     Benchmark::benchmarkRows<Type>(1,projection,filters,100,50,false,100,500,0,
                                       10,0,"../output_files/CSbenchmark_AVX.csv");
-
-    const T **initialData = TableHelper::generateRandomData<T>(50, 600, 0, 10);
-    RowStore::BaseTable<T> baseTable(50, 600, initialData);
-
-    auto count = baseTable.queryCount(projection, filters);
-
-    std::cout << count << std::endl;
 
     Benchmark::benchmarkRows<Type>(0,projection,filters,100,50,false,100,500,0,
                                     10,0,"../output_files/RSbenchmark_AVX.csv");
