@@ -20,8 +20,6 @@ int main(int argc, char ** argv) {
 
     using Type = uint64_t;
 
-
-
     //std::vector<Filters::Filter<Type, SIMD::AVX512>*> filters  {new Filters::Equal<Type, SIMD::AVX512> (1, 2), new Filters::LessThan<Type, SIMD::AVX512> (3,7)};
     //std::vector<Type> projection {0,1,2,3,4};
 
@@ -70,13 +68,26 @@ int main(int argc, char ** argv) {
 
 
 
-    Benchmark::benchmarkRows<Type>(2,projection,filters,100,50,false,100,500,0,
-                                   100,0,"../output_files/PSbenchmark_AVX.csv");
-    Benchmark::benchmarkRows<Type>(1,projection,filters,100,50,false,100,500,0,
+    //Benchmark::benchmarkRows<Type,SIMD::AVX512>(2,projection,filters,100,50,false,100,500,0,
+    //                               100,0,"../output_files/PSbenchmark_AVX.csv");
+    Benchmark::benchmarkRows<Type,SIMD::AVX512>(1,projection,filters,100,50,false,100,500,0,
                                       100,0,"../output_files/CSbenchmark_AVX.csv");
-
-    Benchmark::benchmarkRows<Type>(0,projection,filters,100,50,false,100,500,0,
+    Benchmark::benchmarkRows<Type,SIMD::AVX512>(0,projection,filters,100,50,false,100,500,0,
                                     100,0,"../output_files/RSbenchmark_AVX.csv");
+
+    auto equalFilter = new Filters::GreaterThan<Type, SIMD::None>(0, 2);
+    auto equalFilter2 = new Filters::NotEqual<Type, SIMD::None>(1, 3);
+    auto equalFilter3 = new Filters::LessEqual<Type, SIMD::None>(3, 40);
+    //
+    std::vector<Filters::Filter<Type, SIMD::None>*> filters{equalFilter, equalFilter2, equalFilter3};
+
+    //Benchmark::benchmarkRows<Type,SIMD::AVX512>(2,projection,filters,100,50,false,100,500,0,
+    //                                             100,0,"../output_files/PSbenchmark_Scalar.csv");
+    Benchmark::benchmarkRows<Type,SIMD::AVX512>(1,projection,filters,100,50,false,100,500,0,
+                                                 100,0,"../output_files/CSbenchmark_Scalar.csv");
+    Benchmark::benchmarkRows<Type,SIMD::AVX512>(0,projection,filters,100,50,false,100,500,0,
+                                                 100,0,"../output_files/RSbenchmark_Scalar.csv");
+
 
     return 0;
 }

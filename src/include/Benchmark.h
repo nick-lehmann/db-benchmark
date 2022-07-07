@@ -22,9 +22,9 @@ namespace Benchmark {
 /// \param table original table to apply the query on
 /// \param projection projection attributes for the query
 /// \param filters filters to apply for the query
-template <typename T>
+template <typename T, SIMD Variant>
 std::tuple<uint64_t, uint64_t, double> measureTime(Tables::ITable<T> &table, std::vector<T> &projection,
-                                                   std::vector<Filters::Filter<T, SIMD::AVX512> *> &filters, bool enablePrint = true) {
+                                                   std::vector<Filters::Filter<T, Variant> *> &filters, bool enablePrint = true) {
     // measure both cpu time and real time
     auto clockStartTime = std::clock();
     auto realStartTime = std::chrono::steady_clock::now();
@@ -72,9 +72,9 @@ unsigned incrementValue(unsigned value, bool exponentialGrowth, unsigned growthF
 /// \param lowerBound lower bound of values stored in table cells
 /// \param upperBound upper bound of values stored in table cells
 /// \param seed used for data generation
-template <typename T>
+template <typename T, SIMD Variant>
 std::tuple<uint64_t, uint64_t, double> benchmarkTableImplementation(int tableStoreId, std::vector<uint64_t> &projectionAttributes,
-                                                                    std::vector<Filters::Filter<T, SIMD::AVX512> *> &filters, unsigned rowCount,
+                                                                    std::vector<Filters::Filter<T, Variant> *> &filters, unsigned rowCount,
                                                                     unsigned columnCount, T lowerBound, T upperBound, unsigned seed) {
     // create data
     const T **tableData = TableHelper::generateRandomData<T>(columnCount, rowCount, lowerBound, upperBound, seed);
@@ -97,6 +97,8 @@ std::tuple<uint64_t, uint64_t, double> benchmarkTableImplementation(int tableSto
         }
         case 2: {
             // pax store
+
+
             PaxTable<T> table(columnCount, rowCount, tableData);
 
             // run benchmark and return
@@ -122,8 +124,8 @@ std::tuple<uint64_t, uint64_t, double> benchmarkTableImplementation(int tableSto
 /// \param upperBound upper bound of values stored in table cells
 /// \param seed used for data generation
 /// \param filepath if specified export results to filepath. filepath should include filename and ending (e.g. .csv)
-template <typename T>
-void benchmarkRows(int tableStoreId, std::vector<uint64_t> &projectionAttributes, std::vector<Filters::Filter<T, SIMD::AVX512> *> &filters, unsigned rowCount = 10,
+template <typename T, SIMD Variant>
+void benchmarkRows(int tableStoreId, std::vector<uint64_t> &projectionAttributes, std::vector<Filters::Filter<T, Variant> *> &filters, unsigned rowCount = 10,
                    unsigned columnCount = 10, bool exponentialGrowth = false, unsigned growthFactor = 50, unsigned iterations = 300,
                    T lowerBound = 0, T upperBound = 1000, unsigned seed = 42, const std::string &filepath = "benchmark.csv") {
     // initialize store for result
