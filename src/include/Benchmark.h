@@ -13,6 +13,7 @@
 #include "Helper.h"
 #include "Filters/Base.h"
 #include "ITable.h"
+#include "SIMD.h"
 //#include "Filters/LessThan.h"
 
 namespace Benchmark {
