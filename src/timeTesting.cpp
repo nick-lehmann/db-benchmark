@@ -81,11 +81,11 @@ int main(int argc, char ** argv) {
     //
     std::vector<Filters::Filter<Type, SIMD::None>*> filters{equalFilter, equalFilter2, equalFilter3};
 
-    //Benchmark::benchmarkRows<Type,SIMD::AVX512>(2,projection,filters,100,50,false,100,500,0,
+    //Benchmark::benchmarkRows<Type,SIMD::None>(2,projection,filters,100,50,false,100,500,0,
     //                                             100,0,"../output_files/PSbenchmark_Scalar.csv");
-    Benchmark::benchmarkRows<Type,SIMD::AVX512>(1,projection,filters,100,50,false,100,500,0,
+    Benchmark::benchmarkRows<Type,SIMD::None>(1,projection,filters,100,50,false,100,500,0,
                                                  100,0,"../output_files/CSbenchmark_Scalar.csv");
-    Benchmark::benchmarkRows<Type,SIMD::AVX512>(0,projection,filters,100,50,false,100,500,0,
+    Benchmark::benchmarkRows<Type,SIMD::None>(0,projection,filters,100,50,false,100,500,0,
                                                  100,0,"../output_files/RSbenchmark_Scalar.csv");
 
 
