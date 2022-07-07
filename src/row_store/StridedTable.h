@@ -38,6 +38,9 @@ class StridedTableIterator {
     uint64_t stridePos = 0;  // position inside stride
 
    public:
+    /// Initializes a StridedTableIterator pointing to baseAddress
+    /// \param baseAddress base Address of the  memory that is iterated on
+    /// \param tupleWidth the undelying tables's tupel width
     StridedTableIterator(PointerType baseAddress, size_t tupleWidth)
         : baseAddress(baseAddress),
           currentAddress(baseAddress),
@@ -47,6 +50,10 @@ class StridedTableIterator {
           strideCapacity(StrideWidth / (tupleWidth * sizeof(ValueType))),
           stridesPerSet(VECTOR_BYTE_WIDTH / sizeof(ValueType)) {}
 
+    /// Initializes a StridedTableIterator pointing to the position-th tuple in the table
+    /// \param baseAddress base Address of the  memory that is iterated on
+    /// \param tupleWidth the undelying tables's tupel width
+    /// \param position position of the tuple in the table
     StridedTableIterator(PointerType baseAddress, size_t tupleWidth, uint64_t position) : StridedTableIterator(baseAddress, tupleWidth) {
         pos = position;
         strideSet = pos / (strideCapacity * stridesPerSet);
@@ -55,8 +62,10 @@ class StridedTableIterator {
         currentAddress += strideSet * strideSetW + strideNum * strideW + stridePos * tupleW;
     }
 
+    /// Returns index of the tuple the iterator is currently pointing to
     uint64_t getPos() { return pos; }
 
+    /// Inrements position of the iterator (iterator points to the next tuple)
     StridedTableIterator &operator++() {
         ++pos;
         strideNum = (++strideNum) % stridesPerSet;
@@ -76,13 +85,14 @@ class StridedTableIterator {
         return *this;
     }
 
+    /// Increments position of the iterator (iterator points to the next tuple) and returns titerator state before incrementation
     StridedTableIterator operator++(int) {
         StridedTableIterator iter = *this;
         ++(*this);
         return iter;
     }
 
-    ReferenceType operator[](uint64_t index) {
+        ReferenceType operator[](uint64_t index) {
         uint32_t tmpStrideSet = index / (strideCapacity * stridesPerSet);
         uint64_t tmpStrideNum = index % stridesPerSet;
         uint64_t tmpStridePos = (index / stridesPerSet) % strideCapacity;
