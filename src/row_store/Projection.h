@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <vector>
 
-#include "IntermediateTable.h"
+#include "intermediateRepresentation/IntermediateTable.h"
 
 namespace RowStore {
 /// Cecks whether all column indices are vallid for the given tupleSize

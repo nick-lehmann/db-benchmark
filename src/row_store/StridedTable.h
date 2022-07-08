@@ -92,7 +92,7 @@ class StridedTableIterator {
         return iter;
     }
 
-        ReferenceType operator[](uint64_t index) {
+    ReferenceType operator[](uint64_t index) {
         uint32_t tmpStrideSet = index / (strideCapacity * stridesPerSet);
         uint64_t tmpStrideNum = index % stridesPerSet;
         uint64_t tmpStridePos = (index / stridesPerSet) % strideCapacity;

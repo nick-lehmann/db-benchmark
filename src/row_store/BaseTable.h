@@ -10,11 +10,10 @@
 #include <vector>
 
 #include "Filter.h"
-#include "Filter_AVX.h"
 #include "Filters/All.h"
 #include "ITable.h"
-#include "IntermediateTable.h"
-#include "IntermediateTable_AVX.h"
+#include "intermediateRepresentation/IntermediateTable.h"
+//#include "IntermediateTable_AVX.h"
 #include "Projection.h"
 #include "SIMD.h"
 
@@ -56,81 +55,36 @@ class BaseTable : public Tables::ITable<T> {
     /// \param filters vector of filters used for the query
     /// \param numberOfRows number of rows of the current table
     /// \param numberOfColumns number of columns of the current table
+    template <SIMD Variant, int Alignment>
     std::tuple<T **, uint64_t, uint64_t> queryTable(std::vector<uint64_t> &projectionAttributes,
-                                                    std::vector<Filters::Filter<T, SIMD::None> *> &filters) override {
-        // convert BaseTable to InterMediateTable for query
-        IntermediateTable<T> interTable(this->numberOfAttributes, data);
-        // apply query
-        auto projectedResult = projection(interTable, projectionAttributes);
-        auto filteredResult = apply_filters((*projectedResult), filters);
-        delete projectedResult;
+                                                    std::vector<Filters::Filter<T, Variant> *> &filters) override {
+        // TODO implement
+        // convert BaseTable to IntermediateTable for querying
 
-        // get result and free memory
-        unsigned numberOfColumns = filteredResult->getTupleWidth();
-        auto [table, numberOfRows] = filteredResult->table();
-        filteredResult->detachTableOutput();  // ignore output
-        delete filteredResult;
+        // apply filter and projection to intermediate Table (make sure to use the new IntermediateTable-Implementetion)
 
-        return std::make_tuple(table, numberOfRows, numberOfColumns);
-    }
+        // get result as (T **) and create tuple containing the result with the result tables row count and tuple width
 
-    /// Perform a query on the table and return a tuple containing the data, the number of rows and the number of columns.
-    /// \param projectionAttributes column indices used for projection
-    /// \param filters vector of filters used for the query
-    /// \param numberOfRows number of rows of the current table
-    /// \param numberOfColumns number of columns of the current table
-    std::tuple<T **, uint64_t, uint64_t> queryTable(std::vector<uint64_t> &projectionAttributes,
-                                                    std::vector<Filters::Filter<T, SIMD::AVX512> *> &filters) override {
-        // convert BaseTable to InterMediateTable for query
-        IntermediateTable_AVX<T> interTableAVX(this->numberOfAttributes, data);
-        // apply query
-        auto projectedResult = projection_AVX(interTableAVX, projectionAttributes);
-        auto filteredResult = apply_filters_AVX((*projectedResult), filters);
-        delete projectedResult;
+        // free memory
 
-        // get result and free memory
-        unsigned numberOfColumns = filteredResult->getTupleWidth();
-        auto [table, numberOfRows] = filteredResult->table();
-        filteredResult->detachTableOutput();  // ignore output
-        delete filteredResult;
-
-        return std::make_tuple(table, numberOfRows, numberOfColumns);
+        // return result
     }
 
     /// Perform a query on the table and return the number of rows of the queried table.
     /// \param projectionAttributes column indices used for projection
     /// \param filters vector of filters used for the query
+    template <SIMD Variant, int Alignment>
     uint64_t queryCount(std::vector<uint64_t> &projectionAttributes, std::vector<Filters::Filter<T, SIMD::None> *> &filters) override {
-        // convert BaseTable to InterMediateTable for query
-        IntermediateTable<T> interTable(this->numberOfAttributes, data);
-        // apply query
-        auto projectedResult = projection(interTable, projectionAttributes);
-        auto filteredResult = apply_filters((*projectedResult), filters);
+        // TODO implement
+        // convert BaseTable to IntermediateTable for querying
 
-        // get row count and free memory
-        auto resultRowCount = filteredResult->count();
-        delete projectedResult;
-        delete filteredResult;
+        // apply filter and projection to intermediate Table (make sure to use the new IntermediateTable-Implementetion)
 
-        return resultRowCount;
-    }
+        // get result tables row count
 
-    /// Perform a query on the table and return the number of rows of the queried table.
-    /// \param projectionAttributes column indices used for projection
-    /// \param filters vector of filters used for the query
-    uint64_t queryCount(std::vector<uint64_t> &projectionAttributes, std::vector<Filters::Filter<T, SIMD::AVX512> *> &filters) override {
-        // convert BaseTable to InterMediateTable for query
-        IntermediateTable_AVX<T> interTableAVX(this->numberOfAttributes, data);
-        // apply query
-        auto projectedResult = projection_AVX(interTableAVX, projectionAttributes);
-        auto filteredResult = apply_filters_AVX((*projectedResult), filters);
+        // free memory
 
-        // get row count and free memory
-        auto resultRowCount = filteredResult->count();
-        delete projectedResult;
-        delete filteredResult;
-
-        return resultRowCount;
+        // return result
     }
 };
 }  // namespace RowStore

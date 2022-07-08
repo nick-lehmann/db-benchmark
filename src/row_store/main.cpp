@@ -9,17 +9,55 @@
 #include "Filters/All.h"
 #include "Helper.h"
 #include "ITable.h"
-#include "StridedTable.h"
+#include "intermediateRepresentation/IntermediateTable.h"
 //#include "IntermediateTable.h"
 //#include "Filter.h"
 //#include "Projection.h"
 // #include "IntermediateTable_AVX.h"
-#include "IntermediateTable_AVX.h"
+//#include "IntermediateTable_AVX.h"
 #include "SIMD.h"
+
+template <typename T, SIMD Variant, int Stride>
+void demoUnified() {
+    unsigned width = 10;
+    unsigned height = 20;
+
+    const T **initialData =
+        TableHelper::generateFunctionData<T>(width, height, [&width](unsigned column, unsigned row) { return row * width + column; });
+
+    std::vector<T *> data;
+    for (unsigned row = 0; row < height; row++) {
+        data.push_back(static_cast<T *>(malloc(sizeof(T) * width)));
+        for (unsigned column = 0; column < width; column++) {
+            data.back()[column] = initialData[row][column];
+        }
+    }
+
+    RowStore::IntermediateTable<T, Variant, Stride> table(width, data);
+
+    auto iter = table.vectorBegin();
+    auto itere = table.vectorEnd();
+    while (*iter != *itere) {
+        auto vec = iter->gather(5);
+        auto target = aligned_alloc(64, 64);
+        _mm512_store_epi32(target, vec);
+
+        for (int i = 0; i < 16; ++i) {
+            std::cout << ((T *)target)[i] << " ";
+        }
+        std::cout << std::endl;
+        free(target);
+        ++(*iter);
+    }
+    std::cout << "\n\n" << std::endl;
+
+    delete iter;
+    delete itere;
+}
 
 template <typename T, SIMD Variant>
 void stridedDemo() {
-    unsigned width = 10;
+    /*unsigned width = 10;
     unsigned height = 20;
 
     const T **initialData =
@@ -35,7 +73,7 @@ void stridedDemo() {
     auto iter = stridedTable.begin();
     while (iter != stridedTable.end()) {
         std::cout << *iter++ << std::endl;
-    }
+    }*/
 }
 
 /// Run a demo of the Row-Store database.
@@ -43,7 +81,7 @@ void stridedDemo() {
 // TODO: Probably only works for `Variant = SIMD::AVX512` as the AVX variant of the intermediate table is used
 template <typename T, SIMD Variant>
 void demo() {
-    std::cout << "Row-Store Code" << std::endl;
+    /*std::cout << "Row-Store Code" << std::endl;
 
     // generate example table and print
     const T **initialData = TableHelper::generateRandomData<T>(10, 32, 1, 10);
@@ -65,7 +103,7 @@ void demo() {
 
     // run benchmark of same query
     // std::cout << "Print benchmark: " << std::endl << std::endl;
-    // auto benchmarkResult = Benchmark::measureTime(baseTable, projectionAttributes, filters);
+    // auto benchmarkResult = Benchmark::measureTime(baseTable, projectionAttributes, filters);*/
 }
 
 /// Run an example benchmark of the Row-Store database.
@@ -82,7 +120,12 @@ void demo() {
 }*/
 
 int main(int argc, char **argv) {
-    stridedDemo<uint32_t, SIMD::AVX512>();
+    // demoUnified<uint32_t, SIMD::None, 4096>();
+    // demoUnified<uint64_t, SIMD::AVX512, 4096>();
+    // demoUnified<uint64_t, SIMD::AVX512_Strided, 4096>();
+
+    demoUnified<uint32_t, SIMD::AVX512, 4096>();
+    demoUnified<uint32_t, SIMD::AVX512_Strided, 4096>();
 
     // benchmark();
     return 0;

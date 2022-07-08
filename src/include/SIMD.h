@@ -1,3 +1,3 @@
 #pragma once
 
-enum class SIMD { None, AVX512 };
+enum class SIMD : uint8_t { None = 0, AVX512 = 1, AVX512_Strided = 2 };

@@ -3,8 +3,8 @@
 #include <stdexcept>
 
 #include "Filters/All.h"
-#include "IntermediateTable.h"
 #include "SIMD.h"
+#include "intermediateRepresentation/IntermediateTable.h"
 
 namespace RowStore {
 
