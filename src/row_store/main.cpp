@@ -124,6 +124,7 @@ int main(int argc, char **argv) {
     // demoUnified<uint64_t, SIMD::AVX512, 4096>();
     // demoUnified<uint64_t, SIMD::AVX512_Strided, 4096>();
 
+    demoUnified<uint32_t, SIMD::None, 4096>();
     demoUnified<uint32_t, SIMD::AVX512, 4096>();
     demoUnified<uint32_t, SIMD::AVX512_Strided, 4096>();
 

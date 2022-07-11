@@ -85,6 +85,10 @@ class VectorIterator<T, SIMD::None, S> : public IntermediateIterator<T, SIMD::No
         this->currentAddress += position *tupleWidth this->pos = position;
     }
 
+    ScalarIterator<T, Variant, Alignment> getScalarIterator() {
+        return new ScalarIterator<T, Variant, Alignment>(baseAddress, tupleWidth, pos);
+    }
+
     IntermediateIterator<T, SIMD::None, S> *operator++() override {
         ++(this->pos);
         this->currentAddress += this->tupleWidth;
@@ -113,6 +117,10 @@ class VectorIterator<T, SIMD::AVX512, S> : public IntermediateIterator<T, SIMD::
     VectorIterator(T *baseAddress, uint32_t tupleWidth, uint64_t position) : VectorIterator(baseAddress, tupleWidth) {
         this->currentAddress += position * tupleWidth * VectorIterator<T, SIMD::AVX512, S>::LaneMultiplier;
         this->pos = position;
+    }
+
+    ScalarIterator<T, Variant, Alignment> getScalarIterator() {
+        return new ScalarIterator<T, Variant, Alignment>(baseAddress, tupleWidth, pos * LaneMultiplier);
     }
 
     IntermediateIterator<T, SIMD::AVX512, S> *operator++() override {
@@ -157,6 +165,10 @@ class VectorIterator<T, SIMD::AVX512_Strided, S> : public IntermediateIterator<T
         strideSet = this->pos / strideCapacity;
         stridePos = this->pos % strideCapacity;
         this->currentAddress += strideSet * strideSetW + stridePos * this->tupleWidth;
+    }
+
+    ScalarIterator<T, Variant, Alignment> getScalarIterator() {
+        return new ScalarIterator<T, Variant, Alignment>(baseAddress, tupleWidth, pos * stridesPerSet);
     }
 
     IntermediateIterator<T, SIMD::AVX512_Strided, S> *operator++() override {

@@ -147,6 +147,11 @@ class IntermediateTable {
         ++(*writeIterator);
     }
 
+    /// Increments WriteIterator
+    void incrementWriteIterator(){
+        ++(*writeIterator);
+    }
+
     /// Returns the number of tuples that are contaied in this table
     uint64_t count() {
         // TODO do something fancy counting stuff
