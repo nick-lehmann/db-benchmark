@@ -65,7 +65,7 @@ class AllocationHelper<T, SIMD::AVX512_Strided, A> {
 /// This Class is used for data storage and provides Interators for data access
 /// \tparam T base type
 /// \tparam V simd variant, decides the internal data layout of the table
-/// \tparam A alignment of the data and stridesize (shold be a multiple of sizeof(T))
+/// \tparam A alignment of the data and stridesize (should be a multiple of sizeof(T))
 template <typename T, SIMD V, int A>
 class IntermediateTable {
    public:
