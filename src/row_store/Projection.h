@@ -26,30 +26,30 @@ bool columnIndicesValid(std::vector<uint64_t> columnIndices, uint32_t tupleSize)
 /// \param table table data of the original table
 /// \param projectionParameters vector of column indices that are contained in the result
 template <typename T, SIMD Variant, int Alignment>
-IntermediateTable<T, Variant, Alignment> *projection_unified(IntermediateTable<T, Variant, Alignment> &table, std::vector<uint64_t> &projectionParameters) {
+IntermediateTable<T, Variant, Alignment> *projection_unified(IntermediateTable<T, Variant, Alignment> &table,
+                                                             std::vector<uint64_t> &projectionParameters) {
     // Check for valid projection parameters
     if (!columnIndicesValid(projectionParameters, table.getTupleWidth())) {
         throw std::invalid_argument("Error! Invalid column indices!");
     }
 
     // Create empty intermediate table
-    IntermediateTable<T, Variant, Alignment> result(projectionParameters.size(), table.getRowCount());
+    auto result = new IntermediateTable<T, Variant, Alignment>(projectionParameters.size(), table.end()->getPos());
 
     // Iterate over given table tuples
-    auto skalarIterBegin = table.begin();
-    auto skalarIterEnd = table.end();
-    auto skalarResultIter = result.end();
+    auto scalarIterBegin = table.begin();
+    auto scalarIterEnd = table.end();
+    auto scalarResultIter = result->end();
 
-    while (*skalarIterBegin != *skalarIterEnd) {
-
+    while (*scalarIterBegin != *scalarIterEnd) {
         // Fill tuple with data from every row of table
         for (int j = 0; j < projectionParameters.size(); j++) {
-            skalarResultIter->getAdress()[projectionParameters[j]] = skalarIterBegin->getAdress()[projectionParameters[j]];
+            scalarResultIter->getAddress()[projectionParameters[j]] = scalarIterBegin->getAddress()[projectionParameters[j]];
         }
-        ++(*skalarIterBegin);
-        ++(*skalarResultIter);   
-        result.incrementWriteIterator(); 
-    }   
+        ++(*scalarIterBegin);
+        ++(*scalarResultIter);
+        result->incrementWriteIterator();
+    }
     return result;
 }
 }  // namespace RowStore

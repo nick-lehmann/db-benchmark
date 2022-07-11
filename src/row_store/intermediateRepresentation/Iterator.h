@@ -19,7 +19,7 @@ class IntermediateIterator {
     /// tuple index the iterator is pointing to
     uint64_t pos;
 
-   protected:
+   public:
     /// retruns the memory address of the index-th tuple of the table
     /// \param index index of the tuple whose address is requested
     virtual T *addressOf(uint64_t index) = 0;

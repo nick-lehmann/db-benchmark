@@ -19,7 +19,7 @@
 
 template <typename T, SIMD Variant, int Stride>
 void demoUnified() {
-    unsigned width = 10;
+    /*unsigned width = 10;
     unsigned height = 20;
 
     const T **initialData =
@@ -52,7 +52,7 @@ void demoUnified() {
     std::cout << "\n\n" << std::endl;
 
     delete iter;
-    delete itere;
+    delete itere;*/
 }
 
 template <typename T, SIMD Variant>
@@ -79,13 +79,15 @@ void stridedDemo() {
 /// Run a demo of the Row-Store database.
 /// Creates a small example BaseTable and applies a simple query on it. Afterwards run a benchmark with the same query on the same table.
 // TODO: Probably only works for `Variant = SIMD::AVX512` as the AVX variant of the intermediate table is used
-template <typename T, SIMD Variant>
+template <typename T, SIMD Variant, int Alignment>
 void demo() {
-    /*std::cout << "Row-Store Code" << std::endl;
+    std::cout << "Row-Store Code" << std::endl;
+
+    int width = 10, height = 32;
 
     // generate example table and print
-    const T **initialData = TableHelper::generateRandomData<T>(10, 32, 1, 10);
-    RowStore::BaseTable<T> baseTable(10, 32, initialData);
+    const T **initialData = TableHelper::generateRandomData<T>(width, height, 1, 10);
+    RowStore::BaseTable<T, Variant, Alignment> baseTable(width, height, initialData);
     std::cout << "Print Test-BaseTable: \n" << std::endl;
     baseTable.print();
 
@@ -96,10 +98,11 @@ void demo() {
                                                           new Filters::LessThan<T, Variant>(2, 9)};
 
     auto [queryResult, resultRowCount, resultColumnCount] = baseTable.queryTable(projectionAttributes, filters);
-    RowStore::IntermediateTable_AVX<T>::printTableOutput(queryResult, resultRowCount, resultColumnCount);
+
+    // RowStore::IntermediateTable<T, Variant, Alignment>::printTableOutput(queryResult, resultRowCount, resultColumnCount);
 
     // delete result table and free memory
-    RowStore::IntermediateTable_AVX<T>::deleteDetachedTableOutput(queryResult, resultRowCount);
+    // RowStore::IntermediateTable<T, Variant, Alignment>::deleteDetachedTableOutput(queryResult, resultRowCount);
 
     // run benchmark of same query
     // std::cout << "Print benchmark: " << std::endl << std::endl;
@@ -123,10 +126,9 @@ int main(int argc, char **argv) {
     // demoUnified<uint32_t, SIMD::None, 4096>();
     // demoUnified<uint64_t, SIMD::AVX512, 4096>();
     // demoUnified<uint64_t, SIMD::AVX512_Strided, 4096>();
-
-    demoUnified<uint32_t, SIMD::None, 4096>();
-    demoUnified<uint32_t, SIMD::AVX512, 4096>();
-    demoUnified<uint32_t, SIMD::AVX512_Strided, 4096>();
+    demo<uint32_t, SIMD::None, 4096>();
+    demo<uint32_t, SIMD::AVX512, 4096>();
+    demo<uint32_t, SIMD::AVX512_Strided, 4096>();
 
     // benchmark();
     return 0;

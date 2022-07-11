@@ -82,11 +82,12 @@ class VectorIterator<T, SIMD::None, S> : public IntermediateIterator<T, SIMD::No
     }
 
     VectorIterator(T *baseAddress, uint32_t tupleWidth, uint64_t position) : VectorIterator(baseAddress, tupleWidth) {
-        this->currentAddress += position *tupleWidth this->pos = position;
+        this->currentAddress += position * tupleWidth;
+        this->pos = position;
     }
 
-    ScalarIterator<T, Variant, Alignment> getScalarIterator() {
-        return new ScalarIterator<T, Variant, Alignment>(baseAddress, tupleWidth, pos);
+    ScalarIterator<T, SIMD::None, S> *getScalarIterator() {
+        return new ScalarIterator<T, SIMD::None, S>(const_cast<T *>(this->baseAddress), this->tupleWidth, this->pos);
     }
 
     IntermediateIterator<T, SIMD::None, S> *operator++() override {
@@ -96,9 +97,9 @@ class VectorIterator<T, SIMD::None, S> : public IntermediateIterator<T, SIMD::No
         return this;
     }
 
-    T gather(uint32_t column) { return this->currentAddress + column; }
+    T gather(const uint32_t column) { return this->currentAddress[column]; }
 
-   protected:
+   public:
     T *addressOf(uint64_t index) override { return const_cast<T *>(this->baseAddress + index * this->tupleWidth); }
 };
 
@@ -119,8 +120,8 @@ class VectorIterator<T, SIMD::AVX512, S> : public IntermediateIterator<T, SIMD::
         this->pos = position;
     }
 
-    ScalarIterator<T, Variant, Alignment> getScalarIterator() {
-        return new ScalarIterator<T, Variant, Alignment>(baseAddress, tupleWidth, pos * LaneMultiplier);
+    ScalarIterator<T, SIMD::AVX512, S> *getScalarIterator() {
+        return new ScalarIterator<T, SIMD::AVX512, S>(const_cast<T *>(this->baseAddress), this->tupleWidth, this->pos * LaneMultiplier);
     }
 
     IntermediateIterator<T, SIMD::AVX512, S> *operator++() override {
@@ -130,9 +131,9 @@ class VectorIterator<T, SIMD::AVX512, S> : public IntermediateIterator<T, SIMD::
         return this;
     }
 
-    __m512i gather(uint32_t column) { return Helper::gather(this->currentAddress + column, this->tupleWidth); }
+    __m512i gather(const uint32_t column) { return Helper::gather(this->currentAddress + column, this->tupleWidth); }
 
-   protected:
+   public:
     T *addressOf(uint64_t index) override { return const_cast<T *>(this->baseAddress + index * this->tupleWidth); }
 };
 
@@ -167,8 +168,9 @@ class VectorIterator<T, SIMD::AVX512_Strided, S> : public IntermediateIterator<T
         this->currentAddress += strideSet * strideSetW + stridePos * this->tupleWidth;
     }
 
-    ScalarIterator<T, Variant, Alignment> getScalarIterator() {
-        return new ScalarIterator<T, Variant, Alignment>(baseAddress, tupleWidth, pos * stridesPerSet);
+    ScalarIterator<T, SIMD::AVX512_Strided, S> *getScalarIterator() {
+        return new ScalarIterator<T, SIMD::AVX512_Strided, S>(const_cast<T *>(this->baseAddress), this->tupleWidth,
+                                                              this->pos * stridesPerSet);
     }
 
     IntermediateIterator<T, SIMD::AVX512_Strided, S> *operator++() override {
@@ -185,7 +187,7 @@ class VectorIterator<T, SIMD::AVX512_Strided, S> : public IntermediateIterator<T
         return this;
     }
 
-    __m512i gather(uint32_t column) { return Helper::gather(this->currentAddress + column); }
+    __m512i gather(const uint32_t column) { return Helper::gather(this->currentAddress + column); }
 
    protected:
     T *addressOf(uint64_t index) override {

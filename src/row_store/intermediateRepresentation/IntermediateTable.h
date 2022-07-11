@@ -148,9 +148,7 @@ class IntermediateTable {
     }
 
     /// Increments WriteIterator
-    void incrementWriteIterator(){
-        ++(*writeIterator);
-    }
+    void incrementWriteIterator() { ++(*writeIterator); }
 
     /// Returns the number of tuples that are contaied in this table
     uint64_t count() {
@@ -164,9 +162,9 @@ class IntermediateTable {
         auto &iterEnd = *writeIterator;
 
         T **output = static_cast<T **>(malloc(sizeof(T *) * iterEnd.getPos()));
-        while (iter != iterEnd) {
-            output[iter.getPos()] = static_cast<T *>(malloc(sizeof(T) * tupleWidth));
-            std::memcpy(output[iter.getPos()], iter.getAddress(), sizeof(T) * tupleWidth);
+        while (*iter != iterEnd) {
+            output[iter->getPos()] = static_cast<T *>(malloc(sizeof(T) * tupleWidth));
+            std::memcpy(output[iter->getPos()], iter->getAddress(), sizeof(T) * tupleWidth);
             ++iter;
         }
 
