@@ -32,6 +32,6 @@ class LessEqual<T, SIMD::None> : public Filter<T, SIMD::None> {
    public:
     using Filter<T, SIMD::None>::Filter;
 
-    bool match(T value) override { return this->value == value; }
+    bool match(T value) override { return this->value <= value; }
 };
 };  // namespace Filters
