@@ -33,7 +33,6 @@ std::pair<__m512i, __m512i> gather(uint32_t *iSA, uint64_t *columnStart) {
     return std::make_pair(_mm512_i64gather_epi64(indexRegister, columnStart, 8), indexRegister);
 }
 
-<<<<<<< HEAD
 /// Loads a contiguous part of memory into a register and returns it together with a register containing the
 /// corresponding indices.
 /// \param columnStart the starting address to load into a register
@@ -45,13 +44,6 @@ std::pair<__m512i, __m512i> gather(uint32_t *iSA, uint64_t *columnStart) {
 /// pair[1]: indices register
 template <typename T>
 std::pair<__m512i, __m512i> load(T *columnStart, uint32_t b);
-=======
-    template<>
-    std::pair<__m512i, __m512i> gather(uint64_t *iSA, uint64_t *columnStart) {
-        auto indexRegister = _mm512_set_epi64(iSA[7], iSA[6], iSA[5], iSA[4], iSA[3], iSA[2], iSA[1], iSA[0]);
-        return std::make_pair(_mm512_i64gather_epi64(indexRegister, columnStart, 8), indexRegister);
-    }
->>>>>>> origin/master
 
 template <>
 std::pair<__m512i, __m512i> load(uint32_t *columnStart, uint32_t b) {

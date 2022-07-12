@@ -13,11 +13,6 @@ namespace ColumnStore {
 template <typename T>
 class Table : public Tables::ITable<T> {
    public:
-    // the memory to store indices while filtering, is always enough to fit ALL indices
-    uint64_t *indexStorage;
-    // the actual used size of the index storage
-    size_t sizeOfIndexStorage;
-
     Table(uint64_t numAttributes, uint64_t numRows, const T **initialData) : Tables::ITable<T>(numAttributes, numRows, initialData) {
         data = new std::vector<T>[numAttributes];
         for (uint64_t row = 0; row < numRows; row++) {
@@ -26,7 +21,7 @@ class Table : public Tables::ITable<T> {
             }
         }
 
-        indexStorage = (uint64_t *)malloc(numRows * sizeof(uint64_t));
+        indexStorage = (uint32_t *)malloc(numRows * sizeof(uint32_t));
         sizeOfIndexStorage = -1;
     }
 
@@ -136,7 +131,27 @@ class Table : public Tables::ITable<T> {
             sizeOfIndexStorage = 0;
             // loop over all rows
 
-            for (size_t rowIndex = 0; rowIndex < this->numberOfRows; rowIndex += integerAmount) {
+            uint32_t startRow = 0;
+            auto r = this->numberOfRows % integerAmount;
+#if WITH_R_0_CHECK
+            if (r != 0) {
+#endif
+                // construct a mask based on how many remaining elements there are
+                auto mask = _mm512_int2mask(~(0xffffffff << r));
+
+                // apply a filtering using the calculated mask
+                auto [dataReg, indexReg] = ColumnStore::Helper::load(&(*filterColIterator), startRow);
+                auto maskedResult = filter->match(dataReg, mask);
+                auto maskedElements = ColumnStore::Helper::store(indexReg, maskedResult, currentIndexStorage);
+
+                sizeOfIndexStorage += maskedElements;
+                currentIndexStorage += maskedElements;
+                filterColIterator += r;
+#if WITH_R_0_CHECK
+            }
+#endif
+
+            for (uint32_t rowIndex = r; rowIndex < this->numberOfRows; rowIndex += integerAmount) {
                 auto [dataRegister, indexRegister] = ColumnStore::Helper::load(&(*filterColIterator), rowIndex);
                 auto filterResult = filter->match(dataRegister);
                 auto addedElements = ColumnStore::Helper::store(indexRegister, filterResult, currentIndexStorage);
@@ -214,5 +229,10 @@ class Table : public Tables::ITable<T> {
 
    public:
     std::vector<T> *data;
+
+    // the memory to store indices while filtering, is always enough to fit ALL indices
+    uint32_t *indexStorage;
+    // the actual used size of the index storage
+    size_t sizeOfIndexStorage;
 };
 }  // namespace ColumnStore

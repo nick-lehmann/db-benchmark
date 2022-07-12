@@ -77,14 +77,14 @@ void avxTest() {
 }
 
 void benchmark() {
-    const uint8_t** initialData = TableHelper::generateRandomData<uint8_t>(COLUMNS, ROWS, 1, 10);
-    ColumnStore::ColumnStoreTable<uint8_t> testTable(COLUMNS, ROWS, initialData);
+    const uint32_t** initialData = TableHelper::generateRandomData<uint32_t>(COLUMNS, ROWS, 1, 10);
+    ColumnStore::Table<uint32_t> testTable(COLUMNS, ROWS, initialData);
 
-    auto equalFilter = new Equal<uint8_t>(0, 4);
-    auto greaterFilter = new GreaterThan<uint8_t>(4, 4);
+    auto equalFilter = new Filters::Equal<uint32_t, SIMD::None>(0, 4);
+    auto greaterFilter = new Filters::GreaterThan<uint32_t, SIMD::None>(4, 4);
 
-    std::vector<Filter<uint8_t>*> filters{equalFilter, greaterFilter};
-    std::vector<unsigned> projection{0, 2, 4};
+    std::vector<Filters::Filter<uint32_t, SIMD::None>*> filters{equalFilter, greaterFilter};
+    std::vector<uint64_t> projection{0, 2, 4};
 
     Benchmark::measureTime(testTable, projection, filters);
 }
