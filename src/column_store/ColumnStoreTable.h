@@ -63,6 +63,11 @@ class Table : public Tables::ITable<T> {
         return std::make_tuple(reconstructTableAVX(projection), (uint64_t)sizeOfIndexStorage, (uint64_t)projection.size());
     }
 
+    std::tuple<T **, uint64_t, uint64_t> queryTable(std::vector<uint64_t> &projection,
+                                                    std::vector<Filters::Filter<T, SIMD::AVX512_Strided> *> &filters) override {
+        return std::make_tuple<(T **)nullptr, (uint64_t)-1, (uint64_t)-1>;
+    }
+
     uint64_t queryCount(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T, SIMD::None> *> &filters) override {
         // the first list of filtered indices is empty
         std::vector<uint64_t> *filter_indices = nullptr;
@@ -97,6 +102,10 @@ class Table : public Tables::ITable<T> {
         }
 
         return (uint64_t)sizeOfIndexStorage;
+    }
+
+    uint64_t queryCount(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T, SIMD::AVX512_Strided> *> &filters) override {
+        return (uint64_t)-1;
     }
 
    private:

@@ -87,7 +87,7 @@ void demo() {
 
     // generate example table and print
     const T **initialData = TableHelper::generateRandomData<T>(width, height, 1, 10);
-    RowStore::BaseTable<T, Variant, Alignment> baseTable(width, height, initialData);
+    RowStore::BaseTable<T, Alignment> baseTable(width, height, initialData);
     std::cout << "Print Test-BaseTable: \n" << std::endl;
     baseTable.print();
 

@@ -11,7 +11,7 @@
 namespace Tables {
 /// Unified interface for all basic database tables.
 /// \tparam T the type of stored data
-template <typename T, SIMD Variant>
+template <typename T>
 class ITable {
    public:
     const uint64_t numberOfAttributes;
@@ -37,12 +37,18 @@ class ITable {
     /// \param projection column indices to project
     /// \param filters filters to apply
     virtual std::tuple<T **, uint64_t, uint64_t> queryTable(std::vector<uint64_t> &projection,
-                                                            std::vector<Filters::Filter<T, Variant> *> &filters) = 0;
+                                                            std::vector<Filters::Filter<T, SIMD::None> *> &filters) = 0;
+    virtual std::tuple<T **, uint64_t, uint64_t> queryTable(std::vector<uint64_t> &projection,
+                                                            std::vector<Filters::Filter<T, SIMD::AVX512> *> &filters) = 0;
+    virtual std::tuple<T **, uint64_t, uint64_t> queryTable(std::vector<uint64_t> &projection,
+                                                            std::vector<Filters::Filter<T, SIMD::AVX512_Strided> *> &filters) = 0;
 
     /// Queries the table and returns the amount of rows in the result.
     /// \param projection column indices to project
     /// \param filters filters to apply
-    virtual uint64_t queryCount(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T, Variant> *> &filters) = 0;
+    virtual uint64_t queryCount(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T, SIMD::None> *> &filters) = 0;
+    virtual uint64_t queryCount(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T, SIMD::AVX512> *> &filters) = 0;
+    virtual uint64_t queryCount(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T, SIMD::AVX512_Strided> *> &filters) = 0;
 
     /// Prints the entire table.
     void print() {
