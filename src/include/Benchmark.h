@@ -24,7 +24,7 @@ namespace Benchmark {
 /// \param projection projection attributes for the query
 /// \param filters filters to apply for the query
 template <typename T, SIMD Variant>
-std::tuple<uint64_t, uint64_t, double> measureTime(Tables::ITable<T> &table, std::vector<uint64_t> &projection,
+std::tuple<uint64_t, uint64_t, double> measureTime(Tables::ITable<T> &table, std::vector<T> &projection,
                                                    std::vector<Filters::Filter<T, Variant> *> &filters, bool enablePrint = true) {
     // measure both cpu time and real time
     auto clockStartTime = std::clock();
