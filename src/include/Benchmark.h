@@ -7,10 +7,11 @@
 #include <vector>
 
 #include "../column_store/ColumnStoreTable.h"
-//#include "../pax_store/table.cpp"
+#include "../pax_store/PaxTable.h"
 #include "../row_store/BaseTable.h"
 #include "BenchmarkResult.h"
 #include "Helper.h"
+#include "ITable.h"
 
 namespace Benchmark {
 /// Apply a query using given projection attributes and filters on a table and measure the time.
@@ -19,9 +20,9 @@ namespace Benchmark {
 /// \param table original table to apply the query on
 /// \param projection projection attributes for the query
 /// \param filters filters to apply for the query
-template <typename T>
-std::tuple<uint64_t, uint64_t, double> measureTime(Table<T> &table, std::vector<unsigned> &projection,
-                                                   std::vector<Filters::Scalar::Filter<T> *> &filters, bool enablePrint = true) {
+template <typename T, SIMD Variant>
+std::tuple<uint64_t, uint64_t, double> measureTime(Tables::ITable<T> &table, std::vector<T> &projection,
+                                                   std::vector<Filters::Filter<T, Variant> *> &filters, bool enablePrint = true) {
     // measure both cpu time and real time
     auto clockStartTime = std::clock();
     auto realStartTime = std::chrono::steady_clock::now();
@@ -69,9 +70,9 @@ unsigned incrementValue(unsigned value, bool exponentialGrowth, unsigned growthF
 /// \param lowerBound lower bound of values stored in table cells
 /// \param upperBound upper bound of values stored in table cells
 /// \param seed used for data generation
-template <typename T>
-std::tuple<uint64_t, uint64_t, double> benchmarkTableImplementation(int tableStoreId, std::vector<unsigned> &projectionAttributes,
-                                                                    std::vector<Filters::Scalar::Filter<T> *> &filters, unsigned rowCount,
+template <typename T, SIMD Variant>
+std::tuple<uint64_t, uint64_t, double> benchmarkTableImplementation(int tableStoreId, std::vector<T> &projectionAttributes,
+                                                                    std::vector<Filters::Filter<T, Variant> *> &filters, unsigned rowCount,
                                                                     unsigned columnCount, T lowerBound, T upperBound, unsigned seed) {
     // create data
     const T **tableData = TableHelper::generateRandomData<T>(columnCount, rowCount, lowerBound, upperBound, seed);
@@ -87,10 +88,10 @@ std::tuple<uint64_t, uint64_t, double> benchmarkTableImplementation(int tableSto
         }
         case 1: {
             // column store
-            ColumnStore::ColumnStoreTable<T> table(columnCount, rowCount, tableData);
+            // ColumnStore::ColumnStoreTable<T> table(columnCount, rowCount, tableData);
 
             // run benchmark and return
-            return Benchmark::measureTime(table, projectionAttributes, filters, false);
+            // return Benchmark::measureTime(table, projectionAttributes, filters, false);
         }
         case 2: {
             // pax store
@@ -119,10 +120,11 @@ std::tuple<uint64_t, uint64_t, double> benchmarkTableImplementation(int tableSto
 /// \param upperBound upper bound of values stored in table cells
 /// \param seed used for data generation
 /// \param filepath if specified export results to filepath. filepath should include filename and ending (e.g. .csv)
-template <typename T>
-void benchmarkRows(int tableStoreId, std::vector<unsigned> &projectionAttributes, std::vector<Filter<T> *> &filters, unsigned rowCount = 10,
-                   unsigned columnCount = 10, bool exponentialGrowth = false, unsigned growthFactor = 50, unsigned iterations = 300,
-                   T lowerBound = 0, T upperBound = 1000, unsigned seed = 42, const std::string &filepath = "benchmark.csv") {
+template <typename T, SIMD Variant>
+void benchmarkRows(int tableStoreId, std::vector<T> &projectionAttributes, std::vector<Filters::Filter<T, Variant> *> &filters,
+                   unsigned rowCount = 10, unsigned columnCount = 10, bool exponentialGrowth = false, unsigned growthFactor = 50,
+                   unsigned iterations = 300, T lowerBound = 0, T upperBound = 1000, unsigned seed = 42,
+                   const std::string &filepath = "benchmark.csv") {
     // initialize store for result
     BenchmarkResult<T> result;
 

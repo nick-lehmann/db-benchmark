@@ -8,6 +8,7 @@
 #include <iterator>
 #include <vector>
 
+#include "Benchmark.h"
 #include "Constants.h"
 #include "Filters/All.h"
 #include "Helper.h"
@@ -114,29 +115,30 @@ void testPaxTablePrint() {
  * Test a single filter on a table with a single
  * page.
  */
-// template <typename T>
-// void testBasicScalarFilters() {
-//     unsigned numberOfRows = 10;
-//     unsigned numberOfAttributes = 3;
+template <typename T>
+void testBasicScalarFilters() {
+    unsigned numberOfRows = 10;
+    unsigned numberOfAttributes = 3;
 
-//     const T** data = getData<T>(numberOfRows);
+    const T** data = getData<T>(numberOfRows);
 
-//     PaxTable<T> table(numberOfAttributes, numberOfRows, data);
+    PaxTable<T> table(numberOfAttributes, numberOfRows, data);
 
-//     std::vector<uint64_t> projection = {0, 1, 2};
-//     std::vector<Filters::Scalar::Filter<T>*> filters = {new Filters::Scalar::Equal<T>(0, (T)2)};
+    std::vector<uint64_t> projection = {0, 1, 2};
 
-//     auto [result, rows, columns] = table.queryTable(projection, filters);
+    std::vector<Filters::Filter<T, SIMD::None>*> filters = {new Filters::Equal<T, SIMD::None>(0, 2)};
 
-//     for (unsigned row = 0; row < rows; row++) {
-//         for (unsigned column = 0; column < columns; column++) {
-//             cout << result[row][column] << " ";
-//         }
-//         cout << endl;
-//     }
+    auto [result, rows, columns] = table.queryTable(projection, filters);
 
-//     cout << "Count: " << rows << endl;
-// }
+    for (unsigned row = 0; row < rows; row++) {
+        for (unsigned column = 0; column < columns; column++) {
+            cout << result[row][column] << " ";
+        }
+        cout << endl;
+    }
+
+    cout << "Count: " << rows << endl;
+}
 
 /**
  * Test a single filter on a table with a single
@@ -181,8 +183,25 @@ void testBasicAVXFilters() {
 //     cout << "Scalar operations says: " << result << endl;
 // }
 
+template <typename T>
+void benchmark() {
+    // define projection attributes
+    // std::vector<unsigned> projectionAttributes = {0, 2, 3};
+    // define filters
+    // std::vector<Filter<Type>*> filters = {new GreaterThan<Type>(1, 400), new LessThan<Type>(2, 600)};
+
+    std::vector<T> projection = {0, 2, 3};
+    std::vector<Filters::Filter<T, SIMD::None>*> filters = {new Filters::LessEqual<T, SIMD::None>(0, 3),
+                                                            new Filters::GreaterEqual<T, SIMD::None>(0, 1),
+                                                            new Filters::Equal<T, SIMD::None>(0, 2)};
+
+    // run benchmarks
+    Benchmark::benchmarkRows<T>(0, projection, filters);
+}
+
 int main() {
-    testBasicAVXFilters<uint64_t>();
+    // testBasicAVXFilters<uint64_t>();
+    // testBasicScalarFilters<uint64_t>();
     // Filter::Equal<uint32_t, SIMD::AVX512> equal32bitAVX(1, 1);
     // Filter::LessThan<uint32_t, SIMD::AVX512> lessThan32bitAVX(1, 1);
     // Filter::Equal<uint32_t, SIMD::None> equal32bitScalar(1, 1);
@@ -190,6 +209,8 @@ int main() {
     // queryAVX(equal32bitAVX);
     // queryAVX(lessThan32bitAVX);
     // queryNormal(equal32bitScalar);
+
+    benchmark<uint64_t>();
 
     return 0;
 }
