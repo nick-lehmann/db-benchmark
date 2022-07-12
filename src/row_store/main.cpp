@@ -23,8 +23,8 @@ void demo() {
     std::cout << "Row-Store Code" << std::endl;
 
     // generate example table and print
-    const T **initialData = TableHelper::generateRandomData<T>(5, 32, 1, 10);
-    RowStore::BaseTable<T> baseTable(5, 32, initialData);
+    const T **initialData = TableHelper::generateRandomData<T>(10, 32, 1, 10);
+    RowStore::BaseTable<T> baseTable(10, 32, initialData);
     std::cout << "Print Test-BaseTable: \n" << std::endl;
     baseTable.print();
 
@@ -33,7 +33,7 @@ void demo() {
     std::vector<uint64_t> projectionAttributes = {0, 2, 3};
     std::vector<Filters::Filter<T, Variant> *> filters = {new Filters::GreaterThan<T, Variant>(1, 6),
                                                           new Filters::LessThan<T, Variant>(2, 9)};
-    unsigned numRow = 0, numCol = 0;
+
     auto [queryResult, resultRowCount, resultColumnCount] = baseTable.queryTable(projectionAttributes, filters);
     RowStore::IntermediateTable_AVX<T>::printTableOutput(queryResult, resultRowCount, resultColumnCount);
 
@@ -59,7 +59,7 @@ void demo() {
 }*/
 
 int main(int argc, char **argv) {
-    demo<uint32_t, SIMD::AVX512>();
+    demo<uint64_t, SIMD::AVX512>();
     // benchmark();
 
     return 0;
