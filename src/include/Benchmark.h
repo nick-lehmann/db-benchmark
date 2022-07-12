@@ -10,8 +10,8 @@
 #include "../pax_store/PaxTable.h"
 #include "../row_store/BaseTable.h"
 #include "BenchmarkResult.h"
-#include "Helper.h"
 #include "Filters/Base.h"
+#include "Helper.h"
 #include "ITable.h"
 #include "SIMD.h"
 //#include "Filters/LessThan.h"
@@ -84,7 +84,7 @@ std::tuple<uint64_t, uint64_t, double> benchmarkTableImplementation(int tableSto
     switch (tableStoreId) {
         case 0: {
             // row store
-            RowStore::BaseTable<T> table(columnCount, rowCount, tableData);
+            RowStore::BaseTable<T, 4096> table(columnCount, rowCount, tableData);
 
             // run benchmark and return
             return Benchmark::measureTime(table, projectionAttributes, filters, false);
@@ -98,7 +98,6 @@ std::tuple<uint64_t, uint64_t, double> benchmarkTableImplementation(int tableSto
         }
         case 2: {
             // pax store
-
 
             PaxTable<T> table(columnCount, rowCount, tableData);
 
@@ -126,9 +125,10 @@ std::tuple<uint64_t, uint64_t, double> benchmarkTableImplementation(int tableSto
 /// \param seed used for data generation
 /// \param filepath if specified export results to filepath. filepath should include filename and ending (e.g. .csv)
 template <typename T, SIMD Variant>
-void benchmarkRows(int tableStoreId, std::vector<uint64_t> &projectionAttributes, std::vector<Filters::Filter<T, Variant> *> &filters, unsigned rowCount = 10,
-                   unsigned columnCount = 10, bool exponentialGrowth = false, unsigned growthFactor = 50, unsigned iterations = 300,
-                   T lowerBound = 0, T upperBound = 1000, unsigned seed = 42, const std::string &filepath = "benchmark.csv") {
+void benchmarkRows(int tableStoreId, std::vector<uint64_t> &projectionAttributes, std::vector<Filters::Filter<T, Variant> *> &filters,
+                   unsigned rowCount = 10, unsigned columnCount = 10, bool exponentialGrowth = false, unsigned growthFactor = 50,
+                   unsigned iterations = 300, T lowerBound = 0, T upperBound = 1000, unsigned seed = 42,
+                   const std::string &filepath = "benchmark.csv") {
     // initialize store for result
     BenchmarkResult<T> result;
 

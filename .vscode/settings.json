@@ -62,11 +62,19 @@
         "variant": "cpp",
         "vector": "cpp",
         "__functional_base": "cpp",
-        "algorithm": "cpp",
         "functional": "cpp",
         "iterator": "cpp",
         "utility": "cpp",
-        "__availability": "cpp"
+        "__availability": "cpp",
+        "*.tcc": "cpp",
+        "deque": "cpp",
+        "map": "cpp",
+        "memory_resource": "cpp",
+        "numeric": "cpp",
+        "random": "cpp",
+        "fstream": "cpp",
+        "stdexcept": "cpp",
+        "cinttypes": "cpp"
     },
     "C_Cpp.clang_format_fallbackStyle": "LLVM",
     "editor.rulers": [

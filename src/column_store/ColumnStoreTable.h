@@ -10,7 +10,7 @@
 
 namespace ColumnStore {
 
-template <typename T>
+template <typename T, typename idxT=T>
 class Table : public Tables::ITable<T> {
    public:
     Table(uint64_t numAttributes, uint64_t numRows, const T **initialData) : Tables::ITable<T>(numAttributes, numRows, initialData) {
@@ -58,6 +58,11 @@ class Table : public Tables::ITable<T> {
         return std::make_tuple(reconstructTableAVX(projection), (uint64_t)sizeOfIndexStorage, (uint64_t)projection.size());
     }
 
+    std::tuple<T **, uint64_t, uint64_t> queryTable(std::vector<uint64_t> &projection,
+                                                    std::vector<Filters::Filter<T, SIMD::AVX512_Strided> *> &filters) override {
+        return std::make_tuple((T **)nullptr, (uint64_t)-1, (uint64_t)-1);
+    }
+
     uint64_t queryCount(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T, SIMD::None> *> &filters) override {
         // the first list of filtered indices is empty
         std::vector<uint64_t> *filter_indices = nullptr;
@@ -92,6 +97,10 @@ class Table : public Tables::ITable<T> {
         }
 
         return (uint64_t)sizeOfIndexStorage;
+    }
+
+    uint64_t queryCount(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T, SIMD::AVX512_Strided> *> &filters) override {
+        return (uint64_t)-1;
     }
 
    private:
@@ -131,7 +140,7 @@ class Table : public Tables::ITable<T> {
             sizeOfIndexStorage = 0;
             // loop over all rows
 
-            T startRow = 0;
+            idxT startRow = 0;
             auto r = this->numberOfRows % integerAmount;
 #if WITH_R_0_CHECK
             if (r != 0) {
@@ -151,7 +160,7 @@ class Table : public Tables::ITable<T> {
             }
 #endif
 
-            for (T rowIndex = r; rowIndex < this->numberOfRows; rowIndex += integerAmount) {
+            for (idxT rowIndex = r; rowIndex < this->numberOfRows; rowIndex += integerAmount) {
                 auto [dataRegister, indexRegister] = ColumnStore::Helper::load(&(*filterColIterator), rowIndex);
                 auto filterResult = filter->match(dataRegister);
                 auto addedElements = ColumnStore::Helper::store(indexRegister, filterResult, currentIndexStorage);
@@ -183,7 +192,7 @@ class Table : public Tables::ITable<T> {
             }
 #endif
 
-            for (T rowIndex = r; rowIndex < currentSizeOfIndexStorage; rowIndex += integerAmount) {
+            for (idxT rowIndex = r; rowIndex < currentSizeOfIndexStorage; rowIndex += integerAmount) {
                 auto [dataRegister, indexRegister] = ColumnStore::Helper::gather(&indexStorage[rowIndex], &(*filterColIterator));
                 auto filterResult = filter->match(dataRegister);
                 auto addedElements = ColumnStore::Helper::store(indexRegister, filterResult, currentIndexStorage);
@@ -231,7 +240,7 @@ class Table : public Tables::ITable<T> {
     std::vector<T> *data;
 
     // the memory to store indices while filtering, is always enough to fit ALL indices
-    T *indexStorage;
+    idxT *indexStorage;
     // the actual used size of the index storage
     size_t sizeOfIndexStorage;
 };

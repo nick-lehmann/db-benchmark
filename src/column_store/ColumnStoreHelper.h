@@ -17,8 +17,8 @@ namespace ColumnStore::Helper {
 /// \return
 /// pair[0]: loaded values register <br>
 /// pair[1]: indices register
-template <typename T>
-std::pair<__m512i, __m512i> gather(T *iSA, T *columnStart);
+template <typename T, typename idxT=T>
+std::pair<__m512i, __m512i> gather(idxT *iSA, T *columnStart);
 
 template <>
 std::pair<__m512i, __m512i> gather(uint32_t *iSA, uint32_t *columnStart) {
@@ -44,8 +44,8 @@ std::pair<__m512i, __m512i> gather(uint64_t *iSA, uint64_t *columnStart) {
 /// \return
 /// pair[0]: loaded values register <br>
 /// pair[1]: indices register
-template <typename T>
-std::pair<__m512i, __m512i> load(T *columnStart, T b);
+template <typename T, typename idxT=T>
+std::pair<__m512i, __m512i> load(T *columnStart, idxT b);
 
 template <>
 std::pair<__m512i, __m512i> load(uint32_t *columnStart, uint32_t b) {
@@ -65,8 +65,8 @@ std::pair<__m512i, __m512i> load(uint64_t *columnStart, uint64_t b) {
 /// \param mask whether an index should be stored or not
 /// \param baseAddr start of the C-array (important: this is an array of index positions)
 /// \return amount of stored elements (amount of 1-bits in the mask)
-template <typename T, typename M>
-uint64_t store(__m512i indexRegister, M mask, T *baseAddr);
+template <typename idxT, typename M>
+uint64_t store(__m512i indexRegister, M mask, idxT *baseAddr);
 
 template <>
 uint64_t store(__m512i indexRegister, __mmask8 mask, uint64_t *baseAddr) {

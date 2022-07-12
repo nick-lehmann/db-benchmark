@@ -64,7 +64,7 @@ void avxTest(const T** initialData) {
     auto equalFilter2 = new Filters::NotEqual<T, SIMD::AVX512>(1, 3);
     auto equalFilter3 = new Filters::LessEqual<T, SIMD::AVX512>(3, 4);
 
-    std::vector<Filters::Filter<T, SIMD::AVX512>*> filters{/*equalFilter, equalFilter2,*/ equalFilter3};
+    std::vector<Filters::Filter<T, SIMD::AVX512>*> filters{equalFilter, equalFilter2, equalFilter3};
     std::vector<uint64_t> projection{0, 1, 2, 3, 4};
 
     auto [queried, rows, columns] = testTable.queryTable(projection, filters);
@@ -86,7 +86,7 @@ void scalarTest(const T** initialData) {
     auto equalFilter2 = new Filters::NotEqual<T, SIMD::None>(1, 3);
     auto equalFilter3 = new Filters::LessEqual<T, SIMD::None>(3, 4);
 
-    std::vector<Filters::Filter<T, SIMD::None>*> filters{/*equalFilter, equalFilter2,*/ equalFilter3};
+    std::vector<Filters::Filter<T, SIMD::None>*> filters{equalFilter, equalFilter2, equalFilter3};
     std::vector<uint64_t> projection{0, 1, 2, 3, 4};
 
     auto [queried, rows, columns] = testTable.queryTable(projection, filters);

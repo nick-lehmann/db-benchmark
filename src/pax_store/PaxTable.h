@@ -107,11 +107,20 @@ class PaxTable : public Tables::ITable<T> {
         return std::make_tuple(data, positions.size(), projection.size());
     };
 
+    std::tuple<T **, uint64_t, uint64_t> queryTable(std::vector<uint64_t> &projection,
+                                                    std::vector<Filters::Filter<T, SIMD::AVX512_Strided> *> &filters) override {
+        return std::make_tuple((T **)nullptr, (uint64_t)-1, (uint64_t)-1);
+    }
+
     uint64_t queryCount(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T, SIMD::None> *> &filters) override {
         return get<1>(queryTable(projection, filters));
     }
 
     uint64_t queryCount(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T, SIMD::AVX512> *> &filters) override {
         return get<1>(queryTable(projection, filters));
+    }
+
+    uint64_t queryCount(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T, SIMD::AVX512_Strided> *> &filters) override {
+        return (uint64_t)-1;
     }
 };
