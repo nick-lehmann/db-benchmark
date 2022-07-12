@@ -9,13 +9,33 @@
 
 namespace RowStore {
 
+// TODO this is meant to implement an more complex (lane)-pages, round-robin, tuple allocation algortithm that enables better
+// gather-performance
 template <typename T>
-class IntermediateTable {
+class IntermediateTable2Iterator {
+   private:
+    T const *baseAddress;
+    const size_t tupleSize;
+    const size_t pageCapacity;
+
+    int32_t skipPageFootCounter;  // counts down the number of tuples till the
+    const size_t pageFootSize;
+
+   public:
+    IntermediateTableIterator(T *baseAddress, size_t tupleSize, size_t pageCapacity)
+        : baseAddress(baseAddress), tupleSize(tupleSize), pageCapacity(pageCapacity) {
+        skipPageFootCounter =
+    }
+};
+
+template <typename T>
+class IntermediateTable2 {
    private:
     size_t capacity;
+    size_t pageCapacity;
     size_t rowCount = 0;
     size_t allocatedPages;
-    T *data;
+    T *const data;
 
     T **tableOutput = nullptr;
     unsigned tableOutputSize = 0;
@@ -25,24 +45,23 @@ class IntermediateTable {
     /// Initializes the intermediateTable with a given tuple width.
     /// \param tupleWidth number of attributes per tuple
     IntermediateTable(uint32_t tupleWidth, size_t tupleCapacity) : tupleWidth(tupleWidth), capacity(tupleCapacity) {
-        size_t pageCapacity = PAGE_SIZE / (sizeof(T) * tupleWidth);
-        //               number of complete pages         add 1 if the tuple capacity does not fill complete pages
+        pageCapacity = PAGE_SIZE / (sizeof(T) * tupleWidth);
+        //---------------number of complete pages-------add 1 if the tuple capacity does not fill complete pages
         allocatedPages = (tupleCapacity / pageCapacity) + ((tupleCapacity % pageCapacity) != 0);
 
         // allloc memory that is aligned at the page boundaries
-        data = static_cast<T *>(aligned_alloc(PAGE_SIZE, allocatedPages * PAGE_SIZE));
+        data = alligned_alloc(PAGE_SIZE, allocatedPages * PAGE_SIZE);
     }
 
     /// Initializes the intermediateTable with a given tuple width and initial data. The content of the inital data vector
-    /// is copied to the table's data storage
+    /// is copies to the table's data storage
     /// \param tupleWidth number of attributes per tuple
     /// \param initData data that is copied into the table
-    IntermediateTable(uint32_t tupleWidth, std::vector<T *> &initData) : IntermediateTable(tupleWidth, initData.size()) {
-        // the constructor above handles all the stroage allocation
+    /*IntermediateTable(uint32_t tupleWidth, std::vector<T *> &initData) : tupleWidth(tupleWidth) {
         for (uint64_t i = 0; i < initData.size(); ++i) {
-            addRow(initData[i]);
+            addRowCopy(initData[i]);
         }
-    }
+    }*/
 
     /// Destructor
     ~IntermediateTable() {
@@ -50,47 +69,52 @@ class IntermediateTable {
         free(data);
     }
 
+    /// Calculates the first free address in the allocated memory of the IntermediateTable
+    /// \return Free address that can be used to write data at
+    T *getFreeAddress() {
+        return getAddress(rowCount);  // get address of tuple one past last wrtitten tuple
+    }
+
+    /// Calculates the address of a tuple specified by its tuple
+    /// \param index position of a tuple in the table
+    /// \return Address of the tuple at the index
+    T *getAddress(uint64_t index) {
+        return data + ((index / pageCapacity) * PAGE_SIZE) +  // skip pages that dont contain the index
+               (index % pageCapacity);                        // offset inside the page that contins the index
+    }
+
     /// Copies the content from row to the allocated storage
     /// \param row tuple that's content is copied
-    void addRow(T *row) { std::memcpy(getTuple(rowCount++), row, sizeof(T) * tupleWidth); }
+    void addRow(T *row) {
+        std::memcpy(getFreeAddress(), row, sizeof(T) * tupleWidth);
+        ++rowCount;
+    }
 
     /// Copies the content from multiple rows laying end by end to the allocated storage
     /// \param rows tuples that's content is copied
     void addRows(T *rows, size_t numberOfRows) {
-        std::memcpy(getTuple(rowCount), rows, sizeof(T) * tupleWidth * numberOfRows);
-        rowCount += numberOfRows;
+        size_t leftPageCapacity = pageCapacity - (rowCount % pageCapacity);
+
+        while (numberOfRows > 0) {
+            std::memcpy(getFreeAddress(), row, sizeof(T) * tupleWidth * leftPageCapacity);
+            rowCount += leftPageCapacity;
+            numberOfRows -= leftPageCapacity;
+            leftPageCapacity = pageCapacity;
+        }
     }
 
     /// Returns the number of tuples that are contaied in this table
     uint64_t count() {
-        uint64_t count = 0;
-        for (uint64_t i = 0; i < rowCount; ++i) {
-            T tmp = data[i];
-            ++count;
-        }
-        return count;
+        // TODO do something fancy counting stuff
     }
-
-    /// Calculates the address of a tuple specified by its position in the table
-    /// \param index position of a tuple in the table
-    /// \return Address of the tuple at the index
-    T *operator[](uint64_t index) { return data + (index * tupleWidth); }
-
-    /// Calculates the address of a tuple specified by its position in the table
-    /// \param index position of a tuple in the table
-    /// \return Address of the tuple at the index
-    T *getTuple(uint64_t index) { return data + (index * tupleWidth); }
 
     /// Returns the number of values in a tuple, aka number of attributes of the table.
     uint32_t getTupleWidth() { return tupleWidth; }
 
-    /// Returns the number of rows of the table.
-    size_t getRowCount() { return rowCount; }
-
     /// Frees tableOutput if it already exists and resets tableOutputSize
     void freeTableOutput() {
         if (tableOutput) {
-            for (uint64_t i = 0; i < tableOutputSize; ++i) {
+            for (uint64_t i = 0; i < data.size(); ++i) {
                 free(tableOutput[i]);
             }
             free(tableOutput);
@@ -104,11 +128,11 @@ class IntermediateTable {
     std::tuple<T **, unsigned> table() {
         freeTableOutput();
 
-        tableOutput = static_cast<T **>(malloc(sizeof(T *) * rowCount));
-        tableOutputSize = rowCount;
-        for (uint64_t i = 0; i < rowCount; ++i) {
+        tableOutput = static_cast<T **>(malloc(sizeof(T *) * data.size()));
+        tableOutputSize = data.size();
+        for (uint64_t i = 0; i < data.size(); ++i) {
             tableOutput[i] = static_cast<T *>(malloc(sizeof(T) * tupleWidth));
-            std::memcpy(tableOutput[i], getTuple(i), sizeof(T) * tupleWidth);
+            std::memcpy(tableOutput[i], data[i], sizeof(T) * tupleWidth);
         }
 
         return std::make_tuple(tableOutput, tableOutputSize);
@@ -117,12 +141,12 @@ class IntermediateTable {
     /// Detaches the table data structure of type T** from this IntermediateTable-Object and returns its address.
     /// That means that this datastructure is not freed if the table is deleted.
     /// \param outputSize number of tuple in the output
-    std::tuple<T **, unsigned> detachTableOutput() {
+    T **detachTableOutput(unsigned &outputSize) {
         T **tmp = tableOutput;
         tableOutput = nullptr;
-        unsigned tmpSize = tableOutputSize;
+        outputSize = tableOutputSize;
         tableOutputSize = 0;
-        return std::make_tuple(tmp, tmpSize);
+        return tmp;
     }
 
     /// Frees the memory that is accociated to tableOutput.
@@ -139,13 +163,13 @@ class IntermediateTable {
 
     /// Prints the intermediateTable to stdout
     void printTableOutput() {
-        for (uint64_t row = 0; row < rowCount; ++row) {
+        for (uint64_t row = 0; row < data.size(); ++row) {
             for (uint32_t col = 0; col < tupleWidth; ++col) {
                 // Prepend a column separator except for the first column
                 if (col) {
                     std::cout << " | ";
                 }
-                std::cout << getTuple(row)[col];
+                std::cout << data[row][col];
             }
             std::cout << std::endl;
         }

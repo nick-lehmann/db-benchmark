@@ -3,47 +3,50 @@
 #include <iostream>
 #include <vector>
 
+//#include "Benchmark.h"
+
 #include "BaseTable.h"
-#include "Benchmark.h"
-#include "Filter.h"
-#include "Filters.h"
+#include "Filters/All.h"
 #include "Helper.h"
-#include "IntermediateTable.h"
-#include "Projection.h"
-#include "ITable.h"
+//#include "ITable.h"
+//#include "IntermediateTable.h"
+//#include "Filter.h"
+//#include "Projection.h"
+// #include "IntermediateTable_AVX.h"
+#include "SIMD.h"
 
 /// Run a demo of the Row-Store database.
 /// Creates a small example BaseTable and applies a simple query on it. Afterwards run a benchmark with the same query on the same table.
+// TODO: Probably only works for `Variant = SIMD::AVX512` as the AVX variant of the intermediate table is used
+template <typename T, SIMD Variant>
 void demo() {
-    // define data type of table data
-    using Type = int32_t;
-
     std::cout << "Row-Store Code" << std::endl;
 
     // generate example table and print
-    const Type **initialData = TableHelper::generateRandomData<int>(5, 20, 1, 10);
-    RowStore::BaseTable<Type> baseTable(5, 20, initialData);
+    const T **initialData = TableHelper::generateRandomData<T>(10, 32, 1, 10);
+    RowStore::BaseTable<T> baseTable(10, 32, initialData);
     std::cout << "Print Test-BaseTable: \n" << std::endl;
     baseTable.print();
 
     // perform a query on base table and print result
     std::cout << "Print Test-Query: \n" << std::endl;
-    std::vector<unsigned> projectionAttributes = {0, 2, 3};
-    std::vector<Filter<Type> *> filters = {new GreaterThan<Type>(1, 6), new LessThan<Type>(2, 9)};
-    unsigned numRow = 0, numCol = 0;
-    auto [queryResult, resultRowCount, resultColumnCount] = baseTable.query_table(projectionAttributes, filters);
-    RowStore::IntermediateTable<Type>::printTableOutput(queryResult, resultRowCount, resultColumnCount);
+    std::vector<uint64_t> projectionAttributes = {0, 2, 3};
+    std::vector<Filters::Filter<T, Variant> *> filters = {new Filters::GreaterThan<T, Variant>(1, 6),
+                                                          new Filters::LessThan<T, Variant>(2, 9)};
+
+    auto [queryResult, resultRowCount, resultColumnCount] = baseTable.queryTable(projectionAttributes, filters);
+    RowStore::IntermediateTable_AVX<T>::printTableOutput(queryResult, resultRowCount, resultColumnCount);
 
     // delete result table and free memory
-    RowStore::IntermediateTable<Type>::deleteDetachedTableOutput(queryResult, resultRowCount);
+    RowStore::IntermediateTable_AVX<T>::deleteDetachedTableOutput(queryResult, resultRowCount);
 
     // run benchmark of same query
-    std::cout << "Print benchmark: " << std::endl << std::endl;
-    auto benchmarkResult = Benchmark::measureTime(baseTable, projectionAttributes, filters);
+    // std::cout << "Print benchmark: " << std::endl << std::endl;
+    // auto benchmarkResult = Benchmark::measureTime(baseTable, projectionAttributes, filters);
 }
 
 /// Run an example benchmark of the Row-Store database.
-void benchmark() {
+/*void benchmark() {
     using Type = int32_t;
 
     // define projection attributes
@@ -53,11 +56,11 @@ void benchmark() {
 
     // run benchmarks
     Benchmark::benchmarkRows(0, projectionAttributes, filters);
-}
+}*/
 
 int main(int argc, char **argv) {
-    // demo();
-    benchmark();
+    demo<uint64_t, SIMD::AVX512>();
+    // benchmark();
 
     return 0;
 }
