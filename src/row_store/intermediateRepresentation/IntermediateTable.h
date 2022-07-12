@@ -82,6 +82,7 @@ class IntermediateTable {
 
    public:
     void debugPrintData() {
+        std::cout << "Print interTable" << std::endl;
         size_t itemCount = AllocationHelper<T, V, A>::getByteSize(tupleWidth, capacity) / sizeof(T);
 
         uint32_t column = 0;
@@ -138,7 +139,8 @@ class IntermediateTable {
     /// Returns vector iterator pointer pointing to the address one past the last tuple of the table. A vector iterator is used to iterate
     /// through the table and prepare vector registers on demand.
     VectorIterator<Type, Variant, Alignment> *vectorEnd() {
-        return new VectorIterator<Type, Variant, Alignment>(data, tupleWidth, writeIterator->getPos() / 8);
+        return new VectorIterator<Type, Variant, Alignment>(
+            data, tupleWidth, writeIterator->getPos() / VectorIterator<Type, Variant, Alignment>::LaneMultiplier);
     }
 
     /// Appends a row to the table and increments the writeIterator
@@ -165,7 +167,7 @@ class IntermediateTable {
         while (*iter != iterEnd) {
             output[iter->getPos()] = static_cast<T *>(malloc(sizeof(T) * tupleWidth));
             std::memcpy(output[iter->getPos()], iter->getAddress(), sizeof(T) * tupleWidth);
-            ++iter;
+            ++(*iter);
         }
 
         return std::make_tuple(output, iterEnd.getPos());
@@ -194,7 +196,7 @@ class IntermediateTable {
     /// Frees the memory that is accociated to tableOutput.
     /// \param tableOutput data structure that is freed
     /// \param outputSize number of tuple in tableOutput
-    static void deleteDetachedTableOutput(T **tableOutput, uint64_t outputSize) {
+    static void deleteTableOutput(T **tableOutput, uint64_t outputSize) {
         if (tableOutput) {
             for (uint64_t i = 0; i < outputSize; ++i) {
                 free(tableOutput[i]);

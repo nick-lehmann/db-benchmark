@@ -102,7 +102,7 @@ void demo() {
     RowStore::IntermediateTable<T, Variant, Alignment>::printTableOutput(queryResult, resultRowCount, resultColumnCount);
 
     // delete result table and free memory
-    RowStore::IntermediateTable<T, Variant, Alignment>::deleteDetachedTableOutput(queryResult, resultRowCount);
+    RowStore::IntermediateTable<T, Variant, Alignment>::deleteTableOutput(queryResult, resultRowCount);
 
     // run benchmark of same query
     // std::cout << "Print benchmark: " << std::endl << std::endl;

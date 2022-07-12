@@ -44,7 +44,7 @@ IntermediateTable<T, Variant, Alignment> *projection_unified(IntermediateTable<T
     while (*scalarIterBegin != *scalarIterEnd) {
         // Fill tuple with data from every row of table
         for (int j = 0; j < projectionParameters.size(); j++) {
-            scalarResultIter->getAddress()[projectionParameters[j]] = scalarIterBegin->getAddress()[projectionParameters[j]];
+            scalarResultIter->getAddress()[j] = scalarIterBegin->getAddress()[projectionParameters[j]];
         }
         ++(*scalarIterBegin);
         ++(*scalarResultIter);

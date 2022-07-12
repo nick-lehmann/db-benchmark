@@ -32,7 +32,7 @@ class ScalarIterator<T, SIMD::None, S> : public IntermediateIterator<T, SIMD::No
         return this;
     }
 
-   protected:
+   public:
     T *addressOf(uint64_t index) override { return const_cast<T *>(this->baseAddress + index * this->tupleWidth); }
 };
 
@@ -56,7 +56,7 @@ class ScalarIterator<T, SIMD::AVX512, S> : public IntermediateIterator<T, SIMD::
         return this;
     }
 
-   protected:
+   public:
     T *addressOf(uint64_t index) override { return const_cast<T *>(this->baseAddress + index * this->tupleWidth); }
 };
 
@@ -110,7 +110,7 @@ class ScalarIterator<T, SIMD::AVX512_Strided, S> : public IntermediateIterator<T
         return this;
     }
 
-   protected:
+   public:
     T *addressOf(uint64_t index) override {
         uint32_t tmpStrideSet = index / (strideCapacity * stridesPerSet);
         uint64_t tmpStrideNum = index % stridesPerSet;
