@@ -6,7 +6,7 @@
 #include "Helper.h"
 
 #define COLUMNS 5
-#define ROWS 2048
+#define ROWS 512
 
 // taken from https://www.tutorialspoint.com/cplusplus-equivalent-of-instanceof
 // template<typename Base, typename T>
@@ -55,8 +55,7 @@
 // }
 
 template <typename T>
-void avxTest() {
-    const T** initialData = TableHelper::generateRandomData<T>(COLUMNS, ROWS, 1, 5);
+void avxTest(const T** initialData) {
     ColumnStore::Table<T> testTable(COLUMNS, ROWS, initialData);
 
     // testTable.print();
@@ -65,31 +64,69 @@ void avxTest() {
     auto equalFilter2 = new Filters::NotEqual<T, SIMD::AVX512>(1, 3);
     auto equalFilter3 = new Filters::LessEqual<T, SIMD::AVX512>(3, 4);
 
-    std::vector<Filters::Filter<T, SIMD::AVX512>*> filters{equalFilter, equalFilter2, equalFilter3};
+    std::vector<Filters::Filter<T, SIMD::AVX512>*> filters{/*equalFilter, equalFilter2,*/ equalFilter3};
     std::vector<uint64_t> projection{0, 1, 2, 3, 4};
 
     auto [queried, rows, columns] = testTable.queryTable(projection, filters);
 
     // printFilterInfo<T>(filters);
-    std::cout << std::endl;
+    std::cout << "AVX: " << std::endl;
 
     TableHelper::printTable(queried, columns, rows);
+    
 }
 
-void benchmark() {
-    const uint32_t** initialData = TableHelper::generateRandomData<uint32_t>(COLUMNS, ROWS, 1, 10);
-    ColumnStore::Table<uint32_t> testTable(COLUMNS, ROWS, initialData);
+template <typename T>
+void scalarTest(const T** initialData) {
+    ColumnStore::Table<T> testTable(COLUMNS, ROWS, initialData);
 
-    auto equalFilter = new Filters::Equal<uint32_t, SIMD::None>(0, 4);
-    auto greaterFilter = new Filters::GreaterThan<uint32_t, SIMD::None>(4, 4);
+    // testTable.print();
 
-    std::vector<Filters::Filter<uint32_t, SIMD::None>*> filters{equalFilter, greaterFilter};
-    std::vector<uint64_t> projection{0, 2, 4};
+    auto equalFilter = new Filters::GreaterThan<T, SIMD::None>(0, 2);
+    auto equalFilter2 = new Filters::NotEqual<T, SIMD::None>(1, 3);
+    auto equalFilter3 = new Filters::LessEqual<T, SIMD::None>(3, 4);
 
-    Benchmark::measureTime(testTable, projection, filters);
+    std::vector<Filters::Filter<T, SIMD::None>*> filters{/*equalFilter, equalFilter2,*/ equalFilter3};
+    std::vector<uint64_t> projection{0, 1, 2, 3, 4};
+
+    auto [queried, rows, columns] = testTable.queryTable(projection, filters);
+
+    // printFilterInfo<T>(filters);
+    std::cout << "SCALAR: " << std::endl;
+
+    TableHelper::printTable(queried, columns, rows);
+    
 }
+
+// void benchmark() {
+//     const uint32_t** initialData = TableHelper::generateRandomData<uint32_t>(COLUMNS, ROWS, 1, 10);
+//     ColumnStore::Table<uint32_t> testTable(COLUMNS, ROWS, initialData);
+
+//     auto equalFilter = new Filters::Equal<uint32_t, SIMD::None>(0, 4);
+//     auto greaterFilter = new Filters::GreaterThan<uint32_t, SIMD::None>(4, 4);
+
+//     std::vector<Filters::Filter<uint32_t, SIMD::None>*> filters{equalFilter, greaterFilter};
+//     std::vector<uint64_t> projection{0, 2, 4};
+
+//     Benchmark::measureTime(testTable, projection, filters);
+// }
 
 int main(int argc, char** argv) {
-    avxTest<uint64_t>();
+    // uint32_t** initialData = const_cast<uint32_t**>(TableHelper::generateRandomData<uint32_t>(COLUMNS, ROWS, 1, 5));
+    // for(int i = 0; i < ROWS; i++) {
+    //     initialData[i][4] = i;
+    // }
+
+    // avxTest<uint32_t>(const_cast<const uint32_t**>(initialData));
+    // scalarTest<uint32_t>(const_cast<const uint32_t**>(initialData));
+    
+    uint64_t** initialData = const_cast<uint64_t**>(TableHelper::generateRandomData<uint64_t>(COLUMNS, ROWS, 1, 5));
+    for(int i = 0; i < ROWS; i++) {
+        initialData[i][4] = i;
+    }
+
+    avxTest<uint64_t>(const_cast<const uint64_t**>(initialData));
+    scalarTest<uint64_t>(const_cast<const uint64_t**>(initialData));
+
     return 0;
 }

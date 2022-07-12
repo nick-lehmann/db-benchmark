@@ -18,17 +18,19 @@ namespace ColumnStore::Helper {
 /// pair[0]: loaded values register <br>
 /// pair[1]: indices register
 template <typename T>
-std::pair<__m512i, __m512i> gather(uint32_t *iSA, T *columnStart);
+std::pair<__m512i, __m512i> gather(T *iSA, T *columnStart);
 
 template <>
 std::pair<__m512i, __m512i> gather(uint32_t *iSA, uint32_t *columnStart) {
     auto indexRegister = _mm512_set_epi32(iSA[15], iSA[14], iSA[13], iSA[12], iSA[11], iSA[10], iSA[9], iSA[8], iSA[7], iSA[6], iSA[5],
                                           iSA[4], iSA[3], iSA[2], iSA[1], iSA[0]);
+    // auto indexRegister = _mm512_set_epi32(iSA[0], iSA[1], iSA[2], iSA[3], iSA[4], iSA[5], iSA[6], iSA[7], iSA[8], iSA[9], iSA[10],
+    //                                   iSA[11], iSA[12], iSA[13], iSA[14], iSA[15]);
     return std::make_pair(_mm512_i32gather_epi32(indexRegister, columnStart, 4), indexRegister);
 }
 
 template <>
-std::pair<__m512i, __m512i> gather(uint32_t *iSA, uint64_t *columnStart) {
+std::pair<__m512i, __m512i> gather(uint64_t *iSA, uint64_t *columnStart) {
     auto indexRegister = _mm512_set_epi64(iSA[7], iSA[6], iSA[5], iSA[4], iSA[3], iSA[2], iSA[1], iSA[0]);
     return std::make_pair(_mm512_i64gather_epi64(indexRegister, columnStart, 8), indexRegister);
 }
@@ -43,7 +45,7 @@ std::pair<__m512i, __m512i> gather(uint32_t *iSA, uint64_t *columnStart) {
 /// pair[0]: loaded values register <br>
 /// pair[1]: indices register
 template <typename T>
-std::pair<__m512i, __m512i> load(T *columnStart, uint32_t b);
+std::pair<__m512i, __m512i> load(T *columnStart, T b);
 
 template <>
 std::pair<__m512i, __m512i> load(uint32_t *columnStart, uint32_t b) {
@@ -53,7 +55,7 @@ std::pair<__m512i, __m512i> load(uint32_t *columnStart, uint32_t b) {
 }
 
 template <>
-std::pair<__m512i, __m512i> load(uint64_t *columnStart, uint32_t b) {
+std::pair<__m512i, __m512i> load(uint64_t *columnStart, uint64_t b) {
     auto indexRegister = _mm512_set_epi64(b + 7, b + 6, b + 5, b + 4, b + 3, b + 2, b + 1, b);
     return std::make_pair(_mm512_loadu_si512(columnStart), indexRegister);
 }
@@ -61,13 +63,13 @@ std::pair<__m512i, __m512i> load(uint64_t *columnStart, uint32_t b) {
 /// Stores data from a register in a C-array based on a mask and returns the amount of elements stored.
 /// \param indexRegister the indices to store
 /// \param mask whether an index should be stored or not
-/// \param baseAddr start of the C-array
+/// \param baseAddr start of the C-array (important: this is an array of index positions)
 /// \return amount of stored elements (amount of 1-bits in the mask)
-template <typename T>
-uint64_t store(__m512i indexRegister, __mmask16 mask, T *baseAddr);
+template <typename T, typename M>
+uint64_t store(__m512i indexRegister, M mask, T *baseAddr);
 
 template <>
-uint64_t store(__m512i indexRegister, __mmask16 mask, uint64_t *baseAddr) {
+uint64_t store(__m512i indexRegister, __mmask8 mask, uint64_t *baseAddr) {
     _mm512_mask_compressstoreu_epi64(baseAddr, mask, indexRegister);
     return _mm512_mask_reduce_add_epi64(mask, ONE_REGISTER_64);
 }

@@ -21,7 +21,7 @@ class Table : public Tables::ITable<T> {
             }
         }
 
-        indexStorage = (uint32_t *)malloc(numRows * sizeof(uint32_t));
+        indexStorage = (T *)malloc(numRows * sizeof(T));
         sizeOfIndexStorage = -1;
     }
 
@@ -131,7 +131,7 @@ class Table : public Tables::ITable<T> {
             sizeOfIndexStorage = 0;
             // loop over all rows
 
-            uint32_t startRow = 0;
+            T startRow = 0;
             auto r = this->numberOfRows % integerAmount;
 #if WITH_R_0_CHECK
             if (r != 0) {
@@ -151,7 +151,7 @@ class Table : public Tables::ITable<T> {
             }
 #endif
 
-            for (uint32_t rowIndex = r; rowIndex < this->numberOfRows; rowIndex += integerAmount) {
+            for (T rowIndex = r; rowIndex < this->numberOfRows; rowIndex += integerAmount) {
                 auto [dataRegister, indexRegister] = ColumnStore::Helper::load(&(*filterColIterator), rowIndex);
                 auto filterResult = filter->match(dataRegister);
                 auto addedElements = ColumnStore::Helper::store(indexRegister, filterResult, currentIndexStorage);
@@ -183,8 +183,8 @@ class Table : public Tables::ITable<T> {
             }
 #endif
 
-            for (size_t rowIndex = r; rowIndex < currentSizeOfIndexStorage; rowIndex += integerAmount) {
-                auto [dataRegister, indexRegister] = ColumnStore::Helper::gather(currentIndexStorage, &(*filterColIterator));
+            for (T rowIndex = r; rowIndex < currentSizeOfIndexStorage; rowIndex += integerAmount) {
+                auto [dataRegister, indexRegister] = ColumnStore::Helper::gather(&indexStorage[rowIndex], &(*filterColIterator));
                 auto filterResult = filter->match(dataRegister);
                 auto addedElements = ColumnStore::Helper::store(indexRegister, filterResult, currentIndexStorage);
 
@@ -231,7 +231,7 @@ class Table : public Tables::ITable<T> {
     std::vector<T> *data;
 
     // the memory to store indices while filtering, is always enough to fit ALL indices
-    uint32_t *indexStorage;
+    T *indexStorage;
     // the actual used size of the index storage
     size_t sizeOfIndexStorage;
 };
