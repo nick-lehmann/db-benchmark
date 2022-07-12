@@ -86,8 +86,10 @@ void demo() {
     int width = 10, height = 32;
 
     // generate example table and print
+
     const T **initialData = TableHelper::generateRandomData<T>(width, height, 1, 10);
     RowStore::BaseTable<T, Alignment> baseTable(width, height, initialData);
+
     std::cout << "Print Test-BaseTable: \n" << std::endl;
     baseTable.print();
 
@@ -123,9 +125,6 @@ void demo() {
 }*/
 
 int main(int argc, char **argv) {
-    // demoUnified<uint32_t, SIMD::None, 4096>();
-    // demoUnified<uint64_t, SIMD::AVX512, 4096>();
-    // demoUnified<uint64_t, SIMD::AVX512_Strided, 4096>();
     demo<uint32_t, SIMD::None, 4096>();
     demo<uint32_t, SIMD::AVX512, 4096>();
     demo<uint32_t, SIMD::AVX512_Strided, 4096>();

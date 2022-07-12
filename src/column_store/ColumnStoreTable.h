@@ -65,7 +65,7 @@ class Table : public Tables::ITable<T> {
 
     std::tuple<T **, uint64_t, uint64_t> queryTable(std::vector<uint64_t> &projection,
                                                     std::vector<Filters::Filter<T, SIMD::AVX512_Strided> *> &filters) override {
-        return std::make_tuple<(T **)nullptr, (uint64_t)-1, (uint64_t)-1>;
+        return std::make_tuple((T **)nullptr, (uint64_t)-1, (uint64_t)-1);
     }
 
     uint64_t queryCount(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T, SIMD::None> *> &filters) override {
