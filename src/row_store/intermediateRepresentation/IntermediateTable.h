@@ -173,5 +173,34 @@ class IntermediateTable {
 
     /// Returns the number of values in a tuple, aka number of attributes of the table.
     uint32_t getTupleWidth() { return tupleWidth; }
+
+    /// Prints a table data structure of type T** to stdout
+    /// \param tableOutput data structure that printed
+    /// \param outputSize number of tuple in the output
+    static void printTableOutput(T **data, uint64_t numberOfRows, uint64_t numberOfColumns) {
+        for (uint64_t row = 0; row < numberOfRows; ++row) {
+            for (uint64_t col = 0; col < numberOfColumns; ++col) {
+                // Prepend a column separator except for the first column
+                if (col) {
+                    std::cout << " | ";
+                }
+                std::cout << data[row][col];
+            }
+            std::cout << std::endl;
+        }
+        std::cout << std::endl;
+    }
+
+    /// Frees the memory that is accociated to tableOutput.
+    /// \param tableOutput data structure that is freed
+    /// \param outputSize number of tuple in tableOutput
+    static void deleteDetachedTableOutput(T **tableOutput, uint64_t outputSize) {
+        if (tableOutput) {
+            for (uint64_t i = 0; i < outputSize; ++i) {
+                free(tableOutput[i]);
+            }
+            free(tableOutput);
+        }
+    }
 };
 }  // namespace RowStore

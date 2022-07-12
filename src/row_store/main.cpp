@@ -99,10 +99,10 @@ void demo() {
 
     auto [queryResult, resultRowCount, resultColumnCount] = baseTable.queryTable(projectionAttributes, filters);
 
-    // RowStore::IntermediateTable<T, Variant, Alignment>::printTableOutput(queryResult, resultRowCount, resultColumnCount);
+    RowStore::IntermediateTable<T, Variant, Alignment>::printTableOutput(queryResult, resultRowCount, resultColumnCount);
 
     // delete result table and free memory
-    // RowStore::IntermediateTable<T, Variant, Alignment>::deleteDetachedTableOutput(queryResult, resultRowCount);
+    RowStore::IntermediateTable<T, Variant, Alignment>::deleteDetachedTableOutput(queryResult, resultRowCount);
 
     // run benchmark of same query
     // std::cout << "Print benchmark: " << std::endl << std::endl;
