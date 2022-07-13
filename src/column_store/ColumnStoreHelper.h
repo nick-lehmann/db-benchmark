@@ -24,8 +24,6 @@ template <>
 std::pair<__m512i, __m512i> gather(uint32_t *iSA, uint32_t *columnStart) {
     auto indexRegister = _mm512_set_epi32(iSA[15], iSA[14], iSA[13], iSA[12], iSA[11], iSA[10], iSA[9], iSA[8], iSA[7], iSA[6], iSA[5],
                                           iSA[4], iSA[3], iSA[2], iSA[1], iSA[0]);
-    // auto indexRegister = _mm512_set_epi32(iSA[0], iSA[1], iSA[2], iSA[3], iSA[4], iSA[5], iSA[6], iSA[7], iSA[8], iSA[9], iSA[10],
-    //                                   iSA[11], iSA[12], iSA[13], iSA[14], iSA[15]);
     return std::make_pair(_mm512_i32gather_epi32(indexRegister, columnStart, 4), indexRegister);
 }
 

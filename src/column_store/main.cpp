@@ -5,8 +5,10 @@
 #include "Filters/All.h"
 #include "Helper.h"
 
+// settings for the table
 #define COLUMNS 5
 #define ROWS 512
+#define TEST_DATA_TYPE uint64_t
 
 // taken from https://www.tutorialspoint.com/cplusplus-equivalent-of-instanceof
 // template<typename Base, typename T>
@@ -31,34 +33,9 @@
 //     std::cout << std::endl;
 // }
 
-// void debugTest() {
-//     const int** initialData = TableHelper::generateRandomData<int>(COLUMNS, ROWS, 1, 10);
-//     ColumnStore::Scalar::Table<int> testTable(COLUMNS, ROWS, initialData);
-
-//     std::cout << "Test table: \n" << std::endl;
-
-//     testTable.print();
-
-//     auto equalFilter = new Filters::Scalar::Equal<int>(0, 4);
-//     auto greaterFilter = new Filters::Scalar::GreaterThan<int>(4, 4);
-
-//     std::vector<Filters::Scalar::Filter<int>*> filters{equalFilter, greaterFilter};
-//     std::vector<uint64_t> projection{0, 2, 4};
-
-//     auto [queried, rows, columns] = testTable.queryTable(projection, filters);
-
-//     std::cout << "Filters (0, =4) and (4, >4) as well as projection on (0, 2, 4): \n" << std::endl;
-
-//     TableHelper::printTable(queried, columns, rows);
-
-//     std::cout << "Number of rows: " << testTable.queryCount(projection, filters) << std::endl;
-// }
-
 template <typename T>
 void avxTest(const T** initialData) {
     ColumnStore::Table<T> testTable(COLUMNS, ROWS, initialData);
-
-    // testTable.print();
 
     auto equalFilter = new Filters::GreaterThan<T, SIMD::AVX512>(0, 2);
     auto equalFilter2 = new Filters::NotEqual<T, SIMD::AVX512>(1, 3);
@@ -69,8 +46,7 @@ void avxTest(const T** initialData) {
 
     auto [queried, rows, columns] = testTable.queryTable(projection, filters);
 
-    // printFilterInfo<T>(filters);
-    std::cout << "AVX: " << std::endl;
+    std::cout << "AVX: " << rows << " rows,\nTable: " << std::endl;
 
     TableHelper::printTable(queried, columns, rows);
     
@@ -79,8 +55,6 @@ void avxTest(const T** initialData) {
 template <typename T>
 void scalarTest(const T** initialData) {
     ColumnStore::Table<T> testTable(COLUMNS, ROWS, initialData);
-
-    // testTable.print();
 
     auto equalFilter = new Filters::GreaterThan<T, SIMD::None>(0, 2);
     auto equalFilter2 = new Filters::NotEqual<T, SIMD::None>(1, 3);
@@ -91,42 +65,20 @@ void scalarTest(const T** initialData) {
 
     auto [queried, rows, columns] = testTable.queryTable(projection, filters);
 
-    // printFilterInfo<T>(filters);
-    std::cout << "SCALAR: " << std::endl;
+    std::cout << "SCALAR: " << rows << " rows,\nTable: " << std::endl;
 
     TableHelper::printTable(queried, columns, rows);
     
 }
 
-// void benchmark() {
-//     const uint32_t** initialData = TableHelper::generateRandomData<uint32_t>(COLUMNS, ROWS, 1, 10);
-//     ColumnStore::Table<uint32_t> testTable(COLUMNS, ROWS, initialData);
-
-//     auto equalFilter = new Filters::Equal<uint32_t, SIMD::None>(0, 4);
-//     auto greaterFilter = new Filters::GreaterThan<uint32_t, SIMD::None>(4, 4);
-
-//     std::vector<Filters::Filter<uint32_t, SIMD::None>*> filters{equalFilter, greaterFilter};
-//     std::vector<uint64_t> projection{0, 2, 4};
-
-//     Benchmark::measureTime(testTable, projection, filters);
-// }
-
 int main(int argc, char** argv) {
-    // uint32_t** initialData = const_cast<uint32_t**>(TableHelper::generateRandomData<uint32_t>(COLUMNS, ROWS, 1, 5));
-    // for(int i = 0; i < ROWS; i++) {
-    //     initialData[i][4] = i;
-    // }
-
-    // avxTest<uint32_t>(const_cast<const uint32_t**>(initialData));
-    // scalarTest<uint32_t>(const_cast<const uint32_t**>(initialData));
-    
-    uint64_t** initialData = const_cast<uint64_t**>(TableHelper::generateRandomData<uint64_t>(COLUMNS, ROWS, 1, 5));
-    for(int i = 0; i < ROWS; i++) {
+    auto** initialData = const_cast<TEST_DATA_TYPE**>(TableHelper::generateRandomData<TEST_DATA_TYPE>(COLUMNS, ROWS, 1, 5));
+    for (int i = 0; i < ROWS; i++) {
         initialData[i][4] = i;
     }
 
-    avxTest<uint64_t>(const_cast<const uint64_t**>(initialData));
-    scalarTest<uint64_t>(const_cast<const uint64_t**>(initialData));
+    avxTest<TEST_DATA_TYPE>(const_cast<const TEST_DATA_TYPE**>(initialData));
+    scalarTest<TEST_DATA_TYPE>(const_cast<const TEST_DATA_TYPE**>(initialData));
 
     return 0;
 }
