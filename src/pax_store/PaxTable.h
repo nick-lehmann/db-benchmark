@@ -1,15 +1,15 @@
 #pragma once
-#include "ITable.h"
-
 #include <functional>
 #include <vector>
 
-#include "memory.cpp"
-#include "page.cpp"
-#include "types.h"
+#include "ITable.h"
+#include "Memory.h"
+#include "Page.h"
+#include "SIMD.h"
+#include "Types.h"
 
 template <typename T>
-class PaxTable : public Table<T> {
+class PaxTable : public Tables::ITable<T> {
    private:
     unsigned int rowsPerPage;
     unsigned int numberOfPages;
@@ -25,7 +25,8 @@ class PaxTable : public Table<T> {
    public:
     PaxPage<T> *pages;
 
-    PaxTable(int numberOfAttributes, int numberOfRows, const T **initialData) : Table<T>(numberOfAttributes, numberOfRows, initialData) {
+    PaxTable(int numberOfAttributes, int numberOfRows, const T **initialData)
+        : Tables::ITable<T>(numberOfAttributes, numberOfRows, initialData) {
         auto pagesize = getPagesize();
         this->rowsPerPage = PaxPage<T>::getMaximumRows(pagesize, numberOfAttributes);
 
@@ -53,12 +54,12 @@ class PaxTable : public Table<T> {
     // TODO: Free memory
     virtual ~PaxTable() { cout << "Destroy pax table" << endl; }
 
-    T *getRow(unsigned rowIndex) override {
+    T *getRow(uint64_t rowIndex) override {
         PaxPage<T> &page = pages[pageIndex(rowIndex)];
         return page.readRow(rowIndex % this->rowsPerPage);
     }
 
-    T *projectRow(unsigned rowIndex, std::vector<unsigned> &projection) {
+    T *projectRow(unsigned rowIndex, std::vector<uint64_t> &projection) {
         PaxPage<T> &page = pages[pageIndex(rowIndex)];
         return page.projectRow(rowIndex % this->rowsPerPage, projection);
     }
@@ -68,8 +69,9 @@ class PaxTable : public Table<T> {
         return row + columnIndex;
     }
 
-    virtual std::tuple<T **, unsigned, unsigned> query_table(std::vector<unsigned> &projection,
-                                                             std::vector<Filter<T> *> &filters) override {
+    // Scalar query
+    std::tuple<T **, uint64_t, uint64_t> queryTable(std::vector<uint64_t> &projection,
+                                                    std::vector<Filters::Filter<T, SIMD::None> *> &filters) override {
         vector<unsigned> positions;
 
         // Find positions of all rows that match the given filters.
@@ -86,9 +88,39 @@ class PaxTable : public Table<T> {
         return std::make_tuple(data, positions.size(), projection.size());
     };
 
-    virtual uint64_t query_count(std::vector<unsigned> &projection, std::vector<Filter<T> *> &filters) override {
-        auto result = query_table(projection, filters);
-        uint64_t rows = get<1>(result);
-        return rows;
+    // AVX512 query
+    std::tuple<T **, uint64_t, uint64_t> queryTable(std::vector<uint64_t> &projection,
+                                                    std::vector<Filters::Filter<T, SIMD::AVX512> *> &filters) override {
+        vector<uint64_t> positions;
+
+        // Find positions of all rows that match the given filters.
+        for (unsigned pageIndex = 0; pageIndex < this->numberOfPages; pageIndex++) {
+            PaxPage<T> page = this->pages[pageIndex];
+            auto [pagePositions, count] = page.queryAVX(filters);
+            positions.insert(positions.end(), pagePositions, pagePositions + count);
+        }
+
+        // Allocate enough memory for all rows.
+        T **data = (T **)malloc(positions.size() * sizeof(T *));
+        for (int i = 0; i < positions.size(); i++) data[i] = this->projectRow(positions[i], projection);
+
+        return std::make_tuple(data, positions.size(), projection.size());
+    };
+
+    std::tuple<T **, uint64_t, uint64_t> queryTable(std::vector<uint64_t> &projection,
+                                                    std::vector<Filters::Filter<T, SIMD::AVX512_Strided> *> &filters) override {
+        return std::make_tuple((T **)nullptr, (uint64_t)-1, (uint64_t)-1);
+    }
+
+    uint64_t queryCount(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T, SIMD::None> *> &filters) override {
+        return get<1>(queryTable(projection, filters));
+    }
+
+    uint64_t queryCount(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T, SIMD::AVX512> *> &filters) override {
+        return get<1>(queryTable(projection, filters));
+    }
+
+    uint64_t queryCount(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T, SIMD::AVX512_Strided> *> &filters) override {
+        return (uint64_t)-1;
     }
 };

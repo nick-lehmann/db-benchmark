@@ -3,8 +3,9 @@
 #include <stdexcept>
 
 #include "Constants.h"
-#include "Filters_AVX.h"
+#include "Filters/All.h"
 #include "IntermediateTable_AVX.h"
+#include "SIMD.h"
 #include "copy_tuple_codegen/copyMaskedTuple.h"
 
 namespace RowStore {
@@ -32,7 +33,7 @@ class Filter_AVXHelper<uint64_t> {
     /// determined by rowIndex and columnIndex. \param baseAddress base address of the data storage \param rowIndex index of the first row
     /// (of the 8 consecutive rows) \param columnIndex index of the column that contains the integers
     __m512i gather(uint64_t *baseAddress, uint64_t rowIndex, uint32_t columnIndex) {
-        return _mm512_i64gather_epi64(vindexReg, baseAddress + (columnIndex * tupleWidth) + columnIndex, 8);
+        return _mm512_i64gather_epi64(vindexReg, baseAddress + (rowIndex * tupleWidth) + columnIndex, 8);
     }
 };
 
@@ -53,7 +54,7 @@ class Filter_AVXHelper<uint32_t> {
     /// determined by rowIndex and columnIndex. \param baseAddress base address of the data storage \param rowIndex index of the first row
     /// (of the 16 consecutive rows) \param columnIndex index of the column that contains the integers
     __m512i gather(uint32_t *baseAddress, uint64_t rowIndex, uint32_t columnIndex) {
-        return _mm512_i32gather_epi32(vindexReg, baseAddress + (columnIndex * tupleWidth) + columnIndex, 4);
+        return _mm512_i32gather_epi32(vindexReg, baseAddress + (rowIndex * tupleWidth) + columnIndex, 4);
     }
 };
 
@@ -62,7 +63,7 @@ class Filter_AVXHelper<uint32_t> {
 /// \param table intermediateTable that is filtered
 /// \param filters vector of filters that are applied conjunctive
 template <typename T>
-IntermediateTable_AVX<T> *apply_filters_AVX(IntermediateTable_AVX<T> &table, std::vector<Filters::AVX::Filter<T> *> &filters) {
+IntermediateTable_AVX<T> *apply_filters_AVX(IntermediateTable_AVX<T> &table, std::vector<Filters::Filter<T, SIMD::AVX512> *> &filters) {
     // Validate filters
     for (int i = 0; i < filters.size(); ++i) {
         if (filters[i]->index < 0 || filters[i]->index >= table.getTupleWidth()) {

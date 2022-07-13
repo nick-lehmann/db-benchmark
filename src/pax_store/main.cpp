@@ -1,4 +1,5 @@
 #include <errno.h>
+#include <immintrin.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,12 +8,14 @@
 #include <iterator>
 #include <vector>
 
-#include "Filters.h"
+#include "Constants.h"
+#include "Filters/All.h"
 #include "Helper.h"
-#include "memory.cpp"
-#include "page.cpp"
-#include "table.cpp"
-#include "types.h"
+#include "Memory.h"
+#include "Page.h"
+#include "PaxTable.h"
+#include "SIMD.h"
+#include "Types.h"
 
 using namespace std;
 
@@ -111,8 +114,36 @@ void testPaxTablePrint() {
  * Test a single filter on a table with a single
  * page.
  */
+// template <typename T>
+// void testBasicScalarFilters() {
+//     unsigned numberOfRows = 10;
+//     unsigned numberOfAttributes = 3;
+
+//     const T** data = getData<T>(numberOfRows);
+
+//     PaxTable<T> table(numberOfAttributes, numberOfRows, data);
+
+//     std::vector<uint64_t> projection = {0, 1, 2};
+//     std::vector<Filters::Scalar::Filter<T>*> filters = {new Filters::Scalar::Equal<T>(0, (T)2)};
+
+//     auto [result, rows, columns] = table.queryTable(projection, filters);
+
+//     for (unsigned row = 0; row < rows; row++) {
+//         for (unsigned column = 0; column < columns; column++) {
+//             cout << result[row][column] << " ";
+//         }
+//         cout << endl;
+//     }
+
+//     cout << "Count: " << rows << endl;
+// }
+
+/**
+ * Test a single filter on a table with a single
+ * page.
+ */
 template <typename T>
-void testBasicFilter() {
+void testBasicAVXFilters() {
     unsigned numberOfRows = 10;
     unsigned numberOfAttributes = 3;
 
@@ -120,25 +151,45 @@ void testBasicFilter() {
 
     PaxTable<T> table(numberOfAttributes, numberOfRows, data);
 
-    std::vector<unsigned> projection = {1, 2, 3};
-    std::vector<Filter<T>*> filters = {new Equal<T>(0, (T)2)};
+    std::vector<uint64_t> projection = {0, 1, 2};
+    std::vector<Filters::Filter<T, SIMD::AVX512>*> filters = {new Filters::LessEqual<T, SIMD::AVX512>(0, 3),
+                                                              new Filters::GreaterEqual<T, SIMD::AVX512>(0, 1),
+                                                              new Filters::Equal<T, SIMD::AVX512>(0, 2)};
 
-    auto result = table.query_table(projection, filters);
-    auto result_data = std::get<0>(result);
-    auto returnedRows = std::get<1>(result);
-    auto returnedColumns = std::get<2>(result);
+    auto [result, rows, columns] = table.queryTable(projection, filters);
 
-    for (unsigned row = 0; row < returnedRows; row++) {
-        for (unsigned column = 0; column < returnedColumns; column++) {
-            cout << result_data[row][column] << " ";
+    for (unsigned row = 0; row < rows; row++) {
+        for (unsigned column = 0; column < columns; column++) {
+            cout << result[row][column] << " ";
         }
         cout << endl;
     }
 
-    cout << "Count: " << table.query_count(projection, filters) << endl;
+    cout << "Count: " << rows << endl;
 }
 
+// template <typename T>
+// void queryAVX(Filter::Filter<T, SIMD::AVX512>& filter) {
+//     __m512i reg32bit = _mm512_set1_epi32(1);
+//     auto mask = filter.match(reg32bit);
+// }
+
+// template <typename T>
+// void queryNormal(Filter::Filter<T, SIMD::None>& filter) {
+//     T value = 1;
+//     auto result = filter.match(value);
+//     cout << "Scalar operations says: " << result << endl;
+// }
+
 int main() {
-    testBasicFilter<uint16_t>();
+    testBasicAVXFilters<uint64_t>();
+    // Filter::Equal<uint32_t, SIMD::AVX512> equal32bitAVX(1, 1);
+    // Filter::LessThan<uint32_t, SIMD::AVX512> lessThan32bitAVX(1, 1);
+    // Filter::Equal<uint32_t, SIMD::None> equal32bitScalar(1, 1);
+
+    // queryAVX(equal32bitAVX);
+    // queryAVX(lessThan32bitAVX);
+    // queryNormal(equal32bitScalar);
+
     return 0;
 }
