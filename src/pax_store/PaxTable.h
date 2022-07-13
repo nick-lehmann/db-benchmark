@@ -30,11 +30,11 @@ class PaxTable : public Tables::ITable<T> {
         auto pagesize = getPagesize();
         this->rowsPerPage = PaxPage<T>::getMaximumRows(pagesize, numberOfAttributes);
 
-        cout << "Rows per page: " << rowsPerPage << endl;
+        // cout << "Rows per page: " << rowsPerPage << endl;
 
         // Resize vector to contain all needed pages
         this->numberOfPages = (numberOfRows + (rowsPerPage - 1)) / rowsPerPage;  // Rounding up
-        cout << "Needed pages: " << this->numberOfPages << endl;
+        // cout << "Needed pages: " << this->numberOfPages << endl;
         this->pages = (PaxPage<T> *)malloc(this->numberOfPages * sizeof(PaxPage<T>));
 
         // Initialize all pages
@@ -52,7 +52,9 @@ class PaxTable : public Tables::ITable<T> {
     }
 
     // TODO: Free memory
-    virtual ~PaxTable() { cout << "Destroy pax table" << endl; }
+    virtual ~PaxTable() {
+        // cout << "Destroy pax table" << endl;
+    }
 
     T *getRow(uint64_t rowIndex) override {
         PaxPage<T> &page = pages[pageIndex(rowIndex)];
