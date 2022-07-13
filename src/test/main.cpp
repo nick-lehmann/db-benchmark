@@ -5,6 +5,7 @@
 #include "../column_store/ColumnStoreTable.h"
 #include "../pax_store/PaxTable.h"
 #include "../row_store/BaseTable.h"
+#include "Constants.h"
 #include "Filters/All.h"
 #include "Helper.h"
 
@@ -47,7 +48,7 @@ void checkScenario(const Scenario<T, Variation> &scenario) {
 
     // Row
     {
-        RowStore::BaseTable<T> table(numberOfAttributes, numberOfRows, data);
+        RowStore::BaseTable<T, PAGE_SIZE> table(numberOfAttributes, numberOfRows, data);
         auto result = table.queryTable(projection, filters);
         printResult(result, "Row");
     }
