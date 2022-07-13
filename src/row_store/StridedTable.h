@@ -51,7 +51,7 @@ class StridedTableIterator {
           stridesPerSet(VECTOR_BYTE_WIDTH / sizeof(ValueType)) {}
 
     /// Initializes a StridedTableIterator pointing to the position-th tuple in the table
-    /// \param baseAddress base Address of the  memory that is iterated on
+    /// \param baseAddress base Address of the memory that is iterated on
     /// \param tupleWidth the undelying tables's tupel width
     /// \param position position of the tuple in the table
     StridedTableIterator(PointerType baseAddress, size_t tupleWidth, uint64_t position) : StridedTableIterator(baseAddress, tupleWidth) {
@@ -65,7 +65,7 @@ class StridedTableIterator {
     /// Returns index of the tuple the iterator is currently pointing to
     uint64_t getPos() { return pos; }
 
-    /// Inrements position of the iterator (iterator points to the next tuple)
+    /// Increments position of the iterator (iterator points to the next tuple)
     StridedTableIterator &operator++() {
         ++pos;
         strideNum = (++strideNum) % stridesPerSet;
@@ -85,7 +85,7 @@ class StridedTableIterator {
         return *this;
     }
 
-    /// Increments position of the iterator (iterator points to the next tuple) and returns titerator state before incrementation
+    /// Increments position of the iterator (iterator points to the next tuple) and returns iterator state before incrementation
     StridedTableIterator operator++(int) {
         StridedTableIterator iter = *this;
         ++(*this);

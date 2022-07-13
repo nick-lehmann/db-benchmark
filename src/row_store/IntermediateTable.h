@@ -26,7 +26,7 @@ class IntermediateTable {
     /// \param tupleWidth number of attributes per tuple
     IntermediateTable(uint32_t tupleWidth, size_t tupleCapacity) : tupleWidth(tupleWidth), capacity(tupleCapacity) {
         size_t pageCapacity = PAGE_SIZE / (sizeof(T) * tupleWidth);
-        //               number of complete pages         add 1 if the tuple capacity does not fill complete pages
+        // number of complete pages; add 1 if the tuple capacity does not fill complete pages
         allocatedPages = (tupleCapacity / pageCapacity) + ((tupleCapacity % pageCapacity) != 0);
 
         // allloc memory that is aligned at the page boundaries
@@ -99,7 +99,7 @@ class IntermediateTable {
         }
     }
 
-    /// Creates a table data structure of type T** and assignes the number of tuples to outputSize
+    /// Creates a table data structure of type T** and assigns the number of tuples to outputSize
     /// \param outputSize number of tuple in the output
     std::tuple<T **, unsigned> table() {
         freeTableOutput();
@@ -115,7 +115,7 @@ class IntermediateTable {
     }
 
     /// Detaches the table data structure of type T** from this IntermediateTable-Object and returns its address.
-    /// That means that this datastructure is not freed if the table is deleted.
+    /// That means that this data structure is not freed if the table is deleted.
     /// \param outputSize number of tuple in the output
     std::tuple<T **, unsigned> detachTableOutput() {
         T **tmp = tableOutput;

@@ -28,10 +28,10 @@ class IntermediateTable_AVX {
     /// \param tupleWidth number of attributes per tuple
     IntermediateTable_AVX(uint32_t tupleWidth, size_t tupleCapacity) : tupleWidth(tupleWidth), capacity(tupleCapacity) {
         size_t pageCapacity = PAGE_SIZE / (sizeof(T) * tupleWidth);
-        //               number of complete pages         add 1 if the tuple capacity does not fill complete pages
+        // number of complete pages; add 1 if the tuple capacity does not fill complete pages
         allocatedPages = (tupleCapacity / pageCapacity) + ((tupleCapacity % pageCapacity) != 0);
 
-        // allloc memory that is aligned at the page boundaries
+        // alloc memory that is aligned at the page boundaries
         data = static_cast<T *>(aligned_alloc(PAGE_SIZE, allocatedPages * PAGE_SIZE));
     }
 
@@ -73,8 +73,8 @@ class IntermediateTable_AVX {
         return count;
     }
 
-    /// Getter for data storage of the table. Attetion: After adding tuples manually to the data storage, it is mandatory to manipulate the
-    /// rowCount. It is not recommendet nor intendet to delete tuples.
+    /// Getter for data storage of the table. Attention: After adding tuples manually to the data storage, it is mandatory to manipulate the
+    /// rowCount. It is not recommended nor intended to delete tuples.
     /// \return address of the data storage
     T *getData() { return data; }
 
@@ -82,8 +82,8 @@ class IntermediateTable_AVX {
     /// \return address of the first not occupied position in the data storage.
     T *getDataEnd() { return data + (rowCount * tupleWidth); }
 
-    /// Access method to manually add rows to the rowCount. Attetion: It is only recommendet to use this method after adding tuples manually
-    /// to the data storage of the table. It is not intendet to reduce the number of tules.
+    /// Access method to manually add rows to the rowCount. Attention: It is only recommended to use this method after adding tuples
+    /// manually to the data storage of the table. It is not intended to reduce the number of tuples.
     /// \param addedRows number of rows to add to the rowCount
     void manipulateRowCount(size_t addedRows) { rowCount += addedRows; };
 
@@ -115,8 +115,8 @@ class IntermediateTable_AVX {
         }
     }
 
-    /// Creates a table data structure of type T** and assignes the number of tuples to outputSize
-    /// \param outputSize number of tuple in the output
+    /// Creates a table data structure of type T** and assigns the number of tuples to outputSize
+    /// \param outputSize number of tuples in the output
     std::tuple<T **, unsigned> table() {
         freeTableOutput();
 
@@ -131,8 +131,8 @@ class IntermediateTable_AVX {
     }
 
     /// Detaches the table data structure of type T** from this IntermediateTable-Object and returns its address.
-    /// That means that this datastructure is not freed if the table is deleted.
-    /// \param outputSize number of tuple in the output
+    /// That means that this data structure is not freed if the table is deleted.
+    /// \param outputSize number of tuples in the output
     std::tuple<T **, unsigned> detachTableOutput() {
         T **tmp = tableOutput;
         tableOutput = nullptr;
@@ -143,7 +143,7 @@ class IntermediateTable_AVX {
 
     /// Frees the memory that is accociated to tableOutput.
     /// \param tableOutput data structure that is freed
-    /// \param outputSize number of tuple in tableOutput
+    /// \param outputSize number of tuples in tableOutput
     static void deleteDetachedTableOutput(T **tableOutput, unsigned outputSize) {
         if (tableOutput) {
             for (unsigned i = 0; i < outputSize; ++i) {
@@ -170,7 +170,7 @@ class IntermediateTable_AVX {
 
     /// Prints a table data structure of type T** to stdout
     /// \param tableOutput data structure that printed
-    /// \param outputSize number of tuple in the output
+    /// \param outputSize number of tuples in the output
     static void printTableOutput(T **data, unsigned numberOfRows, unsigned numberOfColumns) {
         for (unsigned row = 0; row < numberOfRows; ++row) {
             for (unsigned col = 0; col < numberOfColumns; ++col) {

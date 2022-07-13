@@ -146,25 +146,35 @@ IntermediateTable<T, Variant, Alignment> *apply_filters_unified(IntermediateTabl
             for (int j = 0; j < filters.size(); ++j) {
                 auto value = vectorIterBegin->gather(filters[j]->index);
                 filteringMask = filters[j]->match(value) && filteringMask;
+                delete value;
             }
             // copy tuples to result
             auto scalarIter = vectorIterBegin->getScalarIterator();
             TupleCopyHelperScalar<T, Alignment>::copyMaskedTupleN(result, *scalarIter, filteringMask);
+            delete scalarIter;
         } else {
             __mmask16 filteringMask = ONE_MASK;
             // Iterate over filters and match
             for (int j = 0; j < filters.size(); ++j) {
                 auto vectorReg = vectorIterBegin->gather(filters[j]->index);
                 filteringMask = filters[j]->match(vectorReg, filteringMask);
+                delete vectorReg;
             }
             // copy tuples to result
             auto scalarIter = vectorIterBegin->getScalarIterator();
             TupleCopyHelper<T, Variant, Alignment>::copyMaskedTupleN(result, *scalarIter, _mm512_mask2int(filteringMask));
+            delete scalarIter;
         }
 
         ++(*vectorIterBegin);
         ++(*vectorResultIter);
     }
+
+    // free memory
+    delete vectorIterBegin;
+    delete vectorIterEnd;
+    delete vectorResultIter;
+
     return result;
 }
 }  // namespace RowStore

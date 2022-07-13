@@ -38,7 +38,7 @@ class AllocationHelper<T, SIMD::AVX512, A> {
    public:
     static size_t const getByteSize(uint32_t tupleWidth, size_t tupleCapacity) {
         size_t pageCapacity = PAGE_SIZE / (sizeof(T) * tupleWidth);
-        //               number of complete pages         add 1 if the tuple capacity does not fill complete pages
+        // number of complete pages; add 1 if the tuple capacity does not fill complete pages
         size_t requiredPages = (tupleCapacity / pageCapacity) + ((tupleCapacity % pageCapacity) != 0);
 
         return PAGE_SIZE * requiredPages;
@@ -62,7 +62,7 @@ class AllocationHelper<T, SIMD::AVX512_Strided, A> {
 
 //##########################################################################################################################################
 
-/// This Class is used for data storage and provides Interators for data access
+/// This Class is used for data storage and provides Iterators for data access
 /// \tparam T base type
 /// \tparam V simd variant, decides the internal data layout of the table
 /// \tparam A alignment of the data and stridesize (should be a multiple of sizeof(T))
@@ -193,7 +193,7 @@ class IntermediateTable {
         std::cout << std::endl;
     }
 
-    /// Frees the memory that is accociated to tableOutput.
+    /// Frees the memory that is associated to tableOutput.
     /// \param tableOutput data structure that is freed
     /// \param outputSize number of tuple in tableOutput
     static void deleteTableOutput(T **tableOutput, uint64_t outputSize) {
