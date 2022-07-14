@@ -39,7 +39,9 @@ IntermediateTable<T, Variant, Alignment> *projection_unified(IntermediateTable<T
     // Iterate over given table tuples
     auto scalarIterBegin = table.begin();
     auto scalarIterEnd = table.end();
+    auto scalarResultIter_ = result->begin();
     auto scalarResultIter = result->end();
+    int i = 0;
 
     while (*scalarIterBegin != *scalarIterEnd) {
         // Fill tuple with data from every row of table

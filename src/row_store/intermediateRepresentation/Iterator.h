@@ -17,7 +17,7 @@ class IntermediateIterator {
 
     const uint32_t tupleWidth;
     /// tuple index the iterator is pointing to
-    uint64_t pos;
+    uint64_t pos = 0;
 
    public:
     /// retuns the memory address of the index-th tuple of the table
@@ -30,11 +30,6 @@ class IntermediateIterator {
 
     /// Increment operator, iterator points to the next tuple or tuple set (in case of teh vector iterator)
     virtual IntermediateIterator<T, V, S> *operator++() = 0;
-    IntermediateIterator<T, V, S> *operator++(int) {
-        IntermediateIterator<T, V, S> iter = *this;
-        ++(*this);
-        return iter;
-    }
 
     /// Value-at operator, returns a reference to the first column of the index-th tuple
     /// \param index index of the tuple whose first elements value is requested

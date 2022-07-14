@@ -8,21 +8,19 @@
 
 namespace RowStore {
 
-template <typename T, SIMD Variant, int Alignment>
-class TupleCopyHelper;
-
 template <typename T, int Alignment>
 class TupleCopyHelperScalar {
    public:
     static void copyMaskedTupleN(IntermediateTable<T, SIMD::None, Alignment> *result,
                                  IntermediateIterator<T, SIMD::None, Alignment> &scalarIterBegin, bool mask) {
-        if (!mask) {
-            return;
-        } else {
+        if (mask) {
             result->addRow(scalarIterBegin.addressOf(scalarIterBegin.getPos()));
         }
     }
 };
+
+template <typename T, SIMD Variant, int Alignment>
+class TupleCopyHelper;
 
 template <SIMD Variant, int Alignment>
 class TupleCopyHelper<uint32_t, Variant, Alignment> {
@@ -146,7 +144,6 @@ IntermediateTable<T, Variant, Alignment> *apply_filters_unified(IntermediateTabl
             for (int j = 0; j < filters.size(); ++j) {
                 auto value = vectorIterBegin->gather(filters[j]->index);
                 filteringMask = filters[j]->match(value) && filteringMask;
-                delete value;
             }
             // copy tuples to result
             auto scalarIter = vectorIterBegin->getScalarIterator();
@@ -158,7 +155,6 @@ IntermediateTable<T, Variant, Alignment> *apply_filters_unified(IntermediateTabl
             for (int j = 0; j < filters.size(); ++j) {
                 auto vectorReg = vectorIterBegin->gather(filters[j]->index);
                 filteringMask = filters[j]->match(vectorReg, filteringMask);
-                delete vectorReg;
             }
             // copy tuples to result
             auto scalarIter = vectorIterBegin->getScalarIterator();

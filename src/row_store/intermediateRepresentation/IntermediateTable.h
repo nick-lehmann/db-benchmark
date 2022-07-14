@@ -16,7 +16,7 @@ namespace RowStore {
 /// \tparam V SIMD variant (None, AVX512, AVX512_Strided)
 /// \tparam A alignment of the data and stridesize (shold be a multiple of sizeof(T))
 template <typename T, SIMD V, int A>
-class AllocationHelper {};
+class AllocationHelper;
 
 template <typename T, int A>
 class AllocationHelper<T, SIMD::None, A> {
@@ -161,48 +161,18 @@ class IntermediateTable {
     /// Creates a table data structure of type T** and assignes the number of tuples to outputSize
     std::tuple<T **, unsigned> table() {
         auto iter = begin();
-        auto &iterEnd = *writeIterator;
 
-        T **output = static_cast<T **>(malloc(sizeof(T *) * iterEnd.getPos()));
-        while (*iter != iterEnd) {
+        T **output = static_cast<T **>(malloc(sizeof(T *) * writeIterator->getPos()));
+        while (*iter != *writeIterator) {
             output[iter->getPos()] = static_cast<T *>(malloc(sizeof(T) * tupleWidth));
             std::memcpy(output[iter->getPos()], iter->getAddress(), sizeof(T) * tupleWidth);
             ++(*iter);
         }
 
-        return std::make_tuple(output, iterEnd.getPos());
+        return std::make_tuple(output, iter->getPos());
     }
 
     /// Returns the number of values in a tuple, aka number of attributes of the table.
     uint32_t getTupleWidth() { return tupleWidth; }
-
-    /// Prints a table data structure of type T** to stdout
-    /// \param tableOutput data structure that printed
-    /// \param outputSize number of tuple in the output
-    static void printTableOutput(T **data, uint64_t numberOfRows, uint64_t numberOfColumns) {
-        for (uint64_t row = 0; row < numberOfRows; ++row) {
-            for (uint64_t col = 0; col < numberOfColumns; ++col) {
-                // Prepend a column separator except for the first column
-                if (col) {
-                    std::cout << " | ";
-                }
-                std::cout << data[row][col];
-            }
-            std::cout << std::endl;
-        }
-        std::cout << std::endl;
-    }
-
-    /// Frees the memory that is associated to tableOutput.
-    /// \param tableOutput data structure that is freed
-    /// \param outputSize number of tuple in tableOutput
-    static void deleteTableOutput(T **tableOutput, uint64_t outputSize) {
-        if (tableOutput) {
-            for (uint64_t i = 0; i < outputSize; ++i) {
-                free(tableOutput[i]);
-            }
-            free(tableOutput);
-        }
-    }
 };
 }  // namespace RowStore

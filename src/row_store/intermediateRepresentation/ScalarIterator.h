@@ -17,7 +17,6 @@ class ScalarIterator<T, SIMD::None, S> : public IntermediateIterator<T, SIMD::No
    public:
     ScalarIterator(T *baseAddress, uint32_t tupleWidth) : IntermediateIterator<T, SIMD::None, S>(baseAddress, tupleWidth) {
         this->currentAddress = baseAddress;
-        this->pos = 0;
     }
 
     ScalarIterator(T *baseAddress, uint32_t tupleWidth, uint64_t position) : ScalarIterator(baseAddress, tupleWidth) {
@@ -41,7 +40,6 @@ class ScalarIterator<T, SIMD::AVX512, S> : public IntermediateIterator<T, SIMD::
    public:
     ScalarIterator(T *baseAddress, uint32_t tupleWidth) : IntermediateIterator<T, SIMD::AVX512, S>(baseAddress, tupleWidth) {
         this->currentAddress = baseAddress;
-        this->pos = 0;
     }
 
     ScalarIterator(T *baseAddress, uint32_t tupleWidth, uint64_t position) : ScalarIterator(baseAddress, tupleWidth) {
@@ -80,7 +78,6 @@ class ScalarIterator<T, SIMD::AVX512_Strided, S> : public IntermediateIterator<T
           strideCapacity(S / (tupleWidth * sizeof(T))),
           stridesPerSet(VECTOR_BYTE_WIDTH / sizeof(T)) {
         this->currentAddress = baseAddress;
-        this->pos = 0;
     }
 
     ScalarIterator(T *baseAddress, uint32_t tupleWidth, uint64_t position) : ScalarIterator(baseAddress, tupleWidth) {

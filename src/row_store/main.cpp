@@ -17,65 +17,6 @@
 //#include "IntermediateTable_AVX.h"
 #include "SIMD.h"
 
-template <typename T, SIMD Variant, int Stride>
-void demoUnified() {
-    /*unsigned width = 10;
-    unsigned height = 20;
-
-    const T **initialData =
-        TableHelper::generateFunctionData<T>(width, height, [&width](unsigned column, unsigned row) { return row * width + column; });
-
-    std::vector<T *> data;
-    for (unsigned row = 0; row < height; row++) {
-        data.push_back(static_cast<T *>(malloc(sizeof(T) * width)));
-        for (unsigned column = 0; column < width; column++) {
-            data.back()[column] = initialData[row][column];
-        }
-    }
-
-    RowStore::IntermediateTable<T, Variant, Stride> table(width, data);
-
-    auto iter = table.vectorBegin();
-    auto itere = table.vectorEnd();
-    while (*iter != *itere) {
-        auto vec = iter->gather(5);
-        auto target = aligned_alloc(64, 64);
-        _mm512_store_epi32(target, vec);
-
-        for (int i = 0; i < 16; ++i) {
-            std::cout << ((T *)target)[i] << " ";
-        }
-        std::cout << std::endl;
-        free(target);
-        ++(*iter);
-    }
-    std::cout << "\n\n" << std::endl;
-
-    delete iter;
-    delete itere;*/
-}
-
-template <typename T, SIMD Variant>
-void stridedDemo() {
-    /*unsigned width = 10;
-    unsigned height = 20;
-
-    const T **initialData =
-        TableHelper::generateFunctionData<T>(width, height, [&width](unsigned column, unsigned row) { return row * width + column; });
-
-    RowStore::BaseTable<T> baseTable(width, height, initialData);
-    std::cout << "Print Test-BaseTable: \n" << std::endl;
-    baseTable.print();
-
-    RowStore::StridedTable<T, 4096> stridedTable(width, baseTable.data);
-    stridedTable.addRow(baseTable.data[1]);
-
-    auto iter = stridedTable.begin();
-    while (iter != stridedTable.end()) {
-        std::cout << *iter++ << std::endl;
-    }*/
-}
-
 /// Run a demo of the Row-Store database.
 /// Creates a small example BaseTable and applies a simple query on it. Afterwards run a benchmark with the same query on the same table.
 // TODO: Probably only works for `Variant = SIMD::AVX512` as the AVX variant of the intermediate table is used
@@ -89,6 +30,7 @@ void demo() {
 
     const T **initialData = TableHelper::generateRandomData<T>(width, height, 1, 10);
     RowStore::BaseTable<T, Alignment> baseTable(width, height, initialData);
+    TableHelper::freeTable(const_cast<T **>(initialData), height);
 
     std::cout << "Print Test-BaseTable: \n" << std::endl;
     baseTable.print();
@@ -101,28 +43,11 @@ void demo() {
 
     auto [queryResult, resultRowCount, resultColumnCount] = baseTable.queryTable(projectionAttributes, filters);
 
-    RowStore::IntermediateTable<T, Variant, Alignment>::printTableOutput(queryResult, resultRowCount, resultColumnCount);
+    TableHelper::printTable(queryResult, resultColumnCount, resultRowCount);
 
     // delete result table and free memory
-    RowStore::IntermediateTable<T, Variant, Alignment>::deleteTableOutput(queryResult, resultRowCount);
-
-    // run benchmark of same query
-    // std::cout << "Print benchmark: " << std::endl << std::endl;
-    // auto benchmarkResult = Benchmark::measureTime(baseTable, projectionAttributes, filters);*/
+    TableHelper::freeTable(queryResult, resultRowCount);
 }
-
-/// Run an example benchmark of the Row-Store database.
-/*void benchmark() {
-    using Type = int32_t;
-
-    // define projection attributes
-    std::vector<unsigned> projectionAttributes = {0, 2, 3};
-    // define filters
-    std::vector<Filter<Type> *> filters = {new GreaterThan<Type>(1, 400), new LessThan<Type>(2, 600)};
-
-    // run benchmarks
-    Benchmark::benchmarkRows(0, projectionAttributes, filters);
-}*/
 
 int main(int argc, char **argv) {
     demo<uint32_t, SIMD::None, 4096>();
