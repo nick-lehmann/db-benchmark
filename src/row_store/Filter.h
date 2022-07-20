@@ -8,21 +8,19 @@
 
 namespace RowStore {
 
-template <typename T, SIMD Variant, int Alignment>
-class TupleCopyHelper;
-
 template <typename T, int Alignment>
 class TupleCopyHelperScalar {
    public:
     static void copyMaskedTupleN(IntermediateTable<T, SIMD::None, Alignment> *result,
                                  IntermediateIterator<T, SIMD::None, Alignment> &scalarIterBegin, bool mask) {
-        if (!mask) {
-            return;
-        } else {
+        if (mask) {
             result->addRow(scalarIterBegin.addressOf(scalarIterBegin.getPos()));
         }
     }
 };
+
+template <typename T, SIMD Variant, int Alignment>
+class TupleCopyHelper;
 
 template <SIMD Variant, int Alignment>
 class TupleCopyHelper<uint32_t, Variant, Alignment> {
@@ -150,6 +148,7 @@ IntermediateTable<T, Variant, Alignment> *apply_filters_unified(IntermediateTabl
             // copy tuples to result
             auto scalarIter = vectorIterBegin->getScalarIterator();
             TupleCopyHelperScalar<T, Alignment>::copyMaskedTupleN(result, *scalarIter, filteringMask);
+            delete scalarIter;
         } else {
             __mmask16 filteringMask = ONE_MASK;
             // Iterate over filters and match
@@ -160,11 +159,18 @@ IntermediateTable<T, Variant, Alignment> *apply_filters_unified(IntermediateTabl
             // copy tuples to result
             auto scalarIter = vectorIterBegin->getScalarIterator();
             TupleCopyHelper<T, Variant, Alignment>::copyMaskedTupleN(result, *scalarIter, _mm512_mask2int(filteringMask));
+            delete scalarIter;
         }
 
         ++(*vectorIterBegin);
         ++(*vectorResultIter);
     }
+
+    // free memory
+    delete vectorIterBegin;
+    delete vectorIterEnd;
+    delete vectorResultIter;
+
     return result;
 }
 }  // namespace RowStore

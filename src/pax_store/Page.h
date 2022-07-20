@@ -18,21 +18,45 @@
 
 using namespace std;
 
-// PAX Page that supports fixed width integers.
-//
-// No presence bits implemented as we do not store nullable values right now
-// No v-minitables are supported because all T types we care about are
-// fixed-sized.
-template <typename T, typename idxT=T>
+/**
+ * @brief PAX Page that supports fixed width integers.
+ *
+ * No presence bits implemented as we do not store nullable values right now.
+ * No v-minitables are supported because all T types we care about are fixed-sized.
+ *
+ * |numberOfAttributes|attributeSize|minipageOffsets|numberOfRecords|freespace|data....|
+ *
+ * Example
+ *
+ * 3 attributes/columns with a size of 8bit/1byte each. and 10 saved records.
+ *
+ * | 3 | 8 | 8 | 8 | 18 | 1377 | 2736 | 10 | 3838
+ *
+ * 3 = number of attributes
+ * 8x3 = 3 times the size of the attributes
+ * 18, 1377, 2736 = offsets inside the minipage for each column
+ * 10 = number of records in the page
+ * 3838 = free space in the page
+ *
+ *
+ * @tparam T type of data
+ */
+template <typename T, typename idxT = T>
 class PaxPage {
+   private:
     unsigned short *start;
     long int pagesize;
 
     Header *numberOfAttributes;  // Fixed
-    Header *attributeSizes;      // Variable
-    Header *minipageOffsets;     // Variable
+    Header *attributeSizes;      // Variable, dependent on the amount of attributes
+    Header *minipageOffsets;     // Variable, dependent on the amount of attributes
     Header *numberOfRecords;     // Fixed
     Header *freeSpace;           // Fixed
+
+    T *getMinipageForAttribute(unsigned index) {
+        const Header offset = *(this->minipageOffsets + index);
+        return (T *)((char *)this->start + offset);
+    }
 
    public:
     // Read page from memory
@@ -47,35 +71,46 @@ class PaxPage {
         this->start = start;
         this->pagesize = pagesize;
 
-        numberOfAttributes = start;
-        *(numberOfAttributes) = attributes;
+        this->numberOfAttributes = start;
+        *this->numberOfAttributes = attributes;
+
         initHeaderLocations();
 
-        this->start = start;
-        *numberOfAttributes = attributes;
-
-        for (int i = 0; i < attributes; i++) *(attributeSizes++) = sizeof(T);
-
-        unsigned short headerLength = (3 + 2 * attributes) * sizeof(Header);
-        unsigned short freeBytes = pagesize - headerLength;
-        unsigned short recordSize = *numberOfAttributes * sizeof(T);
-        unsigned short minipageSize = freeBytes / attributes;
-
         for (int i = 0; i < attributes; i++) {
-            unsigned short offset = headerLength + (i * minipageSize);
-            // cout << "Page " << i << " has offset " << offset << endl;
-            *(minipageOffsets + i) = offset;
+            *this->attributeSizes++ = sizeof(T);
         }
 
-        *numberOfRecords = 0;
-        *freeSpace = freeBytes;
+        const unsigned short headerLength = getHeaderSize(attributes);
+        const unsigned short freeBytes = pagesize - headerLength;
+        const unsigned short recordSize = *numberOfAttributes * sizeof(T);
+        const unsigned short minipageSize = freeBytes / attributes;
+
+        for (int i = 0; i < attributes; i++) {
+            const unsigned short offset = headerLength + (i * minipageSize);
+            *(this->minipageOffsets + i) = offset;
+        }
+
+        *this->numberOfRecords = 0;
+        *this->freeSpace = freeBytes;
     }
 
     void initHeaderLocations() {
+        // All internal class variables
         attributeSizes = start + 1;
         minipageOffsets = attributeSizes + *numberOfAttributes;
         numberOfRecords = minipageOffsets + *numberOfAttributes;
         freeSpace = numberOfRecords + 1;
+    }
+
+    /**
+     * @brief Get the Header Size object
+     *
+     * @param numberOfAttributes
+     * @return unsigned short
+     */
+    static unsigned short getHeaderSize(Header numberOfAttributes) {
+        // 3 header fields, plus 2 (attribute size + minipage offset) for every attribute
+        return (3 + 2 * numberOfAttributes) * sizeof(Header);
     }
 
     /**
@@ -86,14 +121,17 @@ class PaxPage {
      * @return int
      */
     static int getMaximumRows(long pagesize, Header numberOfAttributes) {
-        // 3 header fields, plus 2 for every attribute
-        unsigned short headerLength = (3 + 2 * numberOfAttributes) * sizeof(Header);
-        return (pagesize - headerLength) / (numberOfAttributes * sizeof(T));
+        auto headerSize = getHeaderSize(numberOfAttributes);
+        return (pagesize - headerSize) / (numberOfAttributes * sizeof(T));
     }
 
+    /**
+     * @brief prints the page table. 2 bytes at a time. (the size of the header type)
+     *
+     */
     void print() {
-        int lineWidth = 8;
-        for (int i = 0; i < pagesize / sizeof(unsigned short); i++) {
+        const int lineWidth = 8;
+        for (int i = 0; i < this->pagesize / sizeof(unsigned short); i++) {
             if (i % lineWidth == 0) cout << endl << &start[i] << "  ";
             cout << std::setw(8) << start[i] << " ";
         }
@@ -103,10 +141,8 @@ class PaxPage {
     T *readRow(RowIndex index) {
         T *returnRow = new T[*(this->numberOfAttributes)];
         for (unsigned i = 0; i < *(this->numberOfAttributes); i++) {
-            Header offset = *(minipageOffsets + i);
-
-            T *minipage = (T *)(start + offset / 2);
-            T *location = minipage + index;
+            const auto minipage = this->getMinipageForAttribute(i);
+            const T *location = minipage + index;
             returnRow[i] = *location;
         }
         return returnRow;
@@ -115,31 +151,27 @@ class PaxPage {
     T *projectRow(RowIndex index, std::vector<uint64_t> &projection) {
         T *returnRow = new T[projection.size()];
         for (unsigned i = 0; i < projection.size(); i++) {
-            Header offset = *(minipageOffsets + projection[i]);
-
-            T *minipage = (T *)(start + offset / 2);
-            T *location = minipage + index;
+            const auto minipage = this->getMinipageForAttribute(projection[i]);
+            const T *location = minipage + index;
             returnRow[i] = *location;
         }
         return returnRow;
     }
 
     void writeRecord(const T *record) {
-        unsigned short recordSize = *numberOfAttributes * sizeof(T);
-        if (*freeSpace < recordSize) {
+        const unsigned short recordSize = *numberOfAttributes * sizeof(T);
+        if (*this->freeSpace < recordSize) {
             cout << "Page is full" << endl;
             throw;
         }
 
-        for (int i = 0; i < *numberOfAttributes; i++) {
-            Header offset = *(minipageOffsets + i);
-
-            T *minipage = (T *)(start + offset / 2);
+        for (int i = 0; i < *this->numberOfAttributes; i++) {
+            const auto minipage = this->getMinipageForAttribute(i);
             T *location = minipage + *numberOfRecords;
             *(location) = record[i];
         };
-        (*numberOfRecords)++;
-        (*freeSpace) -= recordSize;
+        *this->numberOfRecords += 1;
+        *this->freeSpace -= recordSize;
     }
 
     vector<unsigned> query(std::vector<Filters::Filter<T, SIMD::None> *> &filters) {
@@ -148,23 +180,24 @@ class PaxPage {
 
         for (auto &filter : filters) {
             // Find the minipage for the attribute to which the filter applies.
-            Header offset = *(minipageOffsets + filter->index);
-            T *minipage = (T *)((char *)start + offset);
+            const auto minipage = this->getMinipageForAttribute(filter->index);
 
             if (firstRun) {
                 // On the first run, we need to go through all records.
                 for (RowIndex index = 0; index < *numberOfRecords; index++) {
-                    T cell = *(minipage + index);
+                    const T cell = *(minipage + index);
                     if (filter->match(cell)) positions.push_back(index);
                 }
                 firstRun = false;
             } else {
+                vector<unsigned> positionsFiltered;
                 // On subsequent runs, we only need to go through the positions where
                 // all previous filters already matched.
                 for (auto &position : positions) {
-                    T cell = *(minipage + position);
-                    if (filter->match(cell)) positions.push_back(position);
+                    const T cell = *(minipage + position);
+                    if (filter->match(cell)) positionsFiltered.push_back(position);
                 }
+                positions = positionsFiltered;
             }
         }
 
@@ -192,8 +225,9 @@ class PaxPage {
 
         for (auto &filter : filters) {
             // Find the minipage for the attribute to which the filter applies.
-            Header offset = *(minipageOffsets + filter->index);
-            T *minipage = (T *)((char *)start + offset);
+            // Header offset = *(minipageOffsets + filter->index);
+            // T *minipage = (T *)((char *)start + offset);
+            const auto minipage = this->getMinipageForAttribute(filter->index);
 
             auto *positionsTail = positions;
 

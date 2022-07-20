@@ -17,10 +17,10 @@ class IntermediateIterator {
 
     const uint32_t tupleWidth;
     /// tuple index the iterator is pointing to
-    uint64_t pos;
+    uint64_t pos = 0;
 
    public:
-    /// retruns the memory address of the index-th tuple of the table
+    /// retuns the memory address of the index-th tuple of the table
     /// \param index index of the tuple whose address is requested
     virtual T *addressOf(uint64_t index) = 0;
 
@@ -28,26 +28,21 @@ class IntermediateIterator {
     /// Constructor
     IntermediateIterator(T *baseAddress, uint32_t tupleWidth) : baseAddress(baseAddress), tupleWidth(tupleWidth) {}
 
-    /// Inrement operator, iterator points to the next tuple or tuple set(in case of teh vector iterator)
+    /// Increment operator, iterator points to the next tuple or tuple set (in case of teh vector iterator)
     virtual IntermediateIterator<T, V, S> *operator++() = 0;
-    IntermediateIterator<T, V, S> *operator++(int) {
-        IntermediateIterator<T, V, S> iter = *this;
-        ++(*this);
-        return iter;
-    }
 
-    /// Value-at operator, retrurns a reference to the first column of the index-th tuple
+    /// Value-at operator, returns a reference to the first column of the index-th tuple
     /// \param index index of the tuple whose first elements value is requested
     T &operator[](uint64_t index) { return *addressOf(index); }
-    /// Value operator, retrurns a reference to the first column of the current tuple
+    /// Value operator, returns a reference to the first column of the current tuple
     T &operator*() { return *currentAddress; }
 
     /// Equal operator, returns if two iterator are currently referencing the same index or not
     bool operator==(const IntermediateIterator<T, V, S> &other) { return pos == other.pos; }
-    /// Not Equal operator, returns if two iterator are currently referencing differen indexes or not
+    /// Not Equal operator, returns if two iterator are currently referencing different indices or not
     bool operator!=(const IntermediateIterator<T, V, S> &other) { return pos != other.pos; }
 
-    /// Retruns address that is currently referenced by the interator
+    /// Retuns address that is currently referenced by the iterator
     T *getAddress() { return currentAddress; }
     /// Returns the value in the specified column of the index-th tuple
     /// \param index index of the tuple
