@@ -49,6 +49,21 @@ const T** generateFunctionData(unsigned numberOfColumns, unsigned numberOfRows, 
     return const_cast<const T**>(data);
 }
 
+/// Frees a two-dimensional C-array.
+/// \tparam T type of the data
+/// \param table array (of type T**) to free
+/// \param numberOfRows number of rows
+template <typename T>
+void freeTable(T** table, unsigned numberOfRows) {
+    // checks if table is a nullptr
+    if (table) {
+        for (uint64_t i = 0; i < numberOfRows; ++i) {
+            free(table[i]);
+        }
+        free(table);
+    }
+}
+
 /// Prints a two-dimensional C-array as a table.
 /// \tparam T type of the data
 /// \param table table to print

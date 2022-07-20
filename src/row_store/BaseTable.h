@@ -12,10 +12,9 @@
 #include "Filter.h"
 #include "Filters/All.h"
 #include "ITable.h"
-#include "intermediateRepresentation/IntermediateTable.h"
-//#include "IntermediateTable_AVX.h"
 #include "Projection.h"
 #include "SIMD.h"
+#include "intermediateRepresentation/IntermediateTable.h"
 
 namespace RowStore {
 
