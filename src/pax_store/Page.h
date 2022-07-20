@@ -41,7 +41,7 @@ using namespace std;
  *
  * @tparam T type of data
  */
-template <typename T>
+template <typename T, typename idxT = T>
 class PaxPage {
    private:
     unsigned short *start;
@@ -207,14 +207,14 @@ class PaxPage {
     // Note: This function currently only works when T is set to uint64_t. Otherwise, the `ColumStore::Helper::store` function does not
     // work.
     // TODO: Allow for uint32_t values
-    std::tuple<uint64_t *, uint64_t> queryAVX(std::vector<Filters::Filter<T, SIMD::AVX512> *> &filters) {
+    std::tuple<idxT *, uint64_t> queryAVX(std::vector<Filters::Filter<T, SIMD::AVX512> *> &filters) {
         // Array of all row indices which have passed all filters that were already applied. At the beginning, all rows all still present
         // because no filter has been applied yet. However, for performance reasons, we do not populate the array with all indicies but
         // rather compute the indices on the fly when the first filter is applied (firstRun=true).
         // Please note that, for performance reasons, we do not recreate the positions array after each iteration. Instead, we overwrite the
         // elements starting from the beginning of each iteration and keep track of all still valid positions using the `positionsCounter`.
         // All values with an index greater than `positionsCounter` are outdated intermediate results.
-        auto positions = new uint64_t[*numberOfRecords];
+        auto positions = new idxT[*numberOfRecords];
         bool firstRun = true;
 
         // Count of all rows which have passed all filters.
@@ -234,7 +234,7 @@ class PaxPage {
             // Counter of all rows which have also passed the current filter.
             uint64_t newPositionsCounter = 0;
 
-            for (RowIndex rowIndex = 0; rowIndex < positionsCounter; rowIndex += rowsPerRegister) {
+            for (idxT rowIndex = 0; rowIndex < positionsCounter; rowIndex += rowsPerRegister) {
                 // Check bounds for next load into AVX register.
                 __mmask16 mask;
                 if (rowIndex + rowsPerRegister <= positionsCounter) {
