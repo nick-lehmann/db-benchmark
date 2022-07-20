@@ -8,7 +8,7 @@
 #include "intermediateRepresentation/IntermediateTable.h"
 
 namespace RowStore {
-/// Cecks whether all column indices are vallid for the given tupleSize
+/// Checks whether all column indices are valid for the given tupleSize
 /// \param columnIndices column indices that are checked for validity
 /// \param tupleSize tuple width of the table that should be projected
 bool columnIndicesValid(std::vector<uint64_t> columnIndices, uint32_t tupleSize) {
@@ -39,7 +39,9 @@ IntermediateTable<T, Variant, Alignment> *projection_unified(IntermediateTable<T
     // Iterate over given table tuples
     auto scalarIterBegin = table.begin();
     auto scalarIterEnd = table.end();
+    auto scalarResultIter_ = result->begin();
     auto scalarResultIter = result->end();
+    int i = 0;
 
     while (*scalarIterBegin != *scalarIterEnd) {
         // Fill tuple with data from every row of table
@@ -50,6 +52,12 @@ IntermediateTable<T, Variant, Alignment> *projection_unified(IntermediateTable<T
         ++(*scalarResultIter);
         result->incrementWriteIterator();
     }
+
+    // free memory
+    delete scalarIterBegin;
+    delete scalarIterEnd;
+    delete scalarResultIter;
+
     return result;
 }
 }  // namespace RowStore

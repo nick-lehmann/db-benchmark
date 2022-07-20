@@ -16,53 +16,57 @@ class VectorIteratorHelper;
 
 template <int S>
 class VectorIteratorHelper<uint32_t, SIMD::AVX512, S> {
+   private:
+    const __m512i vIndex;
+
    public:
+    VectorIteratorHelper(uint32_t tupleWidth)
+        : vIndex(_mm512_set_epi32(0 * tupleWidth, 1 * tupleWidth, 2 * tupleWidth, 3 * tupleWidth, 4 * tupleWidth, 5 * tupleWidth,
+                                  6 * tupleWidth, 7 * tupleWidth, 8 * tupleWidth, 9 * tupleWidth, 10 * tupleWidth, 11 * tupleWidth,
+                                  12 * tupleWidth, 13 * tupleWidth, 14 * tupleWidth, 15 * tupleWidth)) {}
     /// Gather method
     /// \param baseAddress source address for the gather method
     /// \param tupleWidth width of the tuples in the IntermediateTable
-    static const __m512i gather(uint32_t *baseAddress, uint32_t tupleWidth) {
-        __m512i vIndex = _mm512_set_epi32(0 * tupleWidth, 1 * tupleWidth, 2 * tupleWidth, 3 * tupleWidth, 4 * tupleWidth, 5 * tupleWidth,
-                                          6 * tupleWidth, 7 * tupleWidth, 8 * tupleWidth, 9 * tupleWidth, 10 * tupleWidth, 11 * tupleWidth,
-                                          12 * tupleWidth, 13 * tupleWidth, 14 * tupleWidth, 15 * tupleWidth);
-        return _mm512_i32gather_epi32(vIndex, baseAddress, 4);
-    }
+    const __m512i gather(uint32_t *baseAddress) { return _mm512_i32gather_epi32(vIndex, baseAddress, 4); }
 };
 
 template <int S>
 class VectorIteratorHelper<uint64_t, SIMD::AVX512, S> {
+   private:
+    const __m512i vIndex;
+
    public:
-    static const __m512i gather(uint64_t *baseAddress, uint32_t tupleWidth) {
-        __m512i vIndex = _mm512_set_epi64(0 * tupleWidth, 1 * tupleWidth, 2 * tupleWidth, 3 * tupleWidth, 4 * tupleWidth, 5 * tupleWidth,
-                                          6 * tupleWidth, 7 * tupleWidth);
-        auto reg = _mm512_i64gather_epi64(vIndex, baseAddress, 8);
-        return reg;
-    }
+    VectorIteratorHelper(uint32_t tupleWidth)
+        : vIndex(_mm512_set_epi64(0 * tupleWidth, 1 * tupleWidth, 2 * tupleWidth, 3 * tupleWidth, 4 * tupleWidth, 5 * tupleWidth,
+                                  6 * tupleWidth, 7 * tupleWidth)) {}
+
+    const __m512i gather(uint64_t *baseAddress) { return _mm512_i64gather_epi64(vIndex, baseAddress, 8); }
 };
 
 template <int S>
 class VectorIteratorHelper<uint32_t, SIMD::AVX512_Strided, S> {
+   private:
+    const __m512i vIndex = _mm512_set_epi32(
+        0 * (S / sizeof(uint32_t)), 1 * (S / sizeof(uint32_t)), 2 * (S / sizeof(uint32_t)), 3 * (S / sizeof(uint32_t)),
+        4 * (S / sizeof(uint32_t)), 5 * (S / sizeof(uint32_t)), 6 * (S / sizeof(uint32_t)), 7 * (S / sizeof(uint32_t)),
+        8 * (S / sizeof(uint32_t)), 9 * (S / sizeof(uint32_t)), 10 * (S / sizeof(uint32_t)), 11 * (S / sizeof(uint32_t)),
+        12 * (S / sizeof(uint32_t)), 13 * (S / sizeof(uint32_t)), 14 * (S / sizeof(uint32_t)), 15 * (S / sizeof(uint32_t)));
+
    public:
     /// Gather method
     /// \param baseAddress source address for the gather method
-    static const __m512i gather(uint32_t *baseAddress) {
-        __m512i vIndex = _mm512_set_epi32(
-            0 * (S / sizeof(uint32_t)), 1 * (S / sizeof(uint32_t)), 2 * (S / sizeof(uint32_t)), 3 * (S / sizeof(uint32_t)),
-            4 * (S / sizeof(uint32_t)), 5 * (S / sizeof(uint32_t)), 6 * (S / sizeof(uint32_t)), 7 * (S / sizeof(uint32_t)),
-            8 * (S / sizeof(uint32_t)), 9 * (S / sizeof(uint32_t)), 10 * (S / sizeof(uint32_t)), 11 * (S / sizeof(uint32_t)),
-            12 * (S / sizeof(uint32_t)), 13 * (S / sizeof(uint32_t)), 14 * (S / sizeof(uint32_t)), 15 * (S / sizeof(uint32_t)));
-        return _mm512_i32gather_epi32(vIndex, baseAddress, 4);
-    }
+    const __m512i gather(uint32_t *baseAddress) { return _mm512_i32gather_epi32(vIndex, baseAddress, 4); }
 };
 
 template <int S>
 class VectorIteratorHelper<uint64_t, SIMD::AVX512_Strided, S> {
+   private:
+    const __m512i vIndex =
+        _mm512_set_epi64(0 * (S / sizeof(uint64_t)), 1 * (S / sizeof(uint64_t)), 2 * (S / sizeof(uint64_t)), 3 * (S / sizeof(uint64_t)),
+                         4 * (S / sizeof(uint64_t)), 5 * (S / sizeof(uint64_t)), 6 * (S / sizeof(uint64_t)), 7 * (S / sizeof(uint64_t)));
+
    public:
-    static const __m512i gather(uint64_t *baseAddress) {
-        __m512i vIndex = _mm512_set_epi64(0 * (S / sizeof(uint64_t)), 1 * (S / sizeof(uint64_t)), 2 * (S / sizeof(uint64_t)),
-                                          3 * (S / sizeof(uint64_t)), 4 * (S / sizeof(uint64_t)), 5 * (S / sizeof(uint64_t)),
-                                          6 * (S / sizeof(uint64_t)), 7 * (S / sizeof(uint64_t)));
-        return _mm512_i64gather_epi64(vIndex, baseAddress, 8);
-    }
+    const __m512i gather(uint64_t *baseAddress) { return _mm512_i64gather_epi64(vIndex, baseAddress, 8); }
 };
 
 //##########################################################################################################################################
@@ -82,7 +86,6 @@ class VectorIterator<T, SIMD::None, S> : public IntermediateIterator<T, SIMD::No
    public:
     VectorIterator(T *baseAddress, uint32_t tupleWidth) : IntermediateIterator<T, SIMD::None, S>(baseAddress, tupleWidth) {
         this->currentAddress = baseAddress;
-        this->pos = 0;
     }
 
     VectorIterator(T *baseAddress, uint32_t tupleWidth, uint64_t position) : VectorIterator(baseAddress, tupleWidth) {
@@ -113,12 +116,12 @@ class VectorIterator<T, SIMD::AVX512, S> : public IntermediateIterator<T, SIMD::
     static const uint32_t LaneMultiplier = VECTOR_BYTE_WIDTH / sizeof(T);
 
    private:
-    using Helper = VectorIteratorHelper<T, SIMD::AVX512, S>;
+    VectorIteratorHelper<T, SIMD::AVX512, S> helper;
 
    public:
-    VectorIterator(T *baseAddress, uint32_t tupleWidth) : IntermediateIterator<T, SIMD::AVX512, S>(baseAddress, tupleWidth) {
+    VectorIterator(T *baseAddress, uint32_t tupleWidth)
+        : IntermediateIterator<T, SIMD::AVX512, S>(baseAddress, tupleWidth), helper(tupleWidth) {
         this->currentAddress = baseAddress;
-        this->pos = 0;
     }
 
     VectorIterator(T *baseAddress, uint32_t tupleWidth, uint64_t position) : VectorIterator(baseAddress, tupleWidth) {
@@ -137,7 +140,7 @@ class VectorIterator<T, SIMD::AVX512, S> : public IntermediateIterator<T, SIMD::
         return this;
     }
 
-    __m512i gather(const uint32_t column) { return Helper::gather(this->currentAddress + column, this->tupleWidth); }
+    __m512i gather(const uint32_t column) { return helper.gather(this->currentAddress + column); }
 
    public:
     T *addressOf(uint64_t index) override { return const_cast<T *>(this->baseAddress + index * this->tupleWidth); }
@@ -149,7 +152,7 @@ class VectorIterator<T, SIMD::AVX512_Strided, S> : public IntermediateIterator<T
     static const uint32_t LaneMultiplier = VECTOR_BYTE_WIDTH / sizeof(T);
 
    private:
-    using Helper = VectorIteratorHelper<T, SIMD::AVX512_Strided, S>;
+    VectorIteratorHelper<T, SIMD::AVX512_Strided, S> helper;
 
     const size_t strideW;
     const size_t strideSetW;
@@ -162,12 +165,12 @@ class VectorIterator<T, SIMD::AVX512_Strided, S> : public IntermediateIterator<T
    public:
     VectorIterator(T *baseAddress, uint32_t tupleWidth)
         : IntermediateIterator<T, SIMD::AVX512_Strided, S>(baseAddress, tupleWidth),
+          helper(),
           strideW(S / sizeof(T)),
           strideSetW((S / sizeof(T)) * (VECTOR_BYTE_WIDTH / sizeof(T))),
           strideCapacity(S / (tupleWidth * sizeof(T))),
           stridesPerSet(VECTOR_BYTE_WIDTH / sizeof(T)) {
         this->currentAddress = baseAddress;
-        this->pos = 0;
     }
 
     VectorIterator(T *baseAddress, uint32_t tupleWidth, uint64_t position) : VectorIterator(baseAddress, tupleWidth) {
@@ -196,7 +199,7 @@ class VectorIterator<T, SIMD::AVX512_Strided, S> : public IntermediateIterator<T
         return this;
     }
 
-    __m512i gather(const uint32_t column) { return Helper::gather(this->currentAddress + column); }
+    __m512i gather(const uint32_t column) { return helper.gather(this->currentAddress + column); }
 
    protected:
     T *addressOf(uint64_t index) override {
