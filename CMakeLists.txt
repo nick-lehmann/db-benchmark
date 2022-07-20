@@ -8,7 +8,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set(CFLAGS -fno-tree-vectorize)
-#available avx flags for knights landing (KNL) architecture
+
+# available avx flags for knights landing (KNL) architecture
 set(PHI_FLAGS -mavx512f -mavx512cd -mavx512er -mavx512pf)
 
 # pass flags to compiler
@@ -28,7 +29,7 @@ add_executable(row_store src/row_store/main.cpp
                             src/row_store/Filter.h 
                             src/row_store/Projection.h 
                             )
-
 add_executable(column_store src/column_store/main.cpp)
 add_executable(pax_store src/pax_store/main.cpp)
 add_executable(timeTesting src/timeTesting.cpp)
+add_executable(test src/test/main.cpp)
