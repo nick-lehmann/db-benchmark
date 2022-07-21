@@ -37,6 +37,9 @@ template <typename T, int A>
 class AllocationHelper<T, SIMD::AVX512, A> {
    public:
     static size_t const getByteSize(uint32_t tupleWidth, size_t tupleCapacity) {
+        // the table must fit a multiple of #lanes tuples
+        uint32_t lanes = VECTOR_BYTE_WIDTH / sizeof(T);
+        tupleCapacity += lanes - (tupleCapacity % lanes);
         size_t pageCapacity = PAGE_SIZE / (sizeof(T) * tupleWidth);
         // number of complete pages; add 1 if the tuple capacity does not fill complete pages
         size_t requiredPages = (tupleCapacity / pageCapacity) + ((tupleCapacity % pageCapacity) != 0);
@@ -135,6 +138,10 @@ class IntermediateTable {
     /// Returns iterator pointer pointing to the address one past the last tuple of the table
     IntermediateIterator<Type, Variant, Alignment> *end() {
         return new ScalarIterator<Type, Variant, Alignment>(data, tupleWidth, writeIterator->getPos());
+    }
+    /// Returns iterator pointer pointing to the tuple at the specified position
+    IntermediateIterator<Type, Variant, Alignment> *at(uint64_t position) {
+        return new ScalarIterator<Type, Variant, Alignment>(data, tupleWidth, position);
     }
     /// Returns vector iterator pointer pointing to the address one past the last tuple of the table. A vector iterator is used to iterate
     /// through the table and prepare vector registers on demand.
