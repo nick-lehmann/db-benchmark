@@ -71,50 +71,6 @@ void checkScenario(const Scenario<T, Variation> &scenario) {
 }
 
 template <typename T>
-void scenarioScalarBase() {
-    unsigned numberOfRows = 600;
-    unsigned numberOfAttributes = 3;
-    std::vector<T> projection = {0, 1, 2};
-    std::vector<Filters::Filter<T, SIMD::None> *> filters = {new Filters::Equal<T, SIMD::None>(0, 8)};
-
-    Scenario<T, SIMD::None> scenario = {"Base Equal", numberOfAttributes, numberOfRows, projection, filters};
-    checkScenario(scenario);
-}
-template <typename T>
-void scenarioScalarTwoEqual() {
-    unsigned numberOfRows = 600;
-    unsigned numberOfAttributes = 3;
-    std::vector<T> projection = {0, 1, 2};
-    std::vector<Filters::Filter<T, SIMD::None> *> filters = {new Filters::Equal<T, SIMD::None>(0, 8),
-                                                             new Filters::Equal<T, SIMD::None>(1, 69)};
-
-    Scenario<T, SIMD::None> scenario = {"2 Equal", numberOfAttributes, numberOfRows, projection, filters};
-    checkScenario(scenario);
-}
-
-template <typename T>
-void scenarioLT() {
-    unsigned numberOfRows = 1000;
-    unsigned numberOfAttributes = 3;
-    std::vector<T> projection = {0, 1, 2};
-    std::vector<Filters::Filter<T, SIMD::None> *> filters = {new Filters::LessThan<T, SIMD::None>(0, 8)};
-
-    Scenario<T, SIMD::None> scenario = {"LEQ", numberOfAttributes, numberOfRows, projection, filters};
-    checkScenario(scenario);
-}
-
-template <typename T>
-void scenarioScalarNotEqual1() {
-    unsigned numberOfRows = 600;
-    unsigned numberOfAttributes = 3;
-    std::vector<T> projection = {0, 1, 2};
-    std::vector<Filters::Filter<T, SIMD::None> *> filters = {new Filters::NotEqual<T, SIMD::None>(0, 8)};
-
-    Scenario<T, SIMD::None> scenario = {"Not Equal", numberOfAttributes, numberOfRows, projection, filters};
-    checkScenario(scenario);
-}
-
-template <typename T>
 void scenarioScalar() {
     // 1 Filter
     {
