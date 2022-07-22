@@ -182,7 +182,8 @@ class Table : public Tables::ITable<T> {
                 auto mask = _mm512_int2mask(~(0xffffffff << r));
 
                 // apply a filtering using the calculated mask
-                auto [dataReg, indexReg] = ColumnStore::Helper::gather<T, idxT, __mmask8>(currentIndexStorage, &(*filterColIterator), mask);
+                auto [dataReg, indexReg] =
+                    ColumnStore::Helper::gather<T, idxT, __mmask8>(currentIndexStorage, &(*filterColIterator), ONE_MASK);
                 auto maskedResult = filter->match(dataReg, mask);
                 auto maskedElements = ColumnStore::Helper::store(indexReg, maskedResult, currentIndexStorage);
 
@@ -194,7 +195,7 @@ class Table : public Tables::ITable<T> {
 
             for (idxT rowIndex = r; rowIndex < currentSizeOfIndexStorage; rowIndex += integerAmount) {
                 auto [dataRegister, indexRegister] =
-                    ColumnStore::Helper::gather<T, idxT, __mmask8>(&indexStorage[rowIndex], &(*filterColIterator), mask);
+                    ColumnStore::Helper::gather<T, idxT, __mmask8>(&indexStorage[rowIndex], &(*filterColIterator), ONE_MASK);
                 auto filterResult = filter->match(dataRegister);
                 auto addedElements = ColumnStore::Helper::store(indexRegister, filterResult, currentIndexStorage);
 
