@@ -225,8 +225,6 @@ class PaxPage {
 
         for (auto &filter : filters) {
             // Find the minipage for the attribute to which the filter applies.
-            // Header offset = *(minipageOffsets + filter->index);
-            // T *minipage = (T *)((char *)start + offset);
             const auto minipage = this->getMinipageForAttribute(filter->index);
 
             auto *positionsTail = positions;
@@ -253,7 +251,7 @@ class PaxPage {
                 if (firstRun) {
                     // On the first run, the positions array contains only zeros. Since all rows are still valid, we can simply load the
                     // next batch of rows starting from the current `rowIndex`.
-                    loadResult = ColumnStore::Helper::load(minipage, rowIndex);
+                    loadResult = ColumnStore::Helper::load(minipage + rowIndex, rowIndex);
                 } else {
                     loadResult = ColumnStore::Helper::gather<T, idxT, __mmask8>(positions + rowIndex, minipage, mask);
                 }
