@@ -170,8 +170,67 @@ void scenarioScalar() {
     }
 }
 
+template <typename T>
+void scenarioAVX() {
+    {
+        Scenario<T, SIMD::AVX512> scenario = {"AVX512 Equal", 3, 600, {0, 1, 2}, {new Filters::Equal<T, SIMD::AVX512>(0, 8)}};
+        checkScenario(scenario);
+    }
+    {
+        Scenario<T, SIMD::AVX512> scenario = {"AVX512 Not Equal", 3, 600, {0, 1, 2}, {new Filters::NotEqual<T, SIMD::AVX512>(1, 69)}};
+        checkScenario(scenario);
+    }
+    {
+        Scenario<T, SIMD::AVX512> scenario = {"AVX512 Less Than", 3, 600, {0, 1, 2}, {new Filters::LessThan<T, SIMD::AVX512>(0, 42)}};
+        checkScenario(scenario);
+    }
+    {
+        Scenario<T, SIMD::AVX512> scenario = {"AVX512 Less Equal", 3, 600, {0, 1, 2}, {new Filters::LessEqual<T, SIMD::AVX512>(1, 80)}};
+        checkScenario(scenario);
+    }
+    {
+        Scenario<T, SIMD::AVX512> scenario = {"AVX512 Greater Than", 3, 600, {0, 1, 2}, {new Filters::GreaterThan<T, SIMD::AVX512>(0, 90)}};
+        checkScenario(scenario);
+    }
+    {
+        Scenario<T, SIMD::AVX512> scenario = {
+            "AVX512 Greater Equal", 3, 600, {0, 1, 2}, {new Filters::GreaterEqual<T, SIMD::AVX512>(0, 95)}};
+        checkScenario(scenario);
+    }
+
+    // 2 Filter
+    {
+        Scenario<T, SIMD::AVX512> scenario = {
+            "AVX512 Bigger and Smaller",
+            3,
+            600,
+            {0, 1, 2},
+            {new Filters::GreaterThan<T, SIMD::AVX512>(0, 40), new Filters::LessThan<T, SIMD::AVX512>(0, 60)}};
+        checkScenario(scenario);
+    }
+    {
+        Scenario<T, SIMD::AVX512> scenario = {"AVX512 Not Equal & Bigger",
+                                              3,
+                                              600,
+                                              {0, 1, 2},
+                                              {new Filters::NotEqual<T, SIMD::AVX512>(2, 80), new Filters::NotEqual<T, SIMD::AVX512>(1, 69),
+                                               new Filters::GreaterThan<T, SIMD::AVX512>(0, 50)}};
+        checkScenario(scenario);
+    }
+    {
+        Scenario<T, SIMD::AVX512> scenario = {
+            "AVX512 Equal and Greater",
+            3,
+            1000,
+            {0, 1, 2},
+            {new Filters::GreaterThan<T, SIMD::AVX512>(0, 50), new Filters::Equal<T, SIMD::AVX512>(1, 69)}};
+        checkScenario(scenario);
+    }
+}
+
 int main() {
     using T = std::uint64_t;
     scenarioScalar<T>();
+    scenarioAVX<T>();
     return 0;
 }

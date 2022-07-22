@@ -214,14 +214,14 @@ class PaxPage {
         // Please note that, for performance reasons, we do not recreate the positions array after each iteration. Instead, we overwrite the
         // elements starting from the beginning of each iteration and keep track of all still valid positions using the `positionsCounter`.
         // All values with an index greater than `positionsCounter` are outdated intermediate results.
-        auto positions = new idxT[*numberOfRecords];
+        auto positions = new idxT[*this->numberOfRecords];
         bool firstRun = true;
 
         // Count of all rows which have passed all filters.
-        uint64_t positionsCounter = *numberOfRecords;
+        uint64_t positionsCounter = *this->numberOfRecords;
 
         // Batch size. Equals the number of cells that fit in one AVX512 register (512bites = 64bytes).
-        auto rowsPerRegister = (unsigned)64 / sizeof(T);
+        const auto rowsPerRegister = (unsigned)64 / sizeof(T);
 
         for (auto &filter : filters) {
             // Find the minipage for the attribute to which the filter applies.
@@ -249,23 +249,22 @@ class PaxPage {
                 }
 
                 // Load the indices of the rows
-                uint64_t *vindex;
                 std::pair<__m512i, __m512i> loadResult;
                 if (firstRun) {
                     // On the first run, the positions array contains only zeros. Since all rows are still valid, we can simply load the
                     // next batch of rows starting from the current `rowIndex`.
                     loadResult = ColumnStore::Helper::load(minipage, rowIndex);
                 } else {
-                    loadResult = ColumnStore::Helper::gather(positions + rowIndex, minipage);
+                    loadResult = ColumnStore::Helper::gather<T, idxT, __mmask8>(positions + rowIndex, minipage, mask);
                 }
 
                 // Load the cells of a row into the data register. `vindex` is the absolute index of the row and we, therefore, gather from
                 // the start of the minipage.
-                auto [dataRegister, indicesRegister] = loadResult;
-                auto filterResult = filter->match(dataRegister, mask);
+                const auto [dataRegister, indicesRegister] = loadResult;
+                const auto filterResult = filter->match(dataRegister, mask);
 
                 // Store the successfully matched at the current end of the positions array.
-                auto addedElements = ColumnStore::Helper::store(indicesRegister, filterResult, positionsTail);
+                const auto addedElements = ColumnStore::Helper::store(indicesRegister, filterResult, positionsTail);
                 positionsTail += addedElements;
                 newPositionsCounter += addedElements;
             }

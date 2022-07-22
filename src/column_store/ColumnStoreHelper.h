@@ -17,20 +17,22 @@ namespace ColumnStore::Helper {
 /// \return
 /// pair[0]: loaded values register <br>
 /// pair[1]: indices register
-template <typename T, typename idxT=T>
-std::pair<__m512i, __m512i> gather(idxT *iSA, T *columnStart);
+template <typename T, typename idxT = T, typename M>
+std::pair<__m512i, __m512i> gather(idxT *iSA, T *columnStart, M mask);
 
 template <>
-std::pair<__m512i, __m512i> gather(uint32_t *iSA, uint32_t *columnStart) {
-    auto indexRegister = _mm512_set_epi32(iSA[15], iSA[14], iSA[13], iSA[12], iSA[11], iSA[10], iSA[9], iSA[8], iSA[7], iSA[6], iSA[5],
-                                          iSA[4], iSA[3], iSA[2], iSA[1], iSA[0]);
-    return std::make_pair(_mm512_i32gather_epi32(indexRegister, columnStart, 4), indexRegister);
+std::pair<__m512i, __m512i> gather(uint32_t *iSA, uint32_t *columnStart, __mmask16 mask) {
+    const auto indexRegister = _mm512_set_epi32(iSA[15], iSA[14], iSA[13], iSA[12], iSA[11], iSA[10], iSA[9], iSA[8], iSA[7], iSA[6],
+                                                iSA[5], iSA[4], iSA[3], iSA[2], iSA[1], iSA[0]);
+    const auto data = _mm512_mask_i32gather_epi32(ONE_REGISTER_32, mask, indexRegister, columnStart, 4);
+    return std::make_pair(data, indexRegister);
 }
 
 template <>
-std::pair<__m512i, __m512i> gather(uint64_t *iSA, uint64_t *columnStart) {
-    auto indexRegister = _mm512_set_epi64(iSA[7], iSA[6], iSA[5], iSA[4], iSA[3], iSA[2], iSA[1], iSA[0]);
-    return std::make_pair(_mm512_i64gather_epi64(indexRegister, columnStart, 8), indexRegister);
+std::pair<__m512i, __m512i> gather(uint64_t *iSA, uint64_t *columnStart, __mmask8 mask) {
+    const auto indexRegister = _mm512_set_epi64(iSA[7], iSA[6], iSA[5], iSA[4], iSA[3], iSA[2], iSA[1], iSA[0]);
+    const auto data = _mm512_mask_i64gather_epi64(ONE_REGISTER_64, mask, indexRegister, columnStart, 8);
+    return std::make_pair(data, indexRegister);
 }
 
 /// Loads a contiguous part of memory into a register and returns it together with a register containing the
@@ -42,7 +44,7 @@ std::pair<__m512i, __m512i> gather(uint64_t *iSA, uint64_t *columnStart) {
 /// \return
 /// pair[0]: loaded values register <br>
 /// pair[1]: indices register
-template <typename T, typename idxT=T>
+template <typename T, typename idxT = T>
 std::pair<__m512i, __m512i> load(T *columnStart, idxT b);
 
 template <>
