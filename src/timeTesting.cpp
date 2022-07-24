@@ -17,7 +17,7 @@
 
 template<typename T, SIMD Variant>
 void benchmark(std::vector<uint64_t> &projection,
-              std::vector<Filters::Filter<T, Variant> *> &filters, std::string &fileId) {
+              std::vector<Filters::Filter<T, Variant> *> &filters, const std::string &fileId) {
 
 
     std::string fileName="../output_files/PSbenchmark_" + fileId + ".csv";
