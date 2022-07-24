@@ -60,14 +60,16 @@ std::tuple<uint64_t, uint64_t, double> measureTime(Tables::ITable<T> &table, std
 
     auto max = std::max_element(realDurations.begin(), realDurations.end());
     auto argmax = std::distance(realDurations.begin(), max);
+
+    clockDurations.erase(clockDurations.begin() + argmax);
+    realDurations.erase(realDurations.begin() + argmax);
+    counts.erase(counts.begin() + argmax);
+
     auto min = std::min_element(realDurations.begin(), realDurations.end());
     auto argmin = std::distance(realDurations.begin(), min);
 
-    clockDurations.erase(clockDurations.begin() + argmax);
     clockDurations.erase(clockDurations.begin() + argmin);
-    realDurations.erase(realDurations.begin() + argmax);
     realDurations.erase(realDurations.begin() + argmin);
-    counts.erase(counts.begin() + argmax);
     counts.erase(counts.begin() + argmin);
 
     clockDuration = std::accumulate(clockDurations.begin(),clockDurations.end(), 0.0);
