@@ -10,7 +10,7 @@
 
 namespace ColumnStore {
 
-template <typename T, typename idxT=T>
+template <typename T, typename idxT = T>
 class Table : public Tables::ITable<T> {
    public:
     Table(uint64_t numAttributes, uint64_t numRows, const T **initialData) : Tables::ITable<T>(numAttributes, numRows, initialData) {
@@ -182,7 +182,8 @@ class Table : public Tables::ITable<T> {
                 auto mask = _mm512_int2mask(~(0xffffffff << r));
 
                 // apply a filtering using the calculated mask
-                auto [dataReg, indexReg] = ColumnStore::Helper::gather(currentIndexStorage, &(*filterColIterator));
+                auto [dataReg, indexReg] =
+                    ColumnStore::Helper::gather<T, idxT, __mmask8>(currentIndexStorage, &(*filterColIterator), ONE_MASK);
                 auto maskedResult = filter->match(dataReg, mask);
                 auto maskedElements = ColumnStore::Helper::store(indexReg, maskedResult, currentIndexStorage);
 
@@ -193,7 +194,8 @@ class Table : public Tables::ITable<T> {
 #endif
 
             for (idxT rowIndex = r; rowIndex < currentSizeOfIndexStorage; rowIndex += integerAmount) {
-                auto [dataRegister, indexRegister] = ColumnStore::Helper::gather(&indexStorage[rowIndex], &(*filterColIterator));
+                auto [dataRegister, indexRegister] =
+                    ColumnStore::Helper::gather<T, idxT, __mmask8>(&indexStorage[rowIndex], &(*filterColIterator), ONE_MASK);
                 auto filterResult = filter->match(dataRegister);
                 auto addedElements = ColumnStore::Helper::store(indexRegister, filterResult, currentIndexStorage);
 

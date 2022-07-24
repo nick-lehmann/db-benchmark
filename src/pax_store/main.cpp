@@ -24,13 +24,15 @@ using namespace std;
  */
 template <typename T>
 void exampleScalar() {
-    const unsigned rows = 200;
+    const unsigned rows = 1000;
     const unsigned cols = 3;
     const T** data = TableHelper::generateRandomData<T>(cols, rows, 0, 100);
     PaxTable<T> table(cols, rows, data);
 
     std::vector<uint64_t> projection = {0, 1, 2};
-    std::vector<Filters::Filter<T, SIMD::None>*> filters = {new Filters::LessThan<T, SIMD::None>(0, 3)};
+    std::vector<Filters::Filter<T, SIMD::None>*> filters = {new Filters::LessEqual<T, SIMD::None>(0, 90),
+                                                            new Filters::GreaterEqual<T, SIMD::None>(0, 10),
+                                                            new Filters::Equal<T, SIMD::None>(0, 69)};
 
     {
         // Run query
@@ -78,7 +80,11 @@ void exampleAVX() {
 int main() {
     using T = uint64_t;
 
+    cout << "Scalar" << endl;
     exampleScalar<T>();
+
+    cout << endl;
+    cout << "AVX" << endl;
     exampleAVX<T>();
 
     return 0;
