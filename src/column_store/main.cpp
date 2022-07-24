@@ -49,7 +49,6 @@ void avxTest(const T** initialData) {
     std::cout << "AVX: " << rows << " rows,\nTable: " << std::endl;
 
     TableHelper::printTable(queried, columns, rows);
-    
 }
 
 template <typename T>
@@ -68,7 +67,6 @@ void scalarTest(const T** initialData) {
     std::cout << "SCALAR: " << rows << " rows,\nTable: " << std::endl;
 
     TableHelper::printTable(queried, columns, rows);
-    
 }
 
 int main(int argc, char** argv) {

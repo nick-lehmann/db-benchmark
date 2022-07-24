@@ -3,19 +3,12 @@
 #include <iostream>
 #include <vector>
 
-//#include "Benchmark.h"
-
 #include "BaseTable.h"
 #include "Filters/All.h"
 #include "Helper.h"
 #include "ITable.h"
-#include "intermediateRepresentation/IntermediateTable.h"
-//#include "IntermediateTable.h"
-//#include "Filter.h"
-//#include "Projection.h"
-// #include "IntermediateTable_AVX.h"
-//#include "IntermediateTable_AVX.h"
 #include "SIMD.h"
+#include "intermediateRepresentation/IntermediateTable.h"
 
 /// Run a demo of the Row-Store database.
 /// Creates a small example BaseTable and applies a simple query on it. Afterwards run a benchmark with the same query on the same table.
@@ -27,7 +20,6 @@ void demo() {
     int width = 10, height = 32;
 
     // generate example table and print
-
 
     const T **initialData = TableHelper::generateRandomData<T>(width, height, 1, 10);
     RowStore::BaseTable<T, Alignment> baseTable(width, height, initialData);
@@ -51,11 +43,9 @@ void demo() {
 }
 
 int main(int argc, char **argv) {
-
     demo<uint32_t, SIMD::None, 4096>();
     demo<uint32_t, SIMD::AVX512, 4096>();
     demo<uint32_t, SIMD::AVX512_Strided, 4096>();
-
 
     // benchmark();
     return 0;

@@ -1,8 +1,9 @@
 #pragma once
 
 #include <immintrin.h>
-#include <utility>
+
 #include <tuple>
+#include <utility>
 
 #include "Constants.h"
 
