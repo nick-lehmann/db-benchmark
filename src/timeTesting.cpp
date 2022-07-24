@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
-
+#include <format>
 #include "Benchmark.h"
 
 //#include "Table.h"
@@ -23,11 +23,11 @@ template<typename T, SIMD Variant>
 void benchmark(std::vector<uint64_t> &projection,
               std::vector<Filters::Filter<T, Variant> *> &filters, const std::string &fileId) {
 
-    Benchmark::benchmarkRows<Type64,SIMD::AVX512>(2,projection,filters_AVX,100,50,false,100,500,0,
+    Benchmark::benchmarkRows<T,Variant>(2,projection,filters_AVX,100,50,false,100,500,0,
                                                    100,42,std::format("../output_files/PSbenchmark_{}.csv", fileId));
-    Benchmark::benchmarkRows<Type64,SIMD::AVX512>(1,projection,filters_AVX,100,50,false,100,500,0,
+    Benchmark::benchmarkRows<T,Variant>(1,projection,filters_AVX,100,50,false,100,500,0,
                                                    100,42,std::format("../output_files/CSbenchmark_{}.csv", fileId));
-    Benchmark::benchmarkRows<Type64,SIMD::AVX512>(0,projection,filters_AVX,100,50,false,100,500,0,
+    Benchmark::benchmarkRows<T,Variant>(0,projection,filters_AVX,100,50,false,100,500,0,
                                                    100,42,std::format("../output_files/RSbenchmark_{}.csv", fileId));
 
 }
@@ -90,19 +90,19 @@ int main(int argc, char** argv) {
     auto Filter2_S = new Filters::NotEqual<Type64, SIMD::AVX512_Strided>(1, 3);
     auto Filter3_S = new Filters::LessEqual<Type64, SIMD::AVX512_Strided>(3, 39);
 
-    std::vector<Filters::Filter<Type, SIMD::AVX512_Strided>*> filters_strided{Filter_S, Filter2_S, Filter3_S};
+    std::vector<Filters::Filter<Type64, SIMD::AVX512_Strided>*> filters_strided{Filter_S, Filter2_S, Filter3_S};
 
-    Benchmark::benchmarkRows<Type,SIMD::None>(0,projection,filters_strided,100,50,false,100,500,0,
+    Benchmark::benchmarkRows<Type64,SIMD::None>(0,projection,filters_strided,100,50,false,100,500,0,
                                                100,42,"../output_files/RSbenchmark_Strided64.csv");
 
     auto Filter_S32 = new Filters::GreaterThan<Type32, SIMD::AVX512_Strided>(0, 72);
     auto Filter2_S32 = new Filters::NotEqual<Type32, SIMD::AVX512_Strided>(1, 3);
     auto Filter3_S32 = new Filters::LessEqual<Type32, SIMD::AVX512_Strided>(3, 39);
 
-    std::vector<Filters::Filter<Type, SIMD::AVX512_Strided>*> filters_strided32{Filter_S32, Filter2_S32, Filter3_S32};
+    std::vector<Filters::Filter<Type32, SIMD::AVX512_Strided>*> filters_strided32{Filter_S32, Filter2_S32, Filter3_S32};
 
-    Benchmark::benchmarkRows<Type,SIMD::None>(0,projection,filters_strided32,100,50,false,100,500,0,
-                                               100,42,"../output_files/RSbenchmark_Strided64.csv");
+    Benchmark::benchmarkRows<Type32,SIMD::None>(0,projection,filters_strided32,100,50,false,100,500,0,
+                                               100,42,"../output_files/RSbenchmark_Strided32.csv");
 
 
     return 0;
