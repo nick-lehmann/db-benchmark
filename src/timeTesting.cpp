@@ -59,9 +59,6 @@ int main(int argc, char** argv) {
 //    std::vector<Filters::Filter<Type, SIMD::AVX512> *> filters = {new Filters::GreaterThan<T, Variant>(1, 6),
 //                                                          new Filters::LessThan<T, Variant>(2, 29)};
 
-    //
-    std::vector<Filters::Filter<Type, SIMD::AVX512>*> filters_AVX{equalFilter_AVX, equalFilter2_AVX, equalFilter3_AVX};
-    std::vector<Type> projection{0, 1, 2, 3, 4};
 
     //    std::vector<uint64_t> projection = {0, 1, 2};
     //    std::vector<Filters::Filter<Type, SIMD::AVX512>*> filters = {new Filters::LessEqual<Type, SIMD::AVX512>(0, 18),
@@ -75,8 +72,8 @@ int main(int argc, char** argv) {
 
 
 
-    //Benchmark::benchmarkRows<Type,SIMD::AVX512>(2,projection,filters_AVX,100,50,false,100,500,0,
-    //                               100,0,"../output_files/PSbenchmark_AVX.csv");
+    Benchmark::benchmarkRows<Type,SIMD::AVX512>(2,projection,filters_AVX,100,50,false,100,500,0,
+                                   100,0,"../output_files/PSbenchmark_AVX.csv");
     Benchmark::benchmarkRows<Type,SIMD::AVX512>(1,projection,filters_AVX,100,50,false,100,500,0,
                                       100,0,"../output_files/CSbenchmark_AVX.csv");
     Benchmark::benchmarkRows<Type,SIMD::AVX512>(0,projection,filters_AVX,100,50,false,100,500,0,
@@ -89,8 +86,8 @@ int main(int argc, char** argv) {
     //
     std::vector<Filters::Filter<Type, SIMD::None>*> filters{equalFilter, equalFilter2, equalFilter3};
 
-    //Benchmark::benchmarkRows<Type,SIMD::None>(2,projection,filters,100,50,false,100,500,0,
-    //                                             100,0,"../output_files/PSbenchmark_Scalar.csv");
+    Benchmark::benchmarkRows<Type,SIMD::None>(2,projection,filters,100,50,false,100,500,0,
+                                                 100,0,"../output_files/PSbenchmark_Scalar.csv");
     Benchmark::benchmarkRows<Type,SIMD::None>(1,projection,filters,100,50,false,100,500,0,
                                                  100,0,"../output_files/CSbenchmark_Scalar.csv");
     Benchmark::benchmarkRows<Type,SIMD::None>(0,projection,filters,100,50,false,100,500,0,

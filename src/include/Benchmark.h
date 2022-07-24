@@ -5,6 +5,7 @@
 #include <string>
 #include <tuple>
 #include <vector>
+#include <numeric>
 
 #include "../column_store/ColumnStoreTable.h"
 #include "../pax_store/PaxTable.h"
@@ -28,24 +29,56 @@ namespace Benchmark {
 template <typename T, SIMD Variant>
 std::tuple<uint64_t, uint64_t, double> measureTime(Tables::ITable<T> &table, std::vector<T> &projection,
                                                    std::vector<Filters::Filter<T, Variant> *> &filters, bool enablePrint = true) {
-    // measure both cpu time and real time
-    auto clockStartTime = std::clock();
-    auto realStartTime = std::chrono::steady_clock::now();
 
-    // call query count function
-    auto count = table.queryCount(projection, filters);
+    std::vector<uint64_t> clockDurations;
+    std::vector<double> realDurations;
+    std::vector<uint64_t> counts;
 
-    auto clockEndTime = std::clock();
-    auto realEndTime = std::chrono::steady_clock::now();
+    double realDuration;
+    double count;
+    double clockDuration;
 
-    // store results
-    uint64_t clockDuration = clockEndTime - clockStartTime;
-    double realDuration = std::chrono::duration<double, std::milli>(realEndTime - realStartTime).count();
+    for (int i=0; i<10; i++) {
+        // measure both cpu time and real time
+        auto clockStartTime = std::clock();
+        auto realStartTime = std::chrono::steady_clock::now();
+
+        // call query count function
+        auto countTMP = table.queryCount(projection, filters);
+
+        auto clockEndTime = std::clock();
+        auto realEndTime = std::chrono::steady_clock::now();
+
+        // store results
+        auto clockDurationTMP = clockEndTime - clockStartTime;
+        realDuration = std::chrono::duration<double, std::milli>(realEndTime - realStartTime).count();
+
+        clockDurations.push_back(clockDurationTMP);
+        realDurations.push_back(realDuration);
+        counts.push_back(countTMP);
+    }
+
+    auto max = std::max_element(realDurations.begin(), realDurations.end());
+    auto argmax = std::distance(realDurations.begin(), max);
+    auto min = std::min_element(realDurations.begin(), realDurations.end());
+    auto argmin = std::distance(realDurations.begin(), min);
+
+    clockDurations.erase(max);
+    clockDurations.erase(min);
+    realDurations.erase(max);
+    realDurations.erase(min);
+    counts.erase(max);
+    counts.erase(min);
+
+    clockDuration = std::accumulate(clockDurations.begin(),clockDurations.end(), 0.0);
+    realDuration = std::accumulate(realDurations.begin(), realDurations.end(),0.0);
+    count = std::accumulate(counts.begin(),counts.end(), 0.0);
+
 
     // print result
     if (enablePrint) {
-        std::cout << std::fixed << std::setprecision(8) << "CPU cycles: " << clockEndTime - clockStartTime << std::endl
-                  << "Real time: " << std::chrono::duration<double, std::milli>(realEndTime - realStartTime).count() << " ms" << std::endl
+        std::cout << std::fixed << std::setprecision(8) << "CPU cycles: " << clockDuration << std::endl
+                  << "Real time: " << realDuration << " ms" << std::endl
                   << "Row Count: " << count << std::endl;
     }
 
