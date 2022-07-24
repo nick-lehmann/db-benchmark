@@ -17,14 +17,18 @@
 
 template<typename T, SIMD Variant>
 void benchmark(std::vector<uint64_t> &projection,
-              std::vector<Filters::Filter<T, Variant> *> &filters, const std::string &fileId) {
+              std::vector<Filters::Filter<T, Variant> *> &filters, std::string &fileId) {
 
+
+    std::string fileName="../output_files/PSbenchmark_" + fileId + ".csv";
     Benchmark::benchmarkRows<T,Variant>(2,projection,filters,100,50,false,100,500,0,
-                                                   100,42,"../output_files/PSbenchmark_" + fileId + ".csv");
+                                                   100,42,fileName);
+    fileName="../output_files/CSbenchmark_" + fileId + ".csv";
     Benchmark::benchmarkRows<T,Variant>(1,projection,filters,100,50,false,100,500,0,
-                                                   100,42,"../output_files/CSbenchmark_" + fileId + ".csv");
+                                                   100,42,fileName);
+    fileName="../output_files/RSbenchmark_" + fileId + ".csv";
     Benchmark::benchmarkRows<T,Variant>(0,projection,filters,100,50,false,100,500,0,
-                                                   100,42,"../output_files/RSbenchmark_" + fileId + ".csv");
+                                                   100,42,fileName);
 
 }
 
