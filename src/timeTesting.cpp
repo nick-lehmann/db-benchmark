@@ -108,7 +108,7 @@ void increasingRows(std::vector<uint64_t> &projection){
 template<typename T, SIMD Variant>
 void benchmarkFilter(std::vector<uint64_t> &projection,
                      std::vector<Filters::Filter<T, Variant> *> &filters, const std::string &fileId){
-    return 0;
+    std::cout << "Test" << std::endl;
 }
 
 template<typename T, SIMD Variant>
