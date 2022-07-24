@@ -29,7 +29,7 @@ std::pair<__m512i, __m512i> gather(uint32_t *iSA, uint32_t *columnStart, __mmask
 }
 
 template <>
-std::pair<__m512i, __m512i> gather(uint64_t *iSA, uint64_t *columnStart, __mmask8 mask) {
+std::pair<__m512i, __m512i> gather(uint64_t *iSA, uint64_t *columnStart, __mmask16 mask) {
     const auto indexRegister = _mm512_set_epi64(iSA[7], iSA[6], iSA[5], iSA[4], iSA[3], iSA[2], iSA[1], iSA[0]);
     const auto data = _mm512_mask_i64gather_epi64(ONE_REGISTER_64, mask, indexRegister, columnStart, 8);
     return std::make_pair(data, indexRegister);

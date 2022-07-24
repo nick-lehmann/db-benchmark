@@ -253,7 +253,7 @@ class PaxPage {
                     // next batch of rows starting from the current `rowIndex`.
                     loadResult = ColumnStore::Helper::load(minipage + rowIndex, rowIndex);
                 } else {
-                    loadResult = ColumnStore::Helper::gather<T, idxT, __mmask8>(positions + rowIndex, minipage, mask);
+                    loadResult = ColumnStore::Helper::gather<T, idxT, __mmask16>(positions + rowIndex, minipage, mask);
                 }
 
                 // Load the cells of a row into the data register. `vindex` is the absolute index of the row and we, therefore, gather from

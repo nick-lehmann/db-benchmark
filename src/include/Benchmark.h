@@ -1,22 +1,19 @@
 #include <chrono>
 #include <iomanip>
 #include <iostream>
+#include <numeric>
 #include <stdexcept>
 #include <string>
 #include <tuple>
 #include <vector>
-#include <numeric>
 
 #include "../column_store/ColumnStoreTable.h"
 #include "../pax_store/PaxTable.h"
 #include "../row_store/BaseTable.h"
 #include "BenchmarkResult.h"
+#include "Constants.h"
 #include "Filters/Base.h"
 #include "Helper.h"
-#include "Filters/Base.h"
-#include "Constants.h"
-
-
 #include "ITable.h"
 #include "SIMD.h"
 //#include "Filters/LessThan.h"
@@ -30,8 +27,7 @@ namespace Benchmark {
 /// \param filters filters to apply for the query
 template <typename T, SIMD Variant>
 std::tuple<double, double, double> measureTime(Tables::ITable<T> &table, std::vector<uint64_t> &projection,
-                                                   std::vector<Filters::Filter<T, Variant> *> &filters, bool enablePrint = true) {
-
+                                               std::vector<Filters::Filter<T, Variant> *> &filters, bool enablePrint = true) {
     std::vector<uint64_t> clockDurations;
     std::vector<double> realDurations;
     std::vector<uint64_t> counts;
@@ -40,7 +36,7 @@ std::tuple<double, double, double> measureTime(Tables::ITable<T> &table, std::ve
     double count;
     double clockDuration;
 
-    for (int i=0; i<10; i++) {
+    for (int i = 0; i < 10; i++) {
         // measure both cpu time and real time
         auto clockStartTime = std::clock();
         auto realStartTime = std::chrono::steady_clock::now();
@@ -74,10 +70,9 @@ std::tuple<double, double, double> measureTime(Tables::ITable<T> &table, std::ve
     realDurations.erase(realDurations.begin() + argmin);
     counts.erase(counts.begin() + argmin);
 
-    clockDuration = std::accumulate(clockDurations.begin(),clockDurations.end(), 0.0)/(double)clockDurations.size();
-    realDuration = std::accumulate(realDurations.begin(), realDurations.end(),0.0)/(double)realDurations.size();
-    count = std::accumulate(counts.begin(),counts.end(), 0.0)/(double)counts.size();
-
+    clockDuration = std::accumulate(clockDurations.begin(), clockDurations.end(), 0.0) / (double)clockDurations.size();
+    realDuration = std::accumulate(realDurations.begin(), realDurations.end(), 0.0) / (double)realDurations.size();
+    count = std::accumulate(counts.begin(), counts.end(), 0.0) / (double)counts.size();
 
     // print result
     if (enablePrint) {
@@ -114,8 +109,8 @@ unsigned incrementValue(unsigned value, bool exponentialGrowth, unsigned growthF
 /// \param seed used for data generation
 template <typename T, SIMD Variant>
 std::tuple<double, double, double> benchmarkTableImplementation(int tableStoreId, std::vector<uint64_t> &projectionAttributes,
-                                                                    std::vector<Filters::Filter<T, Variant> *> &filters, unsigned rowCount,
-                                                                    unsigned columnCount, T lowerBound, T upperBound, unsigned seed) {
+                                                                std::vector<Filters::Filter<T, Variant> *> &filters, unsigned rowCount,
+                                                                unsigned columnCount, T lowerBound, T upperBound, unsigned seed) {
     // create data
     const T **tableData = TableHelper::generateRandomData<T>(columnCount, rowCount, lowerBound, upperBound, seed);
 
@@ -137,7 +132,6 @@ std::tuple<double, double, double> benchmarkTableImplementation(int tableStoreId
         }
         case 2: {
             // pax store
-
             PaxTable<T> table(columnCount, rowCount, tableData);
 
             // run benchmark and return
@@ -169,7 +163,6 @@ void benchmarkRows(int tableStoreId, std::vector<uint64_t> &projectionAttributes
                    unsigned rowCount = 10, unsigned columnCount = 10, bool exponentialGrowth = false, unsigned growthFactor = 50,
                    unsigned iterations = 300, T lowerBound = 0, T upperBound = 1000, unsigned seed = 42,
                    const std::string &filepath = "benchmark.csv") {
-
     // initialize store for result
     BenchmarkResult<T> result;
 
