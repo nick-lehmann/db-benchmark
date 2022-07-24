@@ -30,11 +30,11 @@ class PaxTable : public Tables::ITable<T> {
         auto pagesize = getPagesize();
         this->rowsPerPage = PaxPage<T>::getMaximumRows(pagesize, numberOfAttributes);
 
-        cout << "Rows per page: " << rowsPerPage << endl;
+        // cout << "Rows per page: " << rowsPerPage << endl;
 
         // Resize vector to contain all needed pages
         this->numberOfPages = (numberOfRows + (rowsPerPage - 1)) / rowsPerPage;  // Rounding up
-        cout << "Needed pages: " << this->numberOfPages << endl;
+        // cout << "Needed pages: " << this->numberOfPages << endl;
         this->pages = (PaxPage<T> *)malloc(this->numberOfPages * sizeof(PaxPage<T>));
 
         // Initialize all pages
@@ -52,7 +52,9 @@ class PaxTable : public Tables::ITable<T> {
     }
 
     // TODO: Free memory
-    virtual ~PaxTable() { cout << "Destroy pax table" << endl; }
+    virtual ~PaxTable() {
+        // cout << "Destroy pax table" << endl;
+    }
 
     T *getRow(uint64_t rowIndex) override {
         PaxPage<T> &page = pages[pageIndex(rowIndex)];
@@ -107,11 +109,20 @@ class PaxTable : public Tables::ITable<T> {
         return std::make_tuple(data, positions.size(), projection.size());
     };
 
+    std::tuple<T **, uint64_t, uint64_t> queryTable(std::vector<uint64_t> &projection,
+                                                    std::vector<Filters::Filter<T, SIMD::AVX512_Strided> *> &filters) override {
+        return std::make_tuple((T **)nullptr, (uint64_t)-1, (uint64_t)-1);
+    }
+
     uint64_t queryCount(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T, SIMD::None> *> &filters) override {
         return get<1>(queryTable(projection, filters));
     }
 
     uint64_t queryCount(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T, SIMD::AVX512> *> &filters) override {
         return get<1>(queryTable(projection, filters));
+    }
+
+    uint64_t queryCount(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T, SIMD::AVX512_Strided> *> &filters) override {
+        return (uint64_t)-1;
     }
 };
