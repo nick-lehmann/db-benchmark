@@ -9,90 +9,100 @@
 #include <iostream>
 #include <string>
 #include <vector>
-
+#include <iostream>
 
 #include "Benchmark.h"
 
 //#include "Table.h"
 #include "Helper.h"
 //#include "Filters.h"
-#include "../row_store/BaseTable.h"
 #include "Filters/All.h"
+#include "SIMD.h"
+
+template<typename T, SIMD Variant>
+void benchmark(std::vector<uint64_t> &projection,
+              std::vector<Filters::Filter<T, Variant> *> &filters, const std::string &fileId) {
+
+    Benchmark::benchmarkRows<Type64,SIMD::AVX512>(2,projection,filters_AVX,100,50,false,100,500,0,
+                                                   100,42,std::format("../output_files/PSbenchmark_{}.csv", fileId));
+    Benchmark::benchmarkRows<Type64,SIMD::AVX512>(1,projection,filters_AVX,100,50,false,100,500,0,
+                                                   100,42,std::format("../output_files/CSbenchmark_{}.csv", fileId));
+    Benchmark::benchmarkRows<Type64,SIMD::AVX512>(0,projection,filters_AVX,100,50,false,100,500,0,
+                                                   100,42,std::format("../output_files/RSbenchmark_{}.csv", fileId));
+
+}
 
 
 int main(int argc, char** argv) {
-    using Type = uint64_t;
+    using Type64 = uint64_t;
+    using Type32 = uint32_t;
 
-    // std::vector<Filters::Filter<Type, SIMD::AVX512>*> filters  {new Filters::Equal<Type, SIMD::AVX512> (1, 2), new
-    // Filters::LessThan<Type, SIMD::AVX512> (3,7)}; std::vector<Type> projection {0,1,2,3,4};
+    // AVX with 64 bit
 
-    // std::vector<uint64_t> projection = {0, 2, 3};
-    // std::vector<Filters::Filter<Type, SIMD::AVX512> *> filters = {new Filters::GreaterThan<Type, SIMD::AVX512>(1, 6),
-    //                                                       new Filters::LessThan<Type, SIMD::AVX512>(2, 9)};
-
-    // std::vector<Filter::Filter<Type, SIMD::AVX512> *> filters{gtAVX,eqAVX,ltAVX,
-    //                                                           eqAVX2,gtAVX2,ltAVX2};
-
-    //    std::vector<uint64_t> projection = {0, 1, 2};
-    //    std::vector<Filters::Filter<Type, SIMD::AVX512>*> filters = {new Filters::LessEqual<Type, SIMD::AVX512>(0, 3),
-    //                                                              new Filters::GreaterEqual<Type, SIMD::AVX512>(0, 1),
-    //                                                              new Filters::Equal<Type, SIMD::AVX512>(0, 2)};
-
-    // array<const std::string,3> files={"RSbenchmark.csv","CSbenchmark.csv","PSbenchmark.csv"};
+    auto Filter_AVX64 = new Filters::GreaterThan<Type64, SIMD::AVX512>(0, 72);
+    auto Filter2_AVX64 = new Filters::NotEqual<Type64, SIMD::AVX512>(1, 3);
+    auto Filter3_AVX64 = new Filters::LessEqual<Type64, SIMD::AVX512>(3, 39);
 
 
-    auto equalFilter_AVX = new Filters::GreaterThan<Type, SIMD::AVX512>(0, 2);
-    auto equalFilter2_AVX = new Filters::NotEqual<Type, SIMD::AVX512>(1, 3);
-    auto equalFilter3_AVX = new Filters::LessEqual<Type, SIMD::AVX512>(3, 40);
+    std::vector<Filters::Filter<Type64, SIMD::AVX512>*> filters_AVX64{Filter_AVX64, Filter2_AVX64, Filter3_AVX64};
+    std::vector<Type64> projection{0, 1, 2};
 
-//
-    std::vector<Filters::Filter<Type, SIMD::AVX512>*> filters_AVX{equalFilter_AVX, equalFilter2_AVX, equalFilter3_AVX};
-    std::vector<Type> projection{0, 1, 2, 3, 4};
+    benchmark<Type64 ,SIMD::AVX512>(projection,filters_AVX64,"AVX64");
 
 
-//    std::vector<uint64_t> projection = {0, 1, 2};
-//    std::vector<Filters::Filter<Type, SIMD::AVX512>*> filters = {new Filters::LessEqual<Type, SIMD::AVX512>(0, 18),
-//                                                              new Filters::GreaterEqual<Type, SIMD::AVX512>(0, 4),
-//                                                              new Filters::Equal<Type, SIMD::AVX512>(0, 7)};
+    // AVX with 32 bit
 
-//    std::vector<uint64_t> projection = {0, 2, 3};
-//    std::vector<Filters::Filter<Type, SIMD::AVX512> *> filters = {new Filters::GreaterThan<T, Variant>(1, 6),
-//                                                          new Filters::LessThan<T, Variant>(2, 29)};
+    auto Filter_AVX32 = new Filters::GreaterThan<Type32, SIMD::AVX512>(0, 72);
+    auto Filter2_AVX32 = new Filters::NotEqual<Type32, SIMD::AVX512>(1, 3);
+    auto Filter3_AVX32 = new Filters::LessEqual<Type32, SIMD::AVX512>(3, 39);
 
 
-    //    std::vector<uint64_t> projection = {0, 1, 2};
-    //    std::vector<Filters::Filter<Type, SIMD::AVX512>*> filters = {new Filters::LessEqual<Type, SIMD::AVX512>(0, 18),
-    //                                                              new Filters::GreaterEqual<Type, SIMD::AVX512>(0, 4),
-    //                                                              new Filters::Equal<Type, SIMD::AVX512>(0, 7)};
+    std::vector<Filters::Filter<Type32, SIMD::AVX512>*> filters_AVX32{Filter_AVX32, Filter2_AVX32, Filter3_AVX32};
 
-    //    std::vector<uint64_t> projection = {0, 2, 3};
-    //    std::vector<Filters::Filter<Type, SIMD::AVX512> *> filters = {new Filters::GreaterThan<T, Variant>(1, 6),
-    //                                                          new Filters::LessThan<T, Variant>(2, 29)};
+    benchmark<Type32 ,SIMD::AVX512>(projection,filters_AVX32,"AVX32");
 
 
+    // Scalar with 32 bit
+
+    auto Filter32 = new Filters::GreaterThan<Type32, SIMD::None>(0, 72);
+    auto Filter2_32 = new Filters::NotEqual<Type32, SIMD::None>(1, 3);
+    auto Filter3_32 = new Filters::LessEqual<Type32, SIMD::None>(3, 39);
 
 
-    Benchmark::benchmarkRows<Type,SIMD::AVX512>(2,projection,filters_AVX,100,50,false,100,500,0,
-                                   100,0,"../output_files/PSbenchmark_AVX.csv");
-    Benchmark::benchmarkRows<Type,SIMD::AVX512>(1,projection,filters_AVX,100,50,false,100,500,0,
-                                      100,0,"../output_files/CSbenchmark_AVX.csv");
-    Benchmark::benchmarkRows<Type,SIMD::AVX512>(0,projection,filters_AVX,100,50,false,100,500,0,
-                                    100,0,"../output_files/RSbenchmark_AVX.csv");
+    std::vector<Filters::Filter<Type32, SIMD::None>*> filters32{Filter32, Filter2_32, Filter3_32};
+
+    benchmark<Type32 ,SIMD::None>(projection,filters32,"Scalar32");
 
 
-    auto equalFilter = new Filters::GreaterThan<Type, SIMD::None>(0, 2);
-    auto equalFilter2 = new Filters::NotEqual<Type, SIMD::None>(1, 3);
-    auto equalFilter3 = new Filters::LessEqual<Type, SIMD::None>(3, 40);
-    //
-    std::vector<Filters::Filter<Type, SIMD::None>*> filters{equalFilter, equalFilter2, equalFilter3};
+    // Scalar with 64 bit
 
-    Benchmark::benchmarkRows<Type,SIMD::None>(2,projection,filters,100,50,false,100,500,0,
-                                                 100,0,"../output_files/PSbenchmark_Scalar.csv");
-    Benchmark::benchmarkRows<Type,SIMD::None>(1,projection,filters,100,50,false,100,500,0,
-                                                 100,0,"../output_files/CSbenchmark_Scalar.csv");
-    Benchmark::benchmarkRows<Type,SIMD::None>(0,projection,filters,100,50,false,100,500,0,
-                                                 100,0,"../output_files/RSbenchmark_Scalar.csv");
+    auto Filter_S64 = new Filters::GreaterThan<Type64, SIMD::None>(0, 72);
+    auto Filter2_S64 = new Filters::NotEqual<Type64, SIMD::None>(1, 3);
+    auto Filter3_S64 = new Filters::LessEqual<Type64, SIMD::None>(3, 39);
 
+    std::vector<Filters::Filter<Type64, SIMD::None>*> filters_S64{Filter_S64, Filter2_S64, Filter3_S64};
+
+    benchmark<Type64 ,SIMD::None>(projection,filters_S64,"Scalar64");
+
+
+
+    auto Filter_S = new Filters::GreaterThan<Type64, SIMD::AVX512_Strided>(0, 72);
+    auto Filter2_S = new Filters::NotEqual<Type64, SIMD::AVX512_Strided>(1, 3);
+    auto Filter3_S = new Filters::LessEqual<Type64, SIMD::AVX512_Strided>(3, 39);
+
+    std::vector<Filters::Filter<Type, SIMD::AVX512_Strided>*> filters_strided{Filter_S, Filter2_S, Filter3_S};
+
+    Benchmark::benchmarkRows<Type,SIMD::None>(0,projection,filters_strided,100,50,false,100,500,0,
+                                               100,42,"../output_files/RSbenchmark_Strided64.csv");
+
+    auto Filter_S32 = new Filters::GreaterThan<Type32, SIMD::AVX512_Strided>(0, 72);
+    auto Filter2_S32 = new Filters::NotEqual<Type32, SIMD::AVX512_Strided>(1, 3);
+    auto Filter3_S32 = new Filters::LessEqual<Type32, SIMD::AVX512_Strided>(3, 39);
+
+    std::vector<Filters::Filter<Type, SIMD::AVX512_Strided>*> filters_strided32{Filter_S32, Filter2_S32, Filter3_S32};
+
+    Benchmark::benchmarkRows<Type,SIMD::None>(0,projection,filters_strided32,100,50,false,100,500,0,
+                                               100,42,"../output_files/RSbenchmark_Strided64.csv");
 
 
     return 0;
