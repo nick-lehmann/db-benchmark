@@ -72,9 +72,9 @@ std::tuple<uint64_t, uint64_t, double> measureTime(Tables::ITable<T> &table, std
     realDurations.erase(realDurations.begin() + argmin);
     counts.erase(counts.begin() + argmin);
 
-    clockDuration = std::accumulate(clockDurations.begin(),clockDurations.end(), 0.0);
-    realDuration = std::accumulate(realDurations.begin(), realDurations.end(),0.0);
-    count = std::accumulate(counts.begin(),counts.end(), 0.0);
+    clockDuration = std::accumulate(clockDurations.begin(),clockDurations.end(), 0.0)/clockDurations.size();
+    realDuration = std::accumulate(realDurations.begin(), realDurations.end(),0.0)/realDurations.size();
+    count = std::accumulate(counts.begin(),counts.end(), 0.0)/counts.size();
 
 
     // print result
