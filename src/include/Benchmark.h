@@ -1,3 +1,5 @@
+#pragma once
+
 #include <chrono>
 #include <iomanip>
 #include <iostream>
@@ -125,7 +127,7 @@ std::tuple<double, double, double> benchmarkTableImplementation(int tableStoreId
         }
         case 1: {
             // column store
-            ColumnStore::Table<T> table(columnCount, rowCount, tableData);
+            ColumnStore::Table<T, T> table(columnCount, rowCount, tableData);
 
             // run benchmark and return
             return Benchmark::measureTime(table, projectionAttributes, filters, false);

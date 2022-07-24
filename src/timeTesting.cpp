@@ -3,11 +3,12 @@
 //
 
 #include <array>
-#include <cstdlib>
 #include <iostream>
 #include <string>
+#include <tuple>
 #include <vector>
 
+#include "../row_store/BaseTable.h"
 #include "Benchmark.h"
 #include "Filters/All.h"
 #include "Helper.h"
@@ -23,7 +24,7 @@ void benchmark(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T,
     Benchmark::benchmarkRows<T, Variant>(0, projection, filters, 100, 50, false, 100, 500, 0, 100, 42, fileName);
 }
 
-int main(int argc, char **argv) {
+void increasingRows(std::vector<uint64_t> &projection) {
     using Type64 = std::uint64_t;
     using Type32 = std::uint32_t;
 
@@ -89,6 +90,28 @@ int main(int argc, char **argv) {
 
     Benchmark::benchmarkRows<Type32, SIMD::AVX512_Strided>(0, projection, filters_strided32, 100, 50, false, 100, 500, 0, 100, 42,
                                                            "../output_files/RSbenchmark_Strided32.csv");
+}
+
+template <typename T, SIMD Variant>
+void benchmarkFilter(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T, Variant> *> &filters, const std::string &fileId) {
+    std::cout << "Test" << std::endl;
+}
+
+template <typename T, SIMD Variant>
+void increaseFilterNumber(unsigned int filterNr, std::vector<uint64_t> &projection, const std::string &type) {
+    std::srand(42);
+    std::vector<Filters::Filter<T, Variant> *> filters;
+    for (int i = 1; i <= filterNr; i++) {
+        filters.push_back(new Filters::NotEqual<T, Variant>(std::rand() % 50, std::rand() % 100));
+        benchmarkFilter<T, Variant>(projection, filters, type);
+    }
+}
+
+int main(int argc, char **argv) {
+    std::vector<uint64_t> projection{0, 1, 2};
+
+    increasingRows(projection);
+    // increaseFilterNumber<uint64_t,SIMD::AVX512>(25,projection,"AVX64");
 
     return 0;
 }
