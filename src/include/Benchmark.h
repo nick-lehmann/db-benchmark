@@ -14,7 +14,8 @@
 #include "Filters/Base.h"
 #include "Helper.h"
 #include "Filters/Base.h"
-#include "Constants.h"#include "Constants.h"
+#include "Constants.h"
+
 
 #include "ITable.h"
 #include "SIMD.h"
@@ -73,9 +74,9 @@ std::tuple<double, double, double> measureTime(Tables::ITable<T> &table, std::ve
     realDurations.erase(realDurations.begin() + argmin);
     counts.erase(counts.begin() + argmin);
 
-    clockDuration = std::accumulate(clockDurations.begin(),clockDurations.end(), 0.0)/clockDurations.size();
-    realDuration = std::accumulate(realDurations.begin(), realDurations.end(),0.0)/realDurations.size();
-    count = std::accumulate(counts.begin(),counts.end(), 0.0)/counts.size();
+    clockDuration = std::accumulate(clockDurations.begin(),clockDurations.end(), 0.0)/(double)clockDurations.size();
+    realDuration = std::accumulate(realDurations.begin(), realDurations.end(),0.0)/(double)realDurations.size();
+    count = std::accumulate(counts.begin(),counts.end(), 0.0)/(double)counts.size();
 
 
     // print result
