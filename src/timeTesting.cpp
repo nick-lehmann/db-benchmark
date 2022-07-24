@@ -1,19 +1,19 @@
 //
 // Created by tumpe on 5/24/22.
 //
-#pragma once
 
 #include <cstdlib>
 #include <array>
 #include <iostream>
 #include <string>
 #include <vector>
+#include <tuple>
 
 #include "Benchmark.h"
 #include "Helper.h"
 #include "Filters/All.h"
 #include "SIMD.h"
-
+#include "../row_store/BaseTable.h"
 
 template<typename T, SIMD Variant>
 void benchmark(std::vector<uint64_t> &projection,
