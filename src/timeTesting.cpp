@@ -35,7 +35,6 @@ void increasingRows(std::vector<uint64_t> &projection) {
     auto Filter3_AVX64 = new Filters::LessEqual<Type64, SIMD::AVX512>(3, 39);
 
     std::vector<Filters::Filter<Type64, SIMD::AVX512> *> filters_AVX64{Filter_AVX64, Filter2_AVX64, Filter3_AVX64};
-    std::vector<Type64> projection{0, 1, 2};
 
     benchmark<Type64, SIMD::AVX512>(projection, filters_AVX64, "AVX64");
 
