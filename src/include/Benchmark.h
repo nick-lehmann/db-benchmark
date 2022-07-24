@@ -27,7 +27,7 @@ namespace Benchmark {
 /// \param projection projection attributes for the query
 /// \param filters filters to apply for the query
 template <typename T, SIMD Variant>
-std::tuple<uint64_t, uint64_t, double> measureTime(Tables::ITable<T> &table, std::vector<uint64_t> &projection,
+std::tuple<double, double, double> measureTime(Tables::ITable<T> &table, std::vector<uint64_t> &projection,
                                                    std::vector<Filters::Filter<T, Variant> *> &filters, bool enablePrint = true) {
 
     std::vector<uint64_t> clockDurations;
@@ -111,7 +111,7 @@ unsigned incrementValue(unsigned value, bool exponentialGrowth, unsigned growthF
 /// \param upperBound upper bound of values stored in table cells
 /// \param seed used for data generation
 template <typename T, SIMD Variant>
-std::tuple<uint64_t, uint64_t, double> benchmarkTableImplementation(int tableStoreId, std::vector<uint64_t> &projectionAttributes,
+std::tuple<double, double, double> benchmarkTableImplementation(int tableStoreId, std::vector<uint64_t> &projectionAttributes,
                                                                     std::vector<Filters::Filter<T, Variant> *> &filters, unsigned rowCount,
                                                                     unsigned columnCount, T lowerBound, T upperBound, unsigned seed) {
     // create data
