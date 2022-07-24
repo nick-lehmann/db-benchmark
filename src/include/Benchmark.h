@@ -14,6 +14,7 @@
 #include "Filters/Base.h"
 #include "Helper.h"
 #include "Filters/Base.h"
+#include "Constants.h"#include "Constants.h"
 
 #include "ITable.h"
 #include "SIMD.h"
@@ -121,7 +122,7 @@ std::tuple<double, double, double> benchmarkTableImplementation(int tableStoreId
     switch (tableStoreId) {
         case 0: {
             // row store
-            RowStore::BaseTable<T, 4096> table(columnCount, rowCount, tableData);
+            RowStore::BaseTable<T, PAGE_SIZE> table(columnCount, rowCount, tableData);
 
             // run benchmark and return
             return Benchmark::measureTime(table, projectionAttributes, filters, false);

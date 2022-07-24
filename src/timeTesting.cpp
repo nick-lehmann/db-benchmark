@@ -9,12 +9,9 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <iostream>
-#include "Benchmark.h"
 
-//#include "Table.h"
+#include "Benchmark.h"
 #include "Helper.h"
-//#include "Filters.h"
 #include "Filters/All.h"
 #include "SIMD.h"
 
@@ -23,18 +20,18 @@ void benchmark(std::vector<uint64_t> &projection,
               std::vector<Filters::Filter<T, Variant> *> &filters, const std::string &fileId) {
 
     Benchmark::benchmarkRows<T,Variant>(2,projection,filters,100,50,false,100,500,0,
-                                                   100,42,"../output_files/PSbenchmark_" + fileId +".csv");
+                                                   100,42,"../output_files/PSbenchmark_" + fileId + ".csv");
     Benchmark::benchmarkRows<T,Variant>(1,projection,filters,100,50,false,100,500,0,
-                                                   100,42,"../output_files/CSbenchmark_" + fileId +".csv");
+                                                   100,42,"../output_files/CSbenchmark_" + fileId + ".csv");
     Benchmark::benchmarkRows<T,Variant>(0,projection,filters,100,50,false,100,500,0,
-                                                   100,42,"../output_files/RSbenchmark_" + fileId +".csv");
+                                                   100,42,"../output_files/RSbenchmark_" + fileId + ".csv");
 
 }
 
 
 int main(int argc, char** argv) {
-    using Type64 = uint64_t;
-    using Type32 = uint32_t;
+    using Type64 = std::uint64_t;
+    using Type32 = std::uint32_t;
 
     // AVX with 64 bit
 
