@@ -80,7 +80,10 @@ class PaxTable : public Tables::ITable<T> {
         for (unsigned pageIndex = 0; pageIndex < this->numberOfPages; pageIndex++) {
             PaxPage<T> page = this->pages[pageIndex];
             vector<unsigned> newPositions = page.query(filters);
-            positions.insert(positions.end(), newPositions.begin(), newPositions.end());
+            const auto pageOffset = this->rowsPerPage * pageIndex;
+            for (auto position : newPositions) {
+                positions.push_back(pageOffset + position);
+            }
         }
 
         // Allocate enough memory for all rows.
@@ -99,7 +102,10 @@ class PaxTable : public Tables::ITable<T> {
         for (unsigned pageIndex = 0; pageIndex < this->numberOfPages; pageIndex++) {
             PaxPage<T> page = this->pages[pageIndex];
             auto [pagePositions, count] = page.queryAVX(filters);
-            positions.insert(positions.end(), pagePositions, pagePositions + count);
+            const auto pageOffset = this->rowsPerPage * pageIndex;
+            for (uint64_t position = 0; position < count; position++) {
+                positions.push_back(pageOffset + pagePositions[position]);
+            }
         }
 
         // Allocate enough memory for all rows.
