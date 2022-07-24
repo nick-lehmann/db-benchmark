@@ -2,7 +2,6 @@
 
 #include <immintrin.h>
 #include <tuple>
-#include <utility>
 #include "Constants.h"
 
 // deactivate certain compiler warnings
