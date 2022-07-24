@@ -15,6 +15,7 @@
 #include "Filters/All.h"
 #include "SIMD.h"
 
+
 template<typename T, SIMD Variant>
 void benchmark(std::vector<uint64_t> &projection,
               std::vector<Filters::Filter<T, Variant> *> &filters, const std::string &fileId) {
@@ -29,11 +30,9 @@ void benchmark(std::vector<uint64_t> &projection,
     fileName="../output_files/RSbenchmark_" + fileId + ".csv";
     Benchmark::benchmarkRows<T,Variant>(0,projection,filters,100,50,false,100,500,0,
                                                    100,42,fileName);
-
 }
 
-
-int main(int argc, char** argv) {
+void increasingRows(std::vector<uint64_t> &projection){
     using Type64 = std::uint64_t;
     using Type32 = std::uint32_t;
 
@@ -45,9 +44,9 @@ int main(int argc, char** argv) {
 
 
     std::vector<Filters::Filter<Type64, SIMD::AVX512>*> filters_AVX64{Filter_AVX64, Filter2_AVX64, Filter3_AVX64};
-    std::vector<Type64> projection{0, 1, 2};
 
-    benchmark<Type64 ,SIMD::AVX512>(projection,filters_AVX64,"AVX64");
+
+    benchmark<Type64, SIMD::AVX512>(projection,filters_AVX64,"AVX64");
 
 
     // AVX with 32 bit
@@ -59,7 +58,7 @@ int main(int argc, char** argv) {
 
     std::vector<Filters::Filter<Type32, SIMD::AVX512>*> filters_AVX32{Filter_AVX32, Filter2_AVX32, Filter3_AVX32};
 
-    benchmark<Type32 ,SIMD::AVX512>(projection,filters_AVX32,"AVX32");
+    benchmark<Type32, SIMD::AVX512>(projection,filters_AVX32,"AVX32");
 
 
     // Scalar with 32 bit
@@ -71,7 +70,7 @@ int main(int argc, char** argv) {
 
     std::vector<Filters::Filter<Type32, SIMD::None>*> filters32{Filter32, Filter2_32, Filter3_32};
 
-    benchmark<Type32 ,SIMD::None>(projection,filters32,"Scalar32");
+    benchmark<Type32, SIMD::None>(projection,filters32,"Scalar32");
 
 
     // Scalar with 64 bit
@@ -82,7 +81,7 @@ int main(int argc, char** argv) {
 
     std::vector<Filters::Filter<Type64, SIMD::None>*> filters_S64{Filter_S64, Filter2_S64, Filter3_S64};
 
-    benchmark<Type64 ,SIMD::None>(projection,filters_S64,"Scalar64");
+    benchmark<Type64, SIMD::None>(projection,filters_S64,"Scalar64");
 
 
 
@@ -92,8 +91,8 @@ int main(int argc, char** argv) {
 
     std::vector<Filters::Filter<Type64, SIMD::AVX512_Strided>*> filters_strided{Filter_S, Filter2_S, Filter3_S};
 
-    Benchmark::benchmarkRows<Type64,SIMD::AVX512_Strided>(0,projection,filters_strided,100,50,false,100,500,0,
-                                               100,42,"../output_files/RSbenchmark_Strided64.csv");
+    Benchmark::benchmarkRows<Type64, SIMD::AVX512_Strided>(0,projection,filters_strided,100,50,false,100,500,0,
+                                                           100,42,"../output_files/RSbenchmark_Strided64.csv");
 
     auto Filter_S32 = new Filters::GreaterThan<Type32, SIMD::AVX512_Strided>(0, 72);
     auto Filter2_S32 = new Filters::NotEqual<Type32, SIMD::AVX512_Strided>(1, 3);
@@ -101,9 +100,32 @@ int main(int argc, char** argv) {
 
     std::vector<Filters::Filter<Type32, SIMD::AVX512_Strided>*> filters_strided32{Filter_S32, Filter2_S32, Filter3_S32};
 
-    Benchmark::benchmarkRows<Type32,SIMD::AVX512_Strided>(0,projection,filters_strided32,100,50,false,100,500,0,
-                                               100,42,"../output_files/RSbenchmark_Strided32.csv");
+    Benchmark::benchmarkRows<Type32, SIMD::AVX512_Strided>(0,projection,filters_strided32,100,50,false,100,500,0,
+                                                           100,42,"../output_files/RSbenchmark_Strided32.csv");
 
+}
+
+template<typename T, SIMD Variant>
+void benchmarkFilter(std::vector<uint64_t> &projection,
+                     std::vector<Filters::Filter<T, Variant> *> &filters, const std::string &fileId){
+    return 0;
+}
+
+template<typename T, SIMD Variant>
+void increaseFilterNumber(unsigned int filterNr, std::vector<uint64_t> &projection ,const std::string &type) {
+    std::srand(42);
+    std::vector<Filters::Filter<T, Variant>*> filters;
+    for (int i=1; i<=filterNr; i++) {
+        filters.push_back(new Filters::NotEqual<T,Variant>(std::rand() % 50, std::rand() % 100));
+        benchmarkFilter<T,Variant>(projection,filters, type);
+    }
+}
+
+int main(int argc, char** argv) {
+    std::vector<uint64_t> projection{0, 1, 2};
+
+    increasingRows(projection);
+    //increaseFilterNumber<uint64_t,SIMD::AVX512>(25,projection,"AVX64");
 
     return 0;
 }
