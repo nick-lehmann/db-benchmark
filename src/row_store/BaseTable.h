@@ -58,12 +58,12 @@ class BaseTable : public Tables::ITable<T> {
         IntermediateTable<T, SIMD::None, Alignment> interTableUnified(this->numberOfAttributes, data);
 
         // apply filter and projection to intermediate Table (make sure to use the new IntermediateTable-Implementetion)
-        auto projectedResult = projection_unified(interTableUnified, projectionAttributes);
-        auto filteredResult = apply_filters_unified((*projectedResult), filters);
+        auto filteredResult = apply_filters_unified(interTableUnified, filters);
+        auto projectedResult = projection_unified((*filteredResult), projectionAttributes);
 
         // get result as (T **) and create tuple containing the result with the result tables row count and tuple width
-        uint64_t numberOfColumns = filteredResult->getTupleWidth();
-        auto [table, numberOfRows] = filteredResult->table();
+        uint64_t numberOfColumns = projectedResult->getTupleWidth();
+        auto [table, numberOfRows] = projectedResult->table();
 
         // free memory
         delete projectedResult;
@@ -82,12 +82,12 @@ class BaseTable : public Tables::ITable<T> {
         IntermediateTable<T, SIMD::AVX512, Alignment> interTableUnified(this->numberOfAttributes, data);
 
         // apply filter and projection to intermediate Table (make sure to use the new IntermediateTable-Implementetion)
-        auto projectedResult = projection_unified(interTableUnified, projectionAttributes);
-        auto filteredResult = apply_filters_unified((*projectedResult), filters);
+        auto filteredResult = apply_filters_unified(interTableUnified, filters);
+        auto projectedResult = projection_unified((*filteredResult), projectionAttributes);
 
         // get result as (T **) and create tuple containing the result with the result tables row count and tuple width
-        uint64_t numberOfColumns = filteredResult->getTupleWidth();
-        auto [table, numberOfRows] = filteredResult->table();
+        uint64_t numberOfColumns = projectedResult->getTupleWidth();
+        auto [table, numberOfRows] = projectedResult->table();
 
         // free memory
         delete projectedResult;
@@ -106,12 +106,12 @@ class BaseTable : public Tables::ITable<T> {
         IntermediateTable<T, SIMD::AVX512_Strided, Alignment> interTableUnified(this->numberOfAttributes, data);
 
         // apply filter and projection to intermediate Table (make sure to use the new IntermediateTable-Implementetion)
-        auto projectedResult = projection_unified(interTableUnified, projectionAttributes);
-        auto filteredResult = apply_filters_unified((*projectedResult), filters);
+        auto filteredResult = apply_filters_unified(interTableUnified, filters);
+        auto projectedResult = projection_unified((*filteredResult), projectionAttributes);
 
         // get result as (T **) and create tuple containing the result with the result tables row count and tuple width
-        uint64_t numberOfColumns = filteredResult->getTupleWidth();
-        auto [table, numberOfRows] = filteredResult->table();
+        uint64_t numberOfColumns = projectedResult->getTupleWidth();
+        auto [table, numberOfRows] = projectedResult->table();
 
         // free memory
         delete projectedResult;
@@ -129,11 +129,11 @@ class BaseTable : public Tables::ITable<T> {
         IntermediateTable<T, SIMD::None, Alignment> interTableUnified(this->numberOfAttributes, data);
 
         // apply filter and projection to intermediate Table (make sure to use the new IntermediateTable-Implementetion)
-        auto projectedResult = projection_unified(interTableUnified, projectionAttributes);
-        auto filteredResult = apply_filters_unified((*projectedResult), filters);
+        auto filteredResult = apply_filters_unified(interTableUnified, filters);
+        auto projectedResult = projection_unified((*filteredResult), projectionAttributes);
 
         // get result tables row count
-        auto resultRowCount = filteredResult->count();
+        auto resultRowCount = projectedResult->count();
 
         // free memory
         delete projectedResult;
@@ -151,11 +151,11 @@ class BaseTable : public Tables::ITable<T> {
         IntermediateTable<T, SIMD::AVX512, Alignment> interTableUnified(this->numberOfAttributes, data);
 
         // apply filter and projection to intermediate Table (make sure to use the new IntermediateTable-Implementetion)
-        auto projectedResult = projection_unified(interTableUnified, projectionAttributes);
-        auto filteredResult = apply_filters_unified((*projectedResult), filters);
+        auto filteredResult = apply_filters_unified(interTableUnified, filters);
+        auto projectedResult = projection_unified((*filteredResult), projectionAttributes);
 
         // get result tables row count
-        auto resultRowCount = filteredResult->count();
+        auto resultRowCount = projectedResult->count();
 
         // free memory
         delete projectedResult;
@@ -174,11 +174,11 @@ class BaseTable : public Tables::ITable<T> {
         IntermediateTable<T, SIMD::AVX512_Strided, Alignment> interTableUnified(this->numberOfAttributes, data);
 
         // apply filter and projection to intermediate Table (make sure to use the new IntermediateTable-Implementetion)
-        auto projectedResult = projection_unified(interTableUnified, projectionAttributes);
-        auto filteredResult = apply_filters_unified((*projectedResult), filters);
+        auto filteredResult = apply_filters_unified(interTableUnified, filters);
+        auto projectedResult = projection_unified((*filteredResult), projectionAttributes);
 
         // get result tables row count
-        auto resultRowCount = filteredResult->count();
+        auto resultRowCount = projectedResult->count();
 
         // free memory
         delete projectedResult;
