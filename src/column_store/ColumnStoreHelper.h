@@ -1,7 +1,7 @@
 #pragma once
 
 #include <immintrin.h>
-
+#include <compare>
 #include <tuple>
 
 #include "Constants.h"
