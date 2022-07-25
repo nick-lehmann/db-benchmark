@@ -27,7 +27,7 @@ void benchmark(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T,
 }
 
 template<typename T, SIMD Variant>
-std::vector<Filters::Filter<T, Variant> *> genFilter(unsigned int filterNr){
+std::vector<Filters::Filter<T, Variant> *> genFilters(unsigned int filterNr){
     std::srand(42);
     std::vector<Filters::Filter<T, Variant> *> filters;
     unsigned int rFilter;
@@ -143,7 +143,6 @@ void increaseFilterNumber(unsigned int filterNr, std::vector<uint64_t> &projecti
         }
         benchmarkFilter<T, Variant>(projection, filters, type);
     }
-    delete filters
 }
 
 int main(int argc, char **argv) {
