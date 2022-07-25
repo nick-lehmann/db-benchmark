@@ -15,8 +15,6 @@ from random import randint
 def main():
     print(__doc__)
     
-    
-    
     #files=['CSbenchmark_AVX.csv','PSbenchmark_AVX.csv','RSbenchmark_AVX.csv']
     #files=['CSbenchmark_AVX.csv','RSbenchmark_AVX.csv','CSbenchmark_Scalar.csv','RSbenchmark_Scalar.csv','RSbenchmark_Strided.csv']
     files=list(glob.glob('../../output_files/*.csv'))
@@ -79,7 +77,7 @@ def main():
     
     labels=['Row-Store','Column-Store','PAX-Store']
     simds=['AVX','Scalar','Strided']
-    marker=['x','+','^']
+    marker=['^','X','D']
     colors_dtype={'32':'b','64':'r'}
     
     figsize=(25,15)
@@ -96,7 +94,8 @@ def main():
         if i==0:
             for t in ['32','64']:
                 ratio=(df[(df[df.columns[0]]==i) & (df[df.columns[-1]]==f'{simds[1]}{t}')].values)[:,-2] / (df[(df[df.columns[0]]==i) & (df[df.columns[-1]]==f'{simds[2]}{t}')].values)[:,-2]
-                plt.plot((df[(df[df.columns[0]]==i) & (df[df.columns[-1]]==f'{simds[1]}{t}')].values)[:,1],ratio,ls='None',marker=marker[i],c=f'{"#%06X" % randint(0, 0xFFFFFF)}',ms=4,label=f'{labels[i]}-Strided-{t}')    
+                plt.plot((df[(df[df.columns[0]]==i) & (df[df.columns[-1]]==f'{simds[1]}{t}')].values)[:,1],
+                         ratio,ls='None',marker=marker[i],c=f'{"#%06X" % randint(0, 0xFFFFFF)}',ms=4,label=f'{labels[i]}-Strided-{t}')    
     plt.xlabel('rowCount',fontsize=fontsize)
     plt.hlines(y = 1, xmin = -1000, xmax = 60000,linewidths=3, ls='dotted',colors='black')
     plt.tick_params(axis = 'both', which = 'major', labelsize = fontsize-2)
@@ -118,33 +117,42 @@ def main():
             for s in simds[:2]:
                 ts=np.array((df[(df[df.columns[0]]==i) & (df[df.columns[-1]]==f'{s}{t}')].values)[:,-2])
                 rc=np.array((df[(df[df.columns[0]]==i) & (df[df.columns[-1]]==f'{s}{t}')].values)[:,1])
-                #y=20*ts/rc
-                axs[i,dtype_idx[t]].plot(rc,ts,ls='None',c=f'{"#%06X" % randint(0, 0xFFFFFF)}',marker=marker[i],ms=3,label=f'{labels[i]}-{s}-{t}')
+                y=(1000/ts)*rc*50/int(1e+6)
+                axs[i,dtype_idx[t]].plot(rc,y,ls='None',c=f'{"#%06X" % randint(0, 0xFFFFFF)}',marker=marker[i],ms=3,label=f'{labels[i]}-{s}-{t}')
             if i!=0:
                 axs[i,dtype_idx[t]].legend(loc='best',markerscale=4,fontsize=fontsize)
             if i==0:
                 #for t in ['32','64']:
                 rc=(df[(df[df.columns[0]]==i) & (df[df.columns[-1]]==f'{simds[2]}{t}')].values)[:,1]
                 ts=(df[(df[df.columns[0]]==i) & (df[df.columns[-1]]==f'{simds[2]}{t}')].values)[:,-2]
-                #y=20*ts/rc
-                axs[i,dtype_idx[t]].plot(rc,ts,ls='None',c=f'{"#%06X" % randint(0, 0xFFFFFF)}',marker=marker[i],ms=3,label=f'{labels[i]}-Strided-{t}')
+                y=(1000/ts)*rc*50/int(1e+6)
+                axs[i,dtype_idx[t]].plot(rc,y,ls='None',c=f'{"#%06X" % randint(0, 0xFFFFFF)}',marker=marker[i],ms=3,label=f'{labels[i]}-Strided-{t}')
                 axs[i,dtype_idx[t]].legend(loc='best',markerscale=4,fontsize=fontsize-4)
             axs[i,dtype_idx[t]].set_xlabel('rowCount',fontsize=fontsize-3)
-            axs[i,dtype_idx[t]].set_ylabel('CPU time [ms]',fontsize=fontsize-2)
+            axs[i,dtype_idx[t]].set_ylabel('Million Integer per Second [mis]',fontsize=fontsize-6)
             #axs[i,dtype_idx[t]].set_ylabel('Million Integer / s',fontsize=fontsize-2)
             axs[i,dtype_idx[t]].tick_params(axis = 'both', which = 'major', labelsize = fontsize-4)
     #plt.ylim(0,50)
     
     #plt.legend(loc='best',markerscale=4,fontsize=fontsize)
+    fig.tight_layout(rect=[0, 0.03, 1.0, 0.95])
     fig.savefig('../../output_files/AVX-Scalar-Strided-50-cols-gt-ne-le-50k.pdf',dpi=300)
     
-    plt.figure(figsize=figsize)
+    """ Filter Diagram """
+    fig, axs = plt.subplots(3, 2,figsize=figsize,sharex=True)
     
     for i in range(3):
-        for s in simds[:2]:
-            plt.plot((df_filter[(df_filter[df_filter.columns[0]]==i) & (df_filter[df_filter.columns[-2]]==f'{s}64')].values)[:,-1],(df_filter[(df_filter[df_filter.columns[0]]==i) & (df_filter[df_filter.columns[-2]]==f'{s}64')].values)[:,-3],ls='None',marker=marker[i],c=f'{"#%06X" % randint(0, 0xFFFFFF)}',ms=4,label=f'{labels[i]}-{s}')
-    plt.legend(loc='best',markerscale=4,fontsize=fontsize)
-    plt.savefig('../../output_files/Filter.pdf',dpi=300)
+        for t in ['32','64']:
+            for s in simds[:2]:
+                axs[i,dtype_idx[t]].plot((df_filter[(df_filter[df_filter.columns[0]]==i) & (df_filter[df_filter.columns[-2]]==f'{s}{t}')].values)[:,-1],
+                                         (df_filter[(df_filter[df_filter.columns[0]]==i) & (df_filter[df_filter.columns[-2]]==f'{s}{t}')].values)[:,-3],
+                                         ls='None',marker=marker[i],c=f'{"#%06X" % randint(0, 0xFFFFFF)}',ms=4,label=f'{labels[i]}-{s}-{t}')
+            axs[i,dtype_idx[t]].legend(loc='best',markerscale=4,fontsize=fontsize)
+            axs[i,dtype_idx[t]].set_ylabel('CPU time [ms]',fontsize=fontsize-2)
+            axs[i,dtype_idx[t]].set_xlabel('# filter',fontsize=fontsize-2)
+            axs[i,dtype_idx[t]].tick_params(axis = 'both', which = 'major', labelsize = fontsize-4)
+    fig.tight_layout(rect=[0, 0.03, 1.0, 0.95])
+    fig.savefig('../../output_files/Filter.pdf',dpi=300)
     
     
     
