@@ -1,3 +1,5 @@
+#pragma once
+
 #include <fstream>
 #include <iostream>
 #include <iterator>
@@ -7,8 +9,8 @@
 #include <string_view>
 #include <vector>
 
-#include "./shell.h"
 #include "Filters/All.h"
+#include "Shell.h"
 
 class Database {
    public:
@@ -31,7 +33,6 @@ class Database {
         importPSV();
     }
 
-    // TODO: Document
     template <typename T, SIMD Variant, uint64_t expectedColumns>
     Result<T, expectedColumns> query(std::vector<T> projection, std::vector<Filters::Filter<T, Variant> *> filters, unsigned partition) {
         std::string query = buildSQLQuery<T, Variant>(projection, filters, tableName, partition);
