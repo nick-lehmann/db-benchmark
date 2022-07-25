@@ -34,7 +34,8 @@ class Database {
     }
 
     template <typename T, SIMD Variant, uint64_t expectedColumns>
-    Result<T, expectedColumns> query(std::vector<T> projection, std::vector<Filters::Filter<T, Variant> *> filters, unsigned partition) {
+    Result<T, expectedColumns> query(std::vector<uint64_t> projection, std::vector<Filters::Filter<T, Variant> *> filters,
+                                     unsigned partition) {
         std::string query = buildSQLQuery<T, Variant>(projection, filters, tableName, partition);
         std::string output = queryWithShell(query);
         return parseQueryResultFromStdout<T, expectedColumns>(output);
@@ -173,7 +174,7 @@ class Database {
     }
 
     template <typename T, SIMD Variant>
-    std::string buildWhereClause(std::vector<Filters::Filter<uint64_t, Variant> *> &filters) {
+    std::string buildWhereClause(std::vector<Filters::Filter<T, Variant> *> &filters) {
         std::ostringstream clause;
         for (unsigned filterIndex = 0; filterIndex < filters.size(); filterIndex++) {
             clause << getColumnName(filters[filterIndex]->index) << filterToSqlOperator<T, Variant>(filters[filterIndex])

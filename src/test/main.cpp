@@ -27,8 +27,10 @@ const uint64_t numberOfRows = 10000;
 int main() {
     using T = std::uint64_t;
 
-    const T **data = TableHelper::generateRandomData<T>(numberOfAttributes, numberOfRows, 0, 100);
+    const std::uint64_t **data = TableHelper::generateRandomData<uint64_t>(numberOfAttributes, numberOfRows, 0, 100);
+    // const std::uint32_t **data_32 = TableHelper::generateRandomData<uint32_t>(numberOfAttributes, numberOfRows, 0, 100);
     Database db = setupEnvironment(data, numberOfAttributes, numberOfRows);
 
     run<uint64_t>(db, data);
+    // run<uint32_t>(db, data_32);
 }
