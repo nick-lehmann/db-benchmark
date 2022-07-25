@@ -23,7 +23,7 @@ const auto dbPath = "test.db";
 const auto datasetPath = "/workspaces/db-benchmark/data.csv";
 
 // Test inputs
-std::vector<uint64_t> rows = {8, 16, 100, 1000, 10000, 1000000};
+std::vector<uint64_t> rows = {8, 16, 100, 1000, 10000};
 std::vector<uint64_t> columns = {5, 10};
 std::vector<std::vector<uint64_t>> projections = {
     {0, 1, 2},
