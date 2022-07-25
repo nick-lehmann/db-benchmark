@@ -51,9 +51,12 @@ class PaxTable : public Tables::ITable<T> {
         }
     }
 
-    // TODO: Free memory
-    virtual ~PaxTable() {
-        // cout << "Destroy pax table" << endl;
+    // TODO: check if this resolves all memeory leaks in pax
+    ~PaxTable() {
+        for (PaxPage<T> ppage : pages) {
+            free(ppage.start);
+        }
+        free(pages);
     }
 
     T *getRow(uint64_t rowIndex) override {

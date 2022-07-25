@@ -143,6 +143,8 @@ std::tuple<double, double, double> benchmarkTableImplementation(int tableStoreId
             throw std::invalid_argument("Invalid table store ID used!");
         }
     }
+
+    TableHelper::freeTable(tableData);
 }
 
 /// Run a benchmark performing multiple time measurements on table with different parameters.
