@@ -25,7 +25,10 @@ class Table : public Tables::ITable<T> {
         sizeOfIndexStorage = -1;
     }
 
-    ~Table() override = default;
+    ~Table() override {
+        delete[] data;
+        free(indexStorage);
+    };
 
     T *getRow(uint64_t rowIndex) override {
         auto returnRow = new T[this->numberOfAttributes];
