@@ -53,8 +53,8 @@ class PaxTable : public Tables::ITable<T> {
 
     // TODO: check if this resolves all memeory leaks in pax
     ~PaxTable() {
-        for (PaxPage<T> ppage : pages) {
-            free(ppage.start);
+        for (uint32_t i = 0; i < numberOfPages; ++i) {
+            free(pages[i].start);
         }
         free(pages);
     }

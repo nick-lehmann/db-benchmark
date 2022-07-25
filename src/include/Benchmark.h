@@ -144,7 +144,7 @@ std::tuple<double, double, double> benchmarkTableImplementation(int tableStoreId
         }
     }
 
-    TableHelper::freeTable(tableData);
+    TableHelper::freeTable(const_cast<T **>(tableData), rowCount);
 }
 
 /// Run a benchmark performing multiple time measurements on table with different parameters.

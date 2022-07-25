@@ -43,8 +43,10 @@ using namespace std;
  */
 template <typename T, typename idxT = T>
 class PaxPage {
-   private:
+   public:
     unsigned short *start;
+
+   private:
     long int pagesize;
 
     Header *numberOfAttributes;  // Fixed
