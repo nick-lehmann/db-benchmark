@@ -1,39 +1,27 @@
 #include <filesystem>
+#include <string>
+
+// Default limiter for Sqlite3
+// When importing from the shell, it is not possible to set sqlite3 into csv mode and import at the same time. Therefore, we have to use the
+// pipe as it is the default delimiter.
+const std::string delimiter = "|";
 
 template <typename T>
-void writeDatasetToFile(std::string path) {
-    auto numberOfAttributes = 50;
-    auto numberOfRows = 100000;
-    const T **data = TableHelper::generateRandomData<T>(numberOfAttributes, numberOfRows, 0, 100);
+void writeDatasetToFile(std::string path, uint64_t numberOfAttributes, uint64_t numberOfRows, const T **data) {
+    std::remove(path.c_str());
 
     std::ofstream out;
     out.open(path, std::ios::out);
 
-    // Write header
-    for (unsigned column = 0; column < numberOfAttributes; column++) {
-        out << "c" << column;
-        if (column != numberOfAttributes - 1) {
-            out << ",";
-        }
-    }
-    out << endl;
-
-    // Write header
+    // Write data
     for (unsigned row = 0; row < numberOfRows; row++) {
         for (unsigned column = 0; column < numberOfAttributes; column++) {
             out << data[row][column];
             if (column != numberOfAttributes - 1) {
-                out << ",";
+                out << delimiter;
             }
         }
         out << endl;
     }
     out.close();
-}
-
-template <typename T>
-void ensureDatasetExists(std::string path) {
-    if (!std::filesystem::exists(path)) {
-        writeDatasetToFile<T>();
-    }
 }
