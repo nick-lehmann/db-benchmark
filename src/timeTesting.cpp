@@ -93,7 +93,12 @@ void increasingRows(std::vector<uint64_t> &projection) {
 
 template <typename T, SIMD Variant>
 void benchmarkFilter(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T, Variant> *> &filters, const std::string &fileId) {
-    std::cout << "Test" << std::endl;
+    std::string fileName = "../output_files/PSbenchmark_" + fileId +"_fNR_"+std::to_string(filters.size())+".csv";
+    Benchmark::benchmarkRows<T, Variant>(2, projection, filters, 500000, 50, false, 100, 1, 0, 100, 42, fileName);
+    fileName = "../output_files/CSbenchmark_" + fileId +"_fNR_"+std::to_string(filters.size())+ ".csv";
+    Benchmark::benchmarkRows<T, Variant>(1, projection, filters, 500000, 50, false, 100, 1, 0, 100, 42, fileName);
+    fileName = "../output_files/RSbenchmark_" + fileId +"_fNR_"+std::to_string(filters.size())+ ".csv";
+    Benchmark::benchmarkRows<T, Variant>(0, projection, filters, 500000, 50, false, 100, 1, 0, 100, 42, fileName);
 }
 
 template <typename T, SIMD Variant>
@@ -107,10 +112,14 @@ void increaseFilterNumber(unsigned int filterNr, std::vector<uint64_t> &projecti
 }
 
 int main(int argc, char **argv) {
-    std::vector<uint64_t> projection{0, 1, 2};
+    std::vector<uint64_t> projection{0, 1, 2, 12};
 
     increasingRows(projection);
-    // increaseFilterNumber<uint64_t,SIMD::AVX512>(25,projection,"AVX64");
+    increaseFilterNumber<uint64_t,SIMD::AVX512>(30,projection,"AVX64");
+    increaseFilterNumber<uint64_t,SIMD::None>(30,projection,"Scalar64");
+
+    increaseFilterNumber<uint32_t,SIMD::AVX512>(30,projection,"AVX32");
+    increaseFilterNumber<uint32_t,SIMD::None>(30,projection,"Scalar32");
 
     return 0;
 }
