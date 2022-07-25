@@ -30,7 +30,7 @@ template<typename T, SIMD Variant>
 std::vector<Filters::Filter<T, Variant> *> genFilter(unsigned int filterNr){
     std::srand(42);
     std::vector<Filters::Filter<T, Variant> *> filters;
-    int rFilter;
+    unsigned int rFilter;
     for (int i = 0; i < filterNr; i++) {
         rFilter= i % 6;
         switch (rFilter) {
@@ -72,34 +72,28 @@ void increasingRows(std::vector<uint64_t> &projection) {
     // AVX with 64 bit
     std::vector<Filters::Filter<Type64, SIMD::AVX512> *> filters_AVX64 = genFilters<Type64,SIMD::AVX512>(filterNr);
     benchmark<Type64, SIMD::AVX512>(projection, filters_AVX64, "AVX64");
-    delete filters_AVX64;
 
     // AVX with 32 bit
     std::vector<Filters::Filter<Type32, SIMD::AVX512> *> filters_AVX32 = genFilters<Type32,SIMD::AVX512>(filterNr);
     benchmark<Type32, SIMD::AVX512>(projection, filters_AVX32, "AVX32");
-    delete filters_AVX32;
 
     // Scalar with 32 bit
     std::vector<Filters::Filter<Type32, SIMD::None> *> filters32 = genFilters<Type32,SIMD::None>(filterNr);
     benchmark<Type32, SIMD::None>(projection, filters32, "Scalar32");
-    delete filters32;
 
     // Scalar with 64 bit
     std::vector<Filters::Filter<Type64, SIMD::None> *> filters64 = genFilters<Type64,SIMD::None>(filterNr);
     benchmark<Type64, SIMD::None>(projection, filters64, "Scalar64");
-    delete filters64
 
     // AVX strided with 64 bit
     std::vector<Filters::Filter<Type64, SIMD::AVX512_Strided> *> filters64_S = genFilters<Type64,SIMD::AVX512_Strided>(filterNr);
     Benchmark::benchmarkRows<Type64, SIMD::AVX512_Strided>(0, projection, filters64_S, 200000, 50, false, 200000, 50, 0, 100, 42,
                                                            "../output_files/RSbenchmark_Strided64.csv");
-    delete filters64_S
 
     // AVX strided with 32 bit
     std::vector<Filters::Filter<Type32, SIMD::AVX512_Strided> *> filters32_S = genFilters<Type32,SIMD::AVX512_Strided>(filterNr);
     Benchmark::benchmarkRows<Type32, SIMD::AVX512_Strided>(0, projection, filters32_S, 200000, 50, false, 200000, 50, 0, 100, 42,
                                                            "../output_files/RSbenchmark_Strided32.csv");
-    delete filters32_S
 }
 
 template <typename T, SIMD Variant>
@@ -118,6 +112,7 @@ template <typename T, SIMD Variant>
 void increaseFilterNumber(unsigned int filterNr, std::vector<uint64_t> &projection, const std::string &type) {
     std::srand(42);
     std::vector<Filters::Filter<T, Variant> *> filters;
+    unsigned int rFilter;
     for (int i = 0; i < filterNr; i++) {
         rFilter= i % 6;
         switch (rFilter) {
