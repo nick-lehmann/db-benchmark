@@ -166,6 +166,24 @@ IntermediateTable<T, Variant, Alignment> *apply_filters_unified(IntermediateTabl
         ++(*vectorResultIter);
     }
 
+    // process the left few elements, that do not fill a entire vector (the tables alloc enougth memory to avoid a segementation fault)
+    if constexpr (Variant != SIMD::None) {
+        uint32_t laneMultiplier = VectorIterator<T, Variant, Alignment>::LaneMultiplier;
+        uint32_t leftTuple = table.end()->getPos() % laneMultiplier;
+        if (leftTuple != 0) {
+            __mmask16 filteringMask = _mm512_int2mask(0b1111111111111111 << (laneMultiplier - leftTuple));
+            // Iterate over filters and match
+            for (int j = 0; j < filters.size(); ++j) {
+                auto vectorReg = vectorIterBegin->gather(filters[j]->index);
+                filteringMask = filters[j]->match(vectorReg, filteringMask);
+            }
+            // copy tuples to result
+            auto scalarIter = vectorIterBegin->getScalarIterator();
+            TupleCopyHelper<T, Variant, Alignment>::copyMaskedTupleN(result, *scalarIter, _mm512_mask2int(filteringMask));
+            delete scalarIter;
+        }
+    }
+
     // free memory
     delete vectorIterBegin;
     delete vectorIterEnd;
