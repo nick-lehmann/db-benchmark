@@ -120,7 +120,10 @@ std::tuple<double, double, double> benchmarkTableImplementation(int tableStoreId
     switch (tableStoreId) {
         case 0: {
             // row store
-            RowStore::BaseTable<T, PAGE_SIZE> table(columnCount, rowCount, tableData);
+            if(T==uint64_t)
+                RowStore::BaseTable<T, 4096> table(columnCount, rowCount, tableData);
+            else
+                RowStore::BaseTable<T, 2048> table(columnCount, rowCount, tableData);
 
             // run benchmark and return
             return Benchmark::measureTime(table, projectionAttributes, filters, false);
@@ -162,7 +165,6 @@ std::tuple<double, double, double> benchmarkTableImplementation(int tableStoreId
 /// \param seed used for data generation
 /// \param filepath if specified export results to filepath. filepath should include filename and ending (e.g. .csv)
 template <typename T, SIMD Variant>
-
 void benchmarkRows(int tableStoreId, std::vector<uint64_t> &projectionAttributes, std::vector<Filters::Filter<T, Variant> *> &filters,
                    unsigned rowCount = 10, unsigned columnCount = 10, bool exponentialGrowth = false, unsigned growthFactor = 50,
                    unsigned iterations = 300, T lowerBound = 0, T upperBound = 1000, unsigned seed = 42,
