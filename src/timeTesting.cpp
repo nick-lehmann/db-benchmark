@@ -16,8 +16,8 @@
 
 template <typename T, SIMD Variant>
 void benchmark(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T, Variant> *> &filters,
-               const std::string &fileId, unsigned rows=200000, unsigned columns=50,
-               unsigned increase=200000,unsigned steps=50) {
+               const std::string &fileId, unsigned rows=10000, unsigned columns=50,
+               unsigned increase=10000,unsigned steps=100) {
     std::string fileName = "../output_files/PSbenchmark_" + fileId + ".csv";
     Benchmark::benchmarkRows<T, Variant>(2, projection, filters, rows, columns, false, increase, steps, 0, 100, 42, fileName);
     fileName = "../output_files/CSbenchmark_" + fileId + ".csv";
@@ -91,20 +91,20 @@ void increasingRows(std::vector<uint64_t> &projection) {
 
     // AVX strided with 64 bit
     std::vector<Filters::Filter<Type64, SIMD::AVX512_Strided> *> filters64_S = genFilters<Type64,SIMD::AVX512_Strided>(filterNr);
-    Benchmark::benchmarkRows<Type64, SIMD::AVX512_Strided>(0, projection, filters64_S, 200000, 50, false, 200000, 50, 0, 100, 42,
+    Benchmark::benchmarkRows<Type64, SIMD::AVX512_Strided>(0, projection, filters64_S, 10000, 50, false, 10000, 100, 0, 100, 42,
                                                            "../output_files/RSbenchmark_Strided64.csv");
     std::vector<Filters::Filter<Type64, SIMD::AVX512_Strided> *>().swap(filters64_S);
 
     // AVX strided with 32 bit
     std::vector<Filters::Filter<Type32, SIMD::AVX512_Strided> *> filters32_S = genFilters<Type32,SIMD::AVX512_Strided>(filterNr);
-    Benchmark::benchmarkRows<Type32, SIMD::AVX512_Strided>(0, projection, filters32_S, 200000, 50, false, 200000, 50, 0, 100, 42,
+    Benchmark::benchmarkRows<Type32, SIMD::AVX512_Strided>(0, projection, filters32_S, 10000, 50, false, 10000, 100, 0, 100, 42,
                                                            "../output_files/RSbenchmark_Strided32.csv");
     std::vector<Filters::Filter<Type32, SIMD::AVX512_Strided> *>().swap(filters32_S);
 }
 
 template <typename T, SIMD Variant>
 void benchmarkFilter(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T, Variant> *> &filters,
-                     const std::string &fileId, unsigned rows=1000000, unsigned columns=50,
+                     const std::string &fileId, unsigned rows=100000, unsigned columns=50,
                      unsigned increase=100,unsigned steps=1) {
     std::string fileName = "../output_files/PSbenchmark_" + fileId +"_fNR_"+std::to_string(filters.size())+".csv";
     Benchmark::benchmarkRows<T, Variant>(2, projection, filters, rows, columns, false, increase, steps, 0, 100, 42, fileName);
