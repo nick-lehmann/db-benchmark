@@ -119,6 +119,7 @@ class Table : public Tables::ITable<T> {
             for (const auto &row : *input_indices) {
                 if (filter->match(filter_col.at(row))) output_indices->push_back(row);
             }
+            input_indices->clear();
         } else {  // input_indices is empty, iterate over the entire set of data
             for (uint64_t row = 0; row < this->numberOfRows; row++) {
                 if (filter->match(filter_col.at(row))) output_indices->push_back(row);
@@ -126,7 +127,7 @@ class Table : public Tables::ITable<T> {
         }
 
         // free the old input_indices memory
-        free(input_indices);
+        delete input_indices;
         return output_indices;
     }
 
