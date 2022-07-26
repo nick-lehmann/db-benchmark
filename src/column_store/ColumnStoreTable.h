@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "ColumnStoreHelper.h"
+#include "Helper.h"
 #include "Filters/Base.h"
 #include "ITable.h"
 #include "SIMD.h"
@@ -80,6 +81,7 @@ class Table : public Tables::ITable<T> {
         if (!filter_indices->empty()) {
             auto access = final_result[filter_indices->size() - 1][projection.size() - 1];
         }
+        TableHelper::freeTable(final_result, filter_indices->size());
 
         return (uint64_t)filter_indices->size();
     }
@@ -98,6 +100,7 @@ class Table : public Tables::ITable<T> {
         if (sizeOfIndexStorage != 0) {
             auto access = final_result[sizeOfIndexStorage - 1][projection.size() - 1];
         }
+        TableHelper::freeTable(final_result, sizeOfIndexStorage);
 
         return (uint64_t)sizeOfIndexStorage;
     }
