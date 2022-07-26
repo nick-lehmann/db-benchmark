@@ -8,6 +8,7 @@
 #include <string>
 #include <tuple>
 #include <vector>
+#include<type_traits>
 
 #include "../column_store/ColumnStoreTable.h"
 #include "../pax_store/PaxTable.h"
@@ -120,34 +121,40 @@ std::tuple<double, double, double> benchmarkTableImplementation(int tableStoreId
     switch (tableStoreId) {
         case 0: {
             // row store
-            if(T==uint64_t)
+            if constexpr(std::is_same<T,uint64_t>::value==true)
                 RowStore::BaseTable<T, 4096> table(columnCount, rowCount, tableData);
             else
                 RowStore::BaseTable<T, 2048> table(columnCount, rowCount, tableData);
 
             // run benchmark and return
-            return Benchmark::measureTime(table, projectionAttributes, filters, false);
+            auto [resultRowCount, resultCpuTime, resultRealTime] = Benchmark::measureTime(table, projectionAttributes, filters, false);
+            TableHelper::freeTable(const_cast<T **>(tableData), rowCount);
+            return [resultRowCount, resultCpuTime, resultRealTime];
         }
         case 1: {
             // column store
             ColumnStore::Table<T, T> table(columnCount, rowCount, tableData);
 
             // run benchmark and return
-            return Benchmark::measureTime(table, projectionAttributes, filters, false);
+            auto [resultRowCount, resultCpuTime, resultRealTime] = Benchmark::measureTime(table, projectionAttributes, filters, false);
+            TableHelper::freeTable(const_cast<T **>(tableData), rowCount);
+            return [resultRowCount, resultCpuTime, resultRealTime];
         }
         case 2: {
             // pax store
             PaxTable<T> table(columnCount, rowCount, tableData);
 
             // run benchmark and return
-            return Benchmark::measureTime(table, projectionAttributes, filters, false);
+            auto [resultRowCount, resultCpuTime, resultRealTime] = Benchmark::measureTime(table, projectionAttributes, filters, false);
+            TableHelper::freeTable(const_cast<T **>(tableData), rowCount);
+            return [resultRowCount, resultCpuTime, resultRealTime];
         }
         default: {
             throw std::invalid_argument("Invalid table store ID used!");
         }
     }
 
-    TableHelper::freeTable(const_cast<T **>(tableData), rowCount);
+
 }
 
 /// Run a benchmark performing multiple time measurements on table with different parameters.
