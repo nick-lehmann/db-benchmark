@@ -38,8 +38,8 @@ std::vector<std::vector<std::tuple<unsigned, uint64_t>>> filterInputs = {
     {{0, 10}},
 };
 
-template <typename T>
-void run(Database &db, const T **data) {
+template <typename T, SIMD Variant>
+void run(Database &db, const T **data, string datatypeName, string variantName) {
     for (auto &row : rows) {
         for (auto &column : columns) {
             RowStore::BaseTable<T, PAGE_SIZE> rowTable(column, row, data);
@@ -53,16 +53,17 @@ void run(Database &db, const T **data) {
                 for (auto &projection : projections) {
                     for (auto &filterInput : filterInputs) {
                         auto [index, value] = filterInput[0];
-                        vector<Filters::Filter<T, SIMD::None> *> filters = {new Filters::GreaterThan<T, SIMD::None>(index, value)};
+                        vector<Filters::Filter<T, Variant> *> filters = {new Filters::GreaterThan<T, Variant>(index, value)};
 
                         // Fetch expected result from sqlite3.
-                        auto expected = db.query<T, SIMD::None, 3>(projection, filters, (unsigned)row);
+                        auto expected = db.query<T, Variant, 3>(projection, filters, (unsigned)row);
 
                         // Query table.
                         auto table = tables[tableIndex];
                         auto result = table->queryTable(projection, filters);
 
-                        cout << tableNames[tableIndex] << " (" << row << "," << column << "): ";
+                        cout << tableNames[tableIndex] << " " << datatypeName << " " << variantName << " (" << row << "x" << column
+                             << "): \t";
                         auto [success, msg] = assertResult<T, 3>(result, expected);
 
                         if (success) {

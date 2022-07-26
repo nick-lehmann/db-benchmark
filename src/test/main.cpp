@@ -28,9 +28,10 @@ int main() {
     using T = std::uint64_t;
 
     const std::uint64_t **data = TableHelper::generateRandomData<uint64_t>(numberOfAttributes, numberOfRows, 0, 100);
-    // const std::uint32_t **data_32 = TableHelper::generateRandomData<uint32_t>(numberOfAttributes, numberOfRows, 0, 100);
+    const std::uint32_t **data_32 = TableHelper::generateRandomData<uint32_t>(numberOfAttributes, numberOfRows, 0, 100);
     Database db = setupEnvironment(data, numberOfAttributes, numberOfRows);
 
-    run<uint64_t>(db, data);
+    run<uint64_t, SIMD::None>(db, data, "uint64_t", "Scalar");
+    run<uint64_t, SIMD::AVX512>(db, data, "uint64_t", "AVX512");
     // run<uint32_t>(db, data_32);
 }

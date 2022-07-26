@@ -154,8 +154,8 @@ class Database {
     /// WHERE filters;
     /// ```
     template <typename T, SIMD Variant>
-    std::string buildSQLQuery(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T, SIMD::None> *> &filters,
-                              std::string tableName, unsigned partition) {
+    std::string buildSQLQuery(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T, Variant> *> &filters, std::string tableName,
+                              unsigned partition) {
         std::ostringstream stmt;
         stmt << "select " << buildSelectClause(projection) << " from ( select * from " << tableName << " limit " << partition << ") where "
              << buildWhereClause<T, Variant>(filters);
