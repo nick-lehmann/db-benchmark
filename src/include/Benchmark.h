@@ -121,15 +121,15 @@ std::tuple<double, double, double> benchmarkTableImplementation(int tableStoreId
     switch (tableStoreId) {
         case 0: {
             // row store
-            if constexpr(std::is_same<T,uint64_t>::value==true)
+            if constexpr(std::is_same<T,uint64_t>::value==true) {
                 RowStore::BaseTable<T, 4096> table(columnCount, rowCount, tableData);
-            else
+            } else {
                 RowStore::BaseTable<T, 2048> table(columnCount, rowCount, tableData);
-
+            }
             // run benchmark and return
             auto [resultRowCount, resultCpuTime, resultRealTime] = Benchmark::measureTime(table, projectionAttributes, filters, false);
             TableHelper::freeTable(const_cast<T **>(tableData), rowCount);
-            return [resultRowCount, resultCpuTime, resultRealTime];
+            return std::make_tuple(resultRowCount, resultCpuTime, resultRealTime);
         }
         case 1: {
             // column store
@@ -138,7 +138,7 @@ std::tuple<double, double, double> benchmarkTableImplementation(int tableStoreId
             // run benchmark and return
             auto [resultRowCount, resultCpuTime, resultRealTime] = Benchmark::measureTime(table, projectionAttributes, filters, false);
             TableHelper::freeTable(const_cast<T **>(tableData), rowCount);
-            return [resultRowCount, resultCpuTime, resultRealTime];
+            return std::make_tuple(resultRowCount, resultCpuTime, resultRealTime);
         }
         case 2: {
             // pax store
@@ -147,7 +147,7 @@ std::tuple<double, double, double> benchmarkTableImplementation(int tableStoreId
             // run benchmark and return
             auto [resultRowCount, resultCpuTime, resultRealTime] = Benchmark::measureTime(table, projectionAttributes, filters, false);
             TableHelper::freeTable(const_cast<T **>(tableData), rowCount);
-            return [resultRowCount, resultCpuTime, resultRealTime];
+            return std::make_tuple(resultRowCount, resultCpuTime, resultRealTime);
         }
         default: {
             throw std::invalid_argument("Invalid table store ID used!");
