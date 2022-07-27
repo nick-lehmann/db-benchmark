@@ -16,8 +16,8 @@
 
 template <typename T, SIMD Variant>
 void benchmark(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T, Variant> *> &filters,
-               const std::string &fileId, unsigned rows=100000, unsigned columns=50,
-               unsigned increase=100000,unsigned steps=100) {
+               const std::string &fileId, unsigned rows=200000, unsigned columns=50,
+               unsigned increase=200000,unsigned steps=50) {
     std::string fileName = "../output_files/PSbenchmark_" + fileId + ".csv";
     Benchmark::benchmarkRows<T, Variant>(2, projection, filters, rows, columns, false, increase, steps, 0, 100, 42, fileName);
     fileName = "../output_files/CSbenchmark_" + fileId + ".csv";
@@ -32,29 +32,29 @@ std::vector<Filters::Filter<T, Variant> *> genFilters(unsigned int filterNr){
     std::vector<Filters::Filter<T, Variant> *> filters;
     unsigned int rFilter;
     for (int i = 0; i < filterNr; i++) {
-        rFilter= i % 6;
+        rFilter= i % 5;
         switch (rFilter) {
             case 0:
                 filters.push_back(
                     new Filters::NotEqual<T, Variant>(i, std::rand() %  21 +40));
                 break;
-            case 1:
+            /* case 1:
                 filters.push_back(
                     new Filters::Equal<T, Variant>(i, std::rand() % 21 +40));
-                break;
-            case 2:
+                break; */
+            case 1:
                 filters.push_back(
                     new Filters::GreaterEqual<T, Variant>(i, std::rand() % 21 +40));
                 break;
-            case 3:
+            case 2:
                 filters.push_back(
                     new Filters::GreaterThan<T, Variant>(i, std::rand() % 21 +40));
                 break;
-            case 4:
+            case 3:
                 filters.push_back(
                     new Filters::LessEqual<T, Variant>(i, std::rand() % 21 +40));
                 break;
-            case 5:
+            case 4:
                 filters.push_back(
                     new Filters::LessThan<T, Variant>(i, std::rand() % 21 +40));
                 break;
@@ -91,20 +91,20 @@ void increasingRows(std::vector<uint64_t> &projection) {
 
     // AVX strided with 64 bit
     std::vector<Filters::Filter<Type64, SIMD::AVX512_Strided> *> filters64_S = genFilters<Type64,SIMD::AVX512_Strided>(filterNr);
-    Benchmark::benchmarkRows<Type64, SIMD::AVX512_Strided>(0, projection, filters64_S, 100000, 50, false, 100000, 100, 0, 100, 42,
+    Benchmark::benchmarkRows<Type64, SIMD::AVX512_Strided>(0, projection, filters64_S, 200000, 50, false, 200000, 50, 0, 100, 42,
                                                            "../output_files/RSbenchmark_Strided64.csv");
     std::vector<Filters::Filter<Type64, SIMD::AVX512_Strided> *>().swap(filters64_S);
 
     // AVX strided with 32 bit
     std::vector<Filters::Filter<Type32, SIMD::AVX512_Strided> *> filters32_S = genFilters<Type32,SIMD::AVX512_Strided>(filterNr);
-    Benchmark::benchmarkRows<Type32, SIMD::AVX512_Strided>(0, projection, filters32_S, 100000, 50, false, 100000, 100, 0, 100, 42,
+    Benchmark::benchmarkRows<Type32, SIMD::AVX512_Strided>(0, projection, filters32_S, 200000, 50, false, 200000, 50, 0, 100, 42,
                                                            "../output_files/RSbenchmark_Strided32.csv");
     std::vector<Filters::Filter<Type32, SIMD::AVX512_Strided> *>().swap(filters32_S);
 }
 
 template <typename T, SIMD Variant>
 void benchmarkFilter(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T, Variant> *> &filters,
-                     const std::string &fileId, unsigned rows=1000000, unsigned columns=50,
+                     const std::string &fileId, unsigned rows=5000000, unsigned columns=50,
                      unsigned increase=100,unsigned steps=1) {
     std::string fileName = "../output_files/PSbenchmark_" + fileId +"_fNR_"+std::to_string(filters.size())+".csv";
     Benchmark::benchmarkRows<T, Variant>(2, projection, filters, rows, columns, false, increase, steps, 0, 100, 42, fileName);
@@ -120,16 +120,16 @@ void increaseFilterNumber(unsigned int filterNr, std::vector<uint64_t> &projecti
     std::vector<Filters::Filter<T, Variant> *> filters;
     unsigned int rFilter;
     for (int i = 0; i < filterNr; i++) {
-        rFilter= i % 6;
+        rFilter= i % 5;
         switch (rFilter) {
             case 0:
                 filters.push_back(
                     new Filters::NotEqual<T, Variant>(i, std::rand() % 21 +40));
                 break;
-            case 1:
+            /*case 1:
                 filters.push_back(
                     new Filters::Equal<T, Variant>(i, std::rand() % 21 +40));
-                break;
+                break;*/
             case 2:
                 filters.push_back(
                     new Filters::GreaterEqual<T, Variant>(i, std::rand() % 21 +40));
@@ -152,14 +152,14 @@ void increaseFilterNumber(unsigned int filterNr, std::vector<uint64_t> &projecti
 }
 
 int main(int argc, char **argv) {
-    std::vector<uint64_t> projection{0, 1, 2, 3, 12,18};
+    std::vector<uint64_t> projection{0, 1, 2, 3, 12, 28};
 
     increasingRows(projection);
-    increaseFilterNumber<uint64_t,SIMD::AVX512>(30,projection,"AVX64");
-    increaseFilterNumber<uint64_t,SIMD::None>(30,projection,"Scalar64");
+    //increaseFilterNumber<uint64_t,SIMD::AVX512>(30,projection,"AVX64");
+    //increaseFilterNumber<uint64_t,SIMD::None>(30,projection,"Scalar64");
 
-    increaseFilterNumber<uint32_t,SIMD::AVX512>(30,projection,"AVX32");
-    increaseFilterNumber<uint32_t,SIMD::None>(30,projection,"Scalar32");
+    //increaseFilterNumber<uint32_t,SIMD::AVX512>(30,projection,"AVX32");
+    //increaseFilterNumber<uint32_t,SIMD::None>(30,projection,"Scalar32");
 
     return 0;
 }
