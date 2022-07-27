@@ -143,7 +143,10 @@ IntermediateTable<T, Variant, Alignment> *apply_filters_unified(IntermediateTabl
             // Iterate over filters and match
             for (int j = 0; j < filters.size(); ++j) {
                 auto value = vectorIterBegin->gather(filters[j]->index);
-                filteringMask = filters[j]->match(value) && filteringMask;
+                if (!filters[j]->match(value)) {
+                    filteringMask = false;
+                    break;
+                }
             }
             // copy tuples to result
             auto scalarIter = vectorIterBegin->getScalarIterator();

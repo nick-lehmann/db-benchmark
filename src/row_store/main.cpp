@@ -3,19 +3,12 @@
 #include <iostream>
 #include <vector>
 
-//#include "Benchmark.h"
-
 #include "BaseTable.h"
 #include "Filters/All.h"
 #include "Helper.h"
 #include "ITable.h"
-#include "intermediateRepresentation/IntermediateTable.h"
-//#include "IntermediateTable.h"
-//#include "Filter.h"
-//#include "Projection.h"
-// #include "IntermediateTable_AVX.h"
-//#include "IntermediateTable_AVX.h"
 #include "SIMD.h"
+#include "intermediateRepresentation/IntermediateTable.h"
 
 /// Run a demo of the Row-Store database.
 /// Creates a small example BaseTable and applies a simple query on it. Afterwards run a benchmark with the same query on the same table.

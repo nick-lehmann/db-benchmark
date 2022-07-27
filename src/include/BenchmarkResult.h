@@ -7,7 +7,7 @@ template <typename T>
 class BenchmarkResult {
    private:
     // result map containing the parameters of the benchmark as a tuple as key and a tuple of the benchmark result as value
-    std::map<std::tuple<int, unsigned, unsigned, T, T>, std::tuple<uint64_t, uint64_t, double>> result;
+    std::map<std::tuple<int, unsigned, unsigned, T, T>, std::tuple<double, double, double>> result;
 
    public:
     /// Constructor
@@ -22,10 +22,10 @@ class BenchmarkResult {
     /// \param resultRowCount number of rows in queried table
     /// \param resultCpuTime CPU cycles needed for query
     /// \param resultRealTime time needed for query in ms
-    void addBenchmark(int tableStoreId, unsigned rowCount, unsigned columnCount, T lowerBound, T upperBound, uint64_t resultRowCount,
-                      uint64_t resultCpuTime, double resultRealTime) {
+    void addBenchmark(int tableStoreId, unsigned rowCount, unsigned columnCount, T lowerBound, T upperBound, double resultRowCount,
+                      double resultCpuTime, double resultRealTime) {
         std::tuple<int, unsigned, unsigned, T, T> key = {tableStoreId, rowCount, columnCount, lowerBound, upperBound};
-        std::tuple<uint64_t, uint64_t, double> value = {resultRowCount, resultCpuTime, resultRealTime};
+        std::tuple<double, double, double> value = {resultRowCount, resultCpuTime, resultRealTime};
 
         result.insert(std::pair{key, value});
     }
@@ -38,7 +38,7 @@ class BenchmarkResult {
         for (auto const& entry : result) {
             // separate key and value of map
             std::tuple<int, unsigned, unsigned, T, T> key = entry.first;
-            std::tuple<uint64_t, uint64_t, double> value = entry.second;
+            std::tuple<double, double, double> value = entry.second;
 
             // print key values
             std::cout << "Query parameters: " << std::endl;
@@ -69,7 +69,7 @@ class BenchmarkResult {
         for (auto const& entry : result) {
             // separate key and value of map
             std::tuple<int, unsigned, unsigned, T, T> key = entry.first;
-            std::tuple<uint64_t, uint64_t, double> value = entry.second;
+            std::tuple<double, double, double> value = entry.second;
 
             // add values to file
             file << std::get<0>(key) << "," << std::get<1>(key) << "," << std::get<2>(key) << "," << std::get<3>(key) << ","

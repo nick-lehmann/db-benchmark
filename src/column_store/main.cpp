@@ -1,8 +1,7 @@
 #include <iostream>
 
-#include "Benchmark.h"
 #include "ColumnStoreTable.h"
-#include "Filters/All.h"
+#include "../include/Filters/All.h"
 #include "Helper.h"
 
 // settings for the table
@@ -48,8 +47,7 @@ void avxTest(const T** initialData) {
 
     std::cout << "AVX: " << rows << " rows,\nTable: " << std::endl;
 
-    TableHelper::printTable(queried, columns, rows);
-    
+    //TableHelper::printTable(queried, columns, rows);
 }
 
 template <typename T>
@@ -67,8 +65,7 @@ void scalarTest(const T** initialData) {
 
     std::cout << "SCALAR: " << rows << " rows,\nTable: " << std::endl;
 
-    TableHelper::printTable(queried, columns, rows);
-    
+    //TableHelper::printTable(queried, columns, rows);
 }
 
 int main(int argc, char** argv) {

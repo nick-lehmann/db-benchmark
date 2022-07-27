@@ -51,9 +51,11 @@ class PaxTable : public Tables::ITable<T> {
         }
     }
 
-    // TODO: Free memory
-    virtual ~PaxTable() {
-        // cout << "Destroy pax table" << endl;
+    ~PaxTable() {
+        for (uint32_t i = 0; i < numberOfPages; ++i) {
+            free(pages[i].start);
+        }
+        free(pages);
     }
 
     T *getRow(uint64_t rowIndex) override {
@@ -121,11 +123,15 @@ class PaxTable : public Tables::ITable<T> {
     }
 
     uint64_t queryCount(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T, SIMD::None> *> &filters) override {
-        return get<1>(queryTable(projection, filters));
+        auto [data, rows, columns] = queryTable(projection, filters);
+        free(data);
+        return rows;
     }
 
     uint64_t queryCount(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T, SIMD::AVX512> *> &filters) override {
-        return get<1>(queryTable(projection, filters));
+        auto [data, rows, columns] = queryTable(projection, filters);
+        free(data);
+        return rows;
     }
 
     uint64_t queryCount(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T, SIMD::AVX512_Strided> *> &filters) override {

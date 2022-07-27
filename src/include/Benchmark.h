@@ -1,15 +1,20 @@
+#pragma once
+
 #include <chrono>
 #include <iomanip>
 #include <iostream>
+#include <numeric>
 #include <stdexcept>
 #include <string>
 #include <tuple>
 #include <vector>
+#include<type_traits>
 
 #include "../column_store/ColumnStoreTable.h"
 #include "../pax_store/PaxTable.h"
 #include "../row_store/BaseTable.h"
 #include "BenchmarkResult.h"
+#include "Constants.h"
 #include "Filters/Base.h"
 #include "Helper.h"
 #include "ITable.h"
@@ -24,26 +29,58 @@ namespace Benchmark {
 /// \param projection projection attributes for the query
 /// \param filters filters to apply for the query
 template <typename T, SIMD Variant>
-std::tuple<uint64_t, uint64_t, double> measureTime(Tables::ITable<T> &table, std::vector<T> &projection,
-                                                   std::vector<Filters::Filter<T, Variant> *> &filters, bool enablePrint = true) {
-    // measure both cpu time and real time
-    auto clockStartTime = std::clock();
-    auto realStartTime = std::chrono::steady_clock::now();
+std::tuple<double, double, double> measureTime(Tables::ITable<T> &table, std::vector<uint64_t> &projection,
+                                               std::vector<Filters::Filter<T, Variant> *> &filters, bool enablePrint = true) {
+    std::vector<uint64_t> clockDurations;
+    std::vector<double> realDurations;
+    std::vector<uint64_t> counts;
 
-    // call query count function
-    auto count = table.queryCount(projection, filters);
+    double realDuration;
+    double count;
+    double clockDuration;
 
-    auto clockEndTime = std::clock();
-    auto realEndTime = std::chrono::steady_clock::now();
+    for (int i = 0; i < 10; i++) {
+        // measure both cpu time and real time
+        auto clockStartTime = std::clock();
+        auto realStartTime = std::chrono::steady_clock::now();
 
-    // store results
-    uint64_t clockDuration = clockEndTime - clockStartTime;
-    double realDuration = std::chrono::duration<double, std::milli>(realEndTime - realStartTime).count();
+        // call query count function
+        auto countTMP = table.queryCount(projection, filters);
+
+        auto clockEndTime = std::clock();
+        auto realEndTime = std::chrono::steady_clock::now();
+
+        // store results
+        auto clockDurationTMP = clockEndTime - clockStartTime;
+        realDuration = std::chrono::duration<double, std::milli>(realEndTime - realStartTime).count();
+
+        clockDurations.push_back(clockDurationTMP);
+        realDurations.push_back(realDuration);
+        counts.push_back(countTMP);
+    }
+
+    auto max = std::max_element(realDurations.begin(), realDurations.end());
+    auto argmax = std::distance(realDurations.begin(), max);
+
+    clockDurations.erase(clockDurations.begin() + argmax);
+    realDurations.erase(realDurations.begin() + argmax);
+    counts.erase(counts.begin() + argmax);
+
+    auto min = std::min_element(realDurations.begin(), realDurations.end());
+    auto argmin = std::distance(realDurations.begin(), min);
+
+    clockDurations.erase(clockDurations.begin() + argmin);
+    realDurations.erase(realDurations.begin() + argmin);
+    counts.erase(counts.begin() + argmin);
+
+    clockDuration = std::accumulate(clockDurations.begin(), clockDurations.end(), 0.0) / (double)clockDurations.size();
+    realDuration = std::accumulate(realDurations.begin(), realDurations.end(), 0.0) / (double)realDurations.size();
+    count = std::accumulate(counts.begin(), counts.end(), 0.0) / (double)counts.size();
 
     // print result
     if (enablePrint) {
-        std::cout << std::fixed << std::setprecision(8) << "CPU cycles: " << clockEndTime - clockStartTime << std::endl
-                  << "Real time: " << std::chrono::duration<double, std::milli>(realEndTime - realStartTime).count() << " ms" << std::endl
+        std::cout << std::fixed << std::setprecision(8) << "CPU cycles: " << clockDuration << std::endl
+                  << "Real time: " << realDuration << " ms" << std::endl
                   << "Row Count: " << count << std::endl;
     }
 
@@ -74,9 +111,9 @@ unsigned incrementValue(unsigned value, bool exponentialGrowth, unsigned growthF
 /// \param upperBound upper bound of values stored in table cells
 /// \param seed used for data generation
 template <typename T, SIMD Variant>
-std::tuple<uint64_t, uint64_t, double> benchmarkTableImplementation(int tableStoreId, std::vector<uint64_t> &projectionAttributes,
-                                                                    std::vector<Filters::Filter<T, Variant> *> &filters, unsigned rowCount,
-                                                                    unsigned columnCount, T lowerBound, T upperBound, unsigned seed) {
+std::tuple<double, double, double> benchmarkTableImplementation(int tableStoreId, std::vector<uint64_t> &projectionAttributes,
+                                                                std::vector<Filters::Filter<T, Variant> *> &filters, unsigned rowCount,
+                                                                unsigned columnCount, T lowerBound, T upperBound, unsigned seed) {
     // create data
     const T **tableData = TableHelper::generateRandomData<T>(columnCount, rowCount, lowerBound, upperBound, seed);
 
@@ -84,30 +121,44 @@ std::tuple<uint64_t, uint64_t, double> benchmarkTableImplementation(int tableSto
     switch (tableStoreId) {
         case 0: {
             // row store
-            RowStore::BaseTable<T, 4096> table(columnCount, rowCount, tableData);
-
+            if constexpr(std::is_same<T,uint64_t>::value==true) {
+                RowStore::BaseTable<T, 4096> table(columnCount, rowCount, tableData);
+                auto [resultRowCount, resultCpuTime, resultRealTime] = Benchmark::measureTime(table, projectionAttributes, filters, false);
+                TableHelper::freeTable(const_cast<T **>(tableData), rowCount);
+                return std::make_tuple(resultRowCount, resultCpuTime, resultRealTime);
+            } else {
+                RowStore::BaseTable<T, 2048> table(columnCount, rowCount, tableData);
+                auto [resultRowCount, resultCpuTime, resultRealTime] = Benchmark::measureTime(table, projectionAttributes, filters, false);
+                TableHelper::freeTable(const_cast<T **>(tableData), rowCount);
+                return std::make_tuple(resultRowCount, resultCpuTime, resultRealTime);
+            }
             // run benchmark and return
-            return Benchmark::measureTime(table, projectionAttributes, filters, false);
+
         }
         case 1: {
             // column store
-            ColumnStore::Table<T> table(columnCount, rowCount, tableData);
+            ColumnStore::Table<T, T> table(columnCount, rowCount, tableData);
 
             // run benchmark and return
-            return Benchmark::measureTime(table, projectionAttributes, filters, false);
+            auto [resultRowCount, resultCpuTime, resultRealTime] = Benchmark::measureTime(table, projectionAttributes, filters, false);
+            TableHelper::freeTable(const_cast<T **>(tableData), rowCount);
+            return std::make_tuple(resultRowCount, resultCpuTime, resultRealTime);
         }
         case 2: {
             // pax store
-
             PaxTable<T> table(columnCount, rowCount, tableData);
 
             // run benchmark and return
-            return Benchmark::measureTime(table, projectionAttributes, filters, false);
+            auto [resultRowCount, resultCpuTime, resultRealTime] = Benchmark::measureTime(table, projectionAttributes, filters, false);
+            TableHelper::freeTable(const_cast<T **>(tableData), rowCount);
+            return std::make_tuple(resultRowCount, resultCpuTime, resultRealTime);
         }
         default: {
             throw std::invalid_argument("Invalid table store ID used!");
         }
     }
+
+
 }
 
 /// Run a benchmark performing multiple time measurements on table with different parameters.
