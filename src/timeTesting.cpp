@@ -36,27 +36,27 @@ std::vector<Filters::Filter<T, Variant> *> genFilters(unsigned int filterNr){
         switch (rFilter) {
             case 0:
                 filters.push_back(
-                    new Filters::NotEqual<T, Variant>(std::rand() % 50, std::rand() % 15 +50));
+                    new Filters::NotEqual<T, Variant>(i, std::rand() %  21 +40));
                 break;
             case 1:
                 filters.push_back(
-                    new Filters::Equal<T, Variant>(std::rand() % 50, std::rand() % 15 +50));
+                    new Filters::Equal<T, Variant>(i, std::rand() % 21 +40));
                 break;
             case 2:
                 filters.push_back(
-                    new Filters::GreaterEqual<T, Variant>(std::rand() % 50, std::rand() % 15 +50));
+                    new Filters::GreaterEqual<T, Variant>(i, std::rand() % 21 +40));
                 break;
             case 3:
                 filters.push_back(
-                    new Filters::GreaterThan<T, Variant>(std::rand() % 50, std::rand() % 15 +50));
+                    new Filters::GreaterThan<T, Variant>(i, std::rand() % 21 +40));
                 break;
             case 4:
                 filters.push_back(
-                    new Filters::LessEqual<T, Variant>(std::rand() % 50, std::rand() % 15 +50));
+                    new Filters::LessEqual<T, Variant>(i, std::rand() % 21 +40));
                 break;
             case 5:
                 filters.push_back(
-                    new Filters::LessThan<T, Variant>(std::rand() % 50, std::rand() % 15 +50));
+                    new Filters::LessThan<T, Variant>(i, std::rand() % 21 +40));
                 break;
         }
     }
@@ -104,7 +104,7 @@ void increasingRows(std::vector<uint64_t> &projection) {
 
 template <typename T, SIMD Variant>
 void benchmarkFilter(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T, Variant> *> &filters,
-                     const std::string &fileId, unsigned rows=1000000, unsigned columns=50,
+                     const std::string &fileId, unsigned rows=100000, unsigned columns=50,
                      unsigned increase=100,unsigned steps=1) {
     std::string fileName = "../output_files/PSbenchmark_" + fileId +"_fNR_"+std::to_string(filters.size())+".csv";
     Benchmark::benchmarkRows<T, Variant>(2, projection, filters, rows, columns, false, increase, steps, 0, 100, 42, fileName);
@@ -124,27 +124,27 @@ void increaseFilterNumber(unsigned int filterNr, std::vector<uint64_t> &projecti
         switch (rFilter) {
             case 0:
                 filters.push_back(
-                    new Filters::NotEqual<T, Variant>(std::rand() % 50, std::rand() % 15 +50));
+                    new Filters::NotEqual<T, Variant>(i, std::rand() % 21 +40));
                 break;
             case 1:
                 filters.push_back(
-                    new Filters::Equal<T, Variant>(std::rand() % 50, std::rand() % 15 +50));
+                    new Filters::Equal<T, Variant>(i, std::rand() % 21 +40));
                 break;
             case 2:
                 filters.push_back(
-                    new Filters::GreaterEqual<T, Variant>(std::rand() % 50, std::rand() % 15 +50));
+                    new Filters::GreaterEqual<T, Variant>(i, std::rand() % 21 +40));
                 break;
             case 3:
                 filters.push_back(
-                    new Filters::GreaterThan<T, Variant>(std::rand() % 50, std::rand() % 15 +50));
+                    new Filters::GreaterThan<T, Variant>(i, std::rand() % 21 +40));
                 break;
             case 4:
                 filters.push_back(
-                    new Filters::LessEqual<T, Variant>(std::rand() % 50, std::rand() % 15 +50));
+                    new Filters::LessEqual<T, Variant>(i, std::rand() % 21 +40));
                 break;
             case 5:
                 filters.push_back(
-                    new Filters::LessThan<T, Variant>(std::rand() % 50, std::rand() % 15 +50));
+                    new Filters::LessThan<T, Variant>(i, std::rand() % 21 +40));
                 break;
         }
         benchmarkFilter<T, Variant>(projection, filters, type);
