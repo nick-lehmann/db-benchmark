@@ -51,7 +51,7 @@ std::tuple<double, double, double> measureTime(Tables::ITable<T> &table, std::ve
         auto clockEndTime = std::clock();
         auto realEndTime = std::chrono::steady_clock::now();
 
-        // free the table
+        // free the resulting table
         TableHelper::freeTable(result, rows);
 
         // store results

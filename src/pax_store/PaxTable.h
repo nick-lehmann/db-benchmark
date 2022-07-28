@@ -124,13 +124,13 @@ class PaxTable : public Tables::ITable<T> {
 
     uint64_t queryCount(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T, SIMD::None> *> &filters) override {
         auto [data, rows, columns] = queryTable(projection, filters);
-        free(data);
+        TableHelper::freeTable(data, rows);
         return rows;
     }
 
     uint64_t queryCount(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T, SIMD::AVX512> *> &filters) override {
         auto [data, rows, columns] = queryTable(projection, filters);
-        free(data);
+        TableHelper::freeTable(data, rows);
         return rows;
     }
 
