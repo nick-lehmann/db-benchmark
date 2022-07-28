@@ -7,8 +7,8 @@
 #include <stdexcept>
 #include <string>
 #include <tuple>
+#include <type_traits>
 #include <vector>
-#include<type_traits>
 
 #include "../column_store/ColumnStoreTable.h"
 #include "../pax_store/PaxTable.h"
@@ -125,7 +125,7 @@ std::tuple<double, double, double> benchmarkTableImplementation(int tableStoreId
     switch (tableStoreId) {
         case 0: {
             // row store
-            if constexpr(std::is_same<T,uint64_t>::value==true) {
+            if constexpr (std::is_same<T, uint64_t>::value == true) {
                 RowStore::BaseTable<T, 4096> table(columnCount, rowCount, tableData);
                 auto [resultRowCount, resultCpuTime, resultRealTime] = Benchmark::measureTime(table, projectionAttributes, filters, false);
                 TableHelper::freeTable(const_cast<T **>(tableData), rowCount);
@@ -137,7 +137,6 @@ std::tuple<double, double, double> benchmarkTableImplementation(int tableStoreId
                 return std::make_tuple(resultRowCount, resultCpuTime, resultRealTime);
             }
             // run benchmark and return
-
         }
         case 1: {
             // column store
@@ -161,8 +160,6 @@ std::tuple<double, double, double> benchmarkTableImplementation(int tableStoreId
             throw std::invalid_argument("Invalid table store ID used!");
         }
     }
-
-
 }
 
 /// Run a benchmark performing multiple time measurements on table with different parameters.

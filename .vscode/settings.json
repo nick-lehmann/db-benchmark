@@ -74,7 +74,8 @@
         "random": "cpp",
         "fstream": "cpp",
         "stdexcept": "cpp",
-        "cinttypes": "cpp"
+        "cinttypes": "cpp",
+        "codecvt": "cpp"
     },
     "C_Cpp.clang_format_fallbackStyle": "LLVM",
     "editor.rulers": [
