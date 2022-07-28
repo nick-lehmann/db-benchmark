@@ -76,8 +76,8 @@ def main():
             #df=df.append(df_tmp,ignore_index=True)
             df_filter=pd.concat([df_filter,df_tmp],ignore_index=True)
     
-    print(df_filter.head(-50))
-    print(df_filter.columns)
+    #print(df_filter.head(-50))
+    #print(df_filter.columns)
     
     
     labels=['Row-Store','Column-Store','PAX-Store']
@@ -112,7 +112,8 @@ def main():
             ratio=(df[(df[df.columns[0]]==i) & (df[df.columns[-1]]==f'{simds[1]}{t}')].values)[:,-2] / (df[(df[df.columns[0]]==i) & (df[df.columns[-1]]==f'{simds[0]}{t}')].values)[:,-2]
             #plt.plot((df[(df[df.columns[0]]==i) & (df[df.columns[-1]]==f'{simds[1]}{t}')].values)[:,1],ratio,ls='None',marker=marker[i],c=f'{"#%06X" % randint(0, 0xFFFFFF)}',ms=4,label=f'{labels[i]}-{t}')
             #plt.plot((df[(df[df.columns[0]]==i) & (df[df.columns[-1]]==f'{simds[1]}{t}')].values)[:,1],ratio,ls='None',marker=marker[i],c=colors[c],ms=7,label=f'{labels[i]}-{t}')
-            axs[dtype_idx[t]].plot((df[(df[df.columns[0]]==i) & (df[df.columns[-1]]==f'{simds[1]}{t}')].values)[:,1],ratio,ls='None',
+            x=(df[(df[df.columns[0]]==i) & (df[df.columns[-1]]==f'{simds[1]}{t}')].values)[:,1]
+            axs[dtype_idx[t]].plot(x,ratio,ls='None',
                                    marker=marker[i],c=colors[i],ms=ms,label=f'{labels[i]}')
             if i==0:
                 ratio=(df[(df[df.columns[0]]==i) & (df[df.columns[-1]]==f'{simds[1]}{t}')].values)[:,-2] / (df[(df[df.columns[0]]==i) & (df[df.columns[-1]]==f'{simds[2]}{t}')].values)[:,-2]
@@ -123,11 +124,12 @@ def main():
                 #f'{"#%06X" % randint(0, 0xFFFFFF)}'
         axs[dtype_idx[t]].set_xlabel('# rows',fontsize=fontsize-3)
         axs[dtype_idx[t]].set_title(f'uint{t}_t',fontsize=fontsize-1)
-        axs[dtype_idx[t]].hlines(y = 1, xmin = -1000, xmax = 60000,linewidths=3, ls='dotted',colors='black')
+        #axs[dtype_idx[t]].hlines(y = 1, xmin = np.min(x)-int(1e+6), xmax = np.max(x)+int(1e+6),linewidths=4, ls='dotted',colors='black')
         axs[dtype_idx[t]].tick_params(axis = 'both', which = 'major', labelsize = fontsize-2)
         #axs[dtype_idx[t]].set_xlim(0,50000)
         #axs[dtype_idx[t]].set_ylim(0,8)
         axs[dtype_idx[t]].set_ylabel('Speedup AVX512 vs Scalar',fontsize=fontsize-3)
+        axs[dtype_idx[t]].xaxis.get_offset_text().set_fontsize(fontsize-4)
     axs[dtype_idx[t]].legend(loc='best',markerscale=4,fontsize=fontsize)
     #plt.ylabel('CPU time [ms]',fontsize=fontsize)
     fig.tight_layout(rect=[0, 0.03, 1.0, 0.95])
@@ -137,7 +139,7 @@ def main():
 
     
     """ Speed Diagram  """
-    fig, axs = plt.subplots(3, 2,figsize=figsize,sharex=True)
+    fig, axs = plt.subplots(3, 2,figsize=figsize,sharex=True,sharey='row')
     tp_dict={'32':2,'64':4}
     #axs=axs.flatten()
     for i in range(3):
@@ -157,9 +159,11 @@ def main():
                 
                 axs[i,dtype_idx[t]].set_title(f'uint{t}_t',fontsize=fontsize-1)
             axs[i,dtype_idx[t]].set_xlabel('# rows',fontsize=fontsize-3)
-            
+            plt.rc('font', size=fontsize-3) #controls default text size
+            #matplotlib.rcParams['legend.fontsize'] = fontsize
             #axs[i,dtype_idx[t]].set_ylabel('Million Integer / s',fontsize=fontsize-2)
             axs[i,dtype_idx[t]].tick_params(axis = 'both', which = 'major', labelsize = fontsize-4)
+            axs[i,dtype_idx[t]].xaxis.get_offset_text().set_fontsize(fontsize-4)
         axs[i,dtype_idx[t]].legend(loc='best',markerscale=3,fontsize=fontsize)
         #axs[i,dtype_idx[t]].legend(loc='best',markerscale=4,fontsize=fontsize-4)
     #plt.ylim(0,50)
@@ -169,13 +173,17 @@ def main():
     fig.savefig('../../output_files/AVX-Scalar-Strided-50-cols-6-filter-4gb.pdf',dpi=300)
     
     """ Filter Diagram """
-    fig, axs = plt.subplots(3, 2,figsize=figsize,sharex=True)
+    fig, axs = plt.subplots(3, 2,figsize=figsize,sharex=True,sharey='row')
     for i in range(3):
         for t in ['32','64']:
             for s in simds[:2]:
-                axs[i,dtype_idx[t]].plot((df_filter[(df_filter[df_filter.columns[0]]==i) & (df_filter[df_filter.columns[-2]]==f'{s}{t}')].values)[:,-1],
-                                         (df_filter[(df_filter[df_filter.columns[0]]==i) & (df_filter[df_filter.columns[-2]]==f'{s}{t}')].values)[:,-3],
-                                         ls='None',marker=marker[i],c=colors_column[i,simds.index(s)],ms=ms,label=f'{labels[i]}-{s}')
+                x=(df_filter[(df_filter[df_filter.columns[0]]==i) & (df_filter[df_filter.columns[-2]]==f'{s}{t}')].values)[:,-1]
+                y=(df_filter[(df_filter[df_filter.columns[0]]==i) & (df_filter[df_filter.columns[-2]]==f'{s}{t}')].values)[:,-3]
+                # print(i,s,t)
+                # print(f'x:{x}')
+                # print(f'y:{y}')
+                # print('')
+                axs[i,dtype_idx[t]].plot(x,y, ls='None',marker=marker[i],c=colors_column[i,simds.index(s)],ms=ms,label=f'{labels[i]}-{s}')
             axs[i,dtype_idx[t]].set_ylabel('CPU time [ms]',fontsize=fontsize-2)
             axs[i,dtype_idx[t]].set_xlabel('# filter',fontsize=fontsize-2)
             axs[i,dtype_idx[t]].tick_params(axis = 'both', which = 'major', labelsize = fontsize-4)

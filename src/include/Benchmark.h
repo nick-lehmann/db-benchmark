@@ -39,7 +39,7 @@ std::tuple<double, double, double> measureTime(Tables::ITable<T> &table, std::ve
     double count;
     double clockDuration;
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 11; i++) {
         // measure both cpu time and real time
         auto clockStartTime = std::clock();
         auto realStartTime = std::chrono::steady_clock::now();
@@ -62,7 +62,7 @@ std::tuple<double, double, double> measureTime(Tables::ITable<T> &table, std::ve
         realDurations.push_back(realDuration);
         counts.push_back(countTMP);
     }
-
+    /*
     auto max = std::max_element(realDurations.begin(), realDurations.end());
     auto argmax = std::distance(realDurations.begin(), max);
 
@@ -80,7 +80,9 @@ std::tuple<double, double, double> measureTime(Tables::ITable<T> &table, std::ve
     clockDuration = std::accumulate(clockDurations.begin(), clockDurations.end(), 0.0) / (double)clockDurations.size();
     realDuration = std::accumulate(realDurations.begin(), realDurations.end(), 0.0) / (double)realDurations.size();
     count = std::accumulate(counts.begin(), counts.end(), 0.0) / (double)counts.size();
+    */
 
+    
     // print result
     if (enablePrint) {
         std::cout << std::fixed << std::setprecision(8) << "CPU cycles: " << clockDuration << std::endl
