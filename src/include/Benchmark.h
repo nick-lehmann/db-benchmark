@@ -82,7 +82,11 @@ std::tuple<double, double, double> measureTime(Tables::ITable<T> &table, std::ve
     count = std::accumulate(counts.begin(), counts.end(), 0.0) / (double)counts.size();
     */
 
-    
+    clockDuration = std::nth_element(clockDurations.begin(), clockDurations.begin() + clockDurations.size() / 2,
+                     clockDurations.end());
+    realDuration = std::nth_element(realDurations.begin(), realDurations.begin() + realDurations.size() / 2,
+                                    realDurations.end());
+    count = std::accumulate(counts.begin(), counts.end(), 0.0) / (double)counts.size();
     // print result
     if (enablePrint) {
         std::cout << std::fixed << std::setprecision(8) << "CPU cycles: " << clockDuration << std::endl
