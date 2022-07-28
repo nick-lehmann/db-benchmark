@@ -30,7 +30,7 @@ class TupleCopyHelper<uint32_t, Variant, Alignment> {
         if (!mask) return;
 
         for (int i = 0; i < 16; ++i) {
-            if ((mask >> (15 - i)) & 1) {
+            if ((mask >> i) & 1) {
                 result->addRow(scalarIterBegin.addressOf(scalarIterBegin.getPos() + i));
             }
         }
@@ -45,7 +45,7 @@ class TupleCopyHelper<uint64_t, Variant, Alignment> {
         if (!mask) return;
 
         for (int i = 0; i < 8; ++i) {
-            if ((mask >> (7 - i)) & 1) {
+            if ((mask >> i) & 1) {
                 result->addRow(scalarIterBegin.addressOf(scalarIterBegin.getPos() + i));
             }
         }
