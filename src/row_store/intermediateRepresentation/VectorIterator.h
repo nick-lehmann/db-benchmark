@@ -11,11 +11,11 @@ namespace RowStore {
 /// \tparam T base type
 /// \tparam V simd variant, decides the internal data layout of the table
 /// \tparam A alignment of the data and stridesize (shold be a multiple of sizeof(T))
-template <typename T, SIMD V, int S>
+template <typename T, SIMD V, int A>
 class VectorIteratorHelper;
 
-template <int S>
-class VectorIteratorHelper<uint32_t, SIMD::AVX512, S> {
+template <int A>
+class VectorIteratorHelper<uint32_t, SIMD::AVX512, A> {
    private:
     const __m512i vIndex;
 
@@ -30,8 +30,8 @@ class VectorIteratorHelper<uint32_t, SIMD::AVX512, S> {
     const __m512i gather(uint32_t *baseAddress) { return _mm512_i32gather_epi32(vIndex, baseAddress, 4); }
 };
 
-template <int S>
-class VectorIteratorHelper<uint64_t, SIMD::AVX512, S> {
+template <int A>
+class VectorIteratorHelper<uint64_t, SIMD::AVX512, A> {
    private:
     const __m512i vIndex;
 
@@ -43,14 +43,14 @@ class VectorIteratorHelper<uint64_t, SIMD::AVX512, S> {
     const __m512i gather(uint64_t *baseAddress) { return _mm512_i64gather_epi64(vIndex, baseAddress, 8); }
 };
 
-template <int S>
-class VectorIteratorHelper<uint32_t, SIMD::AVX512_Strided, S> {
+template <int A>
+class VectorIteratorHelper<uint32_t, SIMD::AVX512_Strided, A> {
    private:
     const __m512i vIndex = _mm512_set_epi32(
-        0 * (S / sizeof(uint32_t)), 1 * (S / sizeof(uint32_t)), 2 * (S / sizeof(uint32_t)), 3 * (S / sizeof(uint32_t)),
-        4 * (S / sizeof(uint32_t)), 5 * (S / sizeof(uint32_t)), 6 * (S / sizeof(uint32_t)), 7 * (S / sizeof(uint32_t)),
-        8 * (S / sizeof(uint32_t)), 9 * (S / sizeof(uint32_t)), 10 * (S / sizeof(uint32_t)), 11 * (S / sizeof(uint32_t)),
-        12 * (S / sizeof(uint32_t)), 13 * (S / sizeof(uint32_t)), 14 * (S / sizeof(uint32_t)), 15 * (S / sizeof(uint32_t)));
+        0 * (A / sizeof(uint32_t)), 1 * (A / sizeof(uint32_t)), 2 * (A / sizeof(uint32_t)), 3 * (A / sizeof(uint32_t)),
+        4 * (A / sizeof(uint32_t)), 5 * (A / sizeof(uint32_t)), 6 * (A / sizeof(uint32_t)), 7 * (A / sizeof(uint32_t)),
+        8 * (A / sizeof(uint32_t)), 9 * (A / sizeof(uint32_t)), 10 * (A / sizeof(uint32_t)), 11 * (A / sizeof(uint32_t)),
+        12 * (A / sizeof(uint32_t)), 13 * (A / sizeof(uint32_t)), 14 * (A / sizeof(uint32_t)), 15 * (A / sizeof(uint32_t)));
 
    public:
     /// Gather method
@@ -58,12 +58,12 @@ class VectorIteratorHelper<uint32_t, SIMD::AVX512_Strided, S> {
     const __m512i gather(uint32_t *baseAddress) { return _mm512_i32gather_epi32(vIndex, baseAddress, 4); }
 };
 
-template <int S>
-class VectorIteratorHelper<uint64_t, SIMD::AVX512_Strided, S> {
+template <int A>
+class VectorIteratorHelper<uint64_t, SIMD::AVX512_Strided, A> {
    private:
     const __m512i vIndex =
-        _mm512_set_epi64(0 * (S / sizeof(uint64_t)), 1 * (S / sizeof(uint64_t)), 2 * (S / sizeof(uint64_t)), 3 * (S / sizeof(uint64_t)),
-                         4 * (S / sizeof(uint64_t)), 5 * (S / sizeof(uint64_t)), 6 * (S / sizeof(uint64_t)), 7 * (S / sizeof(uint64_t)));
+        _mm512_set_epi64(0 * (A / sizeof(uint64_t)), 1 * (A / sizeof(uint64_t)), 2 * (A / sizeof(uint64_t)), 3 * (A / sizeof(uint64_t)),
+                         4 * (A / sizeof(uint64_t)), 5 * (A / sizeof(uint64_t)), 6 * (A / sizeof(uint64_t)), 7 * (A / sizeof(uint64_t)));
 
    public:
     const __m512i gather(uint64_t *baseAddress) { return _mm512_i64gather_epi64(vIndex, baseAddress, 8); }
@@ -75,16 +75,16 @@ class VectorIteratorHelper<uint64_t, SIMD::AVX512_Strided, S> {
 /// \tparam T base type
 /// \tparam V simd variant, decides the internal data layout of the table
 /// \tparam A alignment of the data and stridesize (shold be a multiple of sizeof(T))
-template <typename T, SIMD V, int S>
-class VectorIterator : public IntermediateIterator<T, V, S> {};
+template <typename T, SIMD V, int A>
+class VectorIterator : public IntermediateIterator<T, V, A> {};
 
-template <typename T, int S>
-class VectorIterator<T, SIMD::None, S> : public IntermediateIterator<T, SIMD::None, S> {
+template <typename T, int A>
+class VectorIterator<T, SIMD::None, A> : public IntermediateIterator<T, SIMD::None, A> {
    public:
     static const uint32_t LaneMultiplier = 1;
 
    public:
-    VectorIterator(T *baseAddress, uint32_t tupleWidth) : IntermediateIterator<T, SIMD::None, S>(baseAddress, tupleWidth) {
+    VectorIterator(T *baseAddress, uint32_t tupleWidth) : IntermediateIterator<T, SIMD::None, A>(baseAddress, tupleWidth) {
         this->currentAddress = baseAddress;
     }
 
@@ -93,11 +93,11 @@ class VectorIterator<T, SIMD::None, S> : public IntermediateIterator<T, SIMD::No
         this->pos = position;
     }
 
-    ScalarIterator<T, SIMD::None, S> *getScalarIterator() {
-        return new ScalarIterator<T, SIMD::None, S>(const_cast<T *>(this->baseAddress), this->tupleWidth, this->pos);
+    ScalarIterator<T, SIMD::None, A> *getScalarIterator() {
+        return new ScalarIterator<T, SIMD::None, A>(const_cast<T *>(this->baseAddress), this->tupleWidth, this->pos);
     }
 
-    IntermediateIterator<T, SIMD::None, S> *operator++() override {
+    IntermediateIterator<T, SIMD::None, A> *operator++() override {
         ++(this->pos);
         this->currentAddress += this->tupleWidth;
 
@@ -110,32 +110,32 @@ class VectorIterator<T, SIMD::None, S> : public IntermediateIterator<T, SIMD::No
     T *addressOf(uint64_t index) override { return const_cast<T *>(this->baseAddress + index * this->tupleWidth); }
 };
 
-template <typename T, int S>
-class VectorIterator<T, SIMD::AVX512, S> : public IntermediateIterator<T, SIMD::AVX512, S> {
+template <typename T, int A>
+class VectorIterator<T, SIMD::AVX512, A> : public IntermediateIterator<T, SIMD::AVX512, A> {
    public:
     static const uint32_t LaneMultiplier = VECTOR_BYTE_WIDTH / sizeof(T);
 
    private:
-    VectorIteratorHelper<T, SIMD::AVX512, S> helper;
+    VectorIteratorHelper<T, SIMD::AVX512, A> helper;
 
    public:
     VectorIterator(T *baseAddress, uint32_t tupleWidth)
-        : IntermediateIterator<T, SIMD::AVX512, S>(baseAddress, tupleWidth), helper(tupleWidth) {
+        : IntermediateIterator<T, SIMD::AVX512, A>(baseAddress, tupleWidth), helper(tupleWidth) {
         this->currentAddress = baseAddress;
     }
 
     VectorIterator(T *baseAddress, uint32_t tupleWidth, uint64_t position) : VectorIterator(baseAddress, tupleWidth) {
-        this->currentAddress += position * tupleWidth * VectorIterator<T, SIMD::AVX512, S>::LaneMultiplier;
+        this->currentAddress += position * tupleWidth * VectorIterator<T, SIMD::AVX512, A>::LaneMultiplier;
         this->pos = position;
     }
 
-    ScalarIterator<T, SIMD::AVX512, S> *getScalarIterator() {
-        return new ScalarIterator<T, SIMD::AVX512, S>(const_cast<T *>(this->baseAddress), this->tupleWidth, this->pos * LaneMultiplier);
+    ScalarIterator<T, SIMD::AVX512, A> *getScalarIterator() {
+        return new ScalarIterator<T, SIMD::AVX512, A>(const_cast<T *>(this->baseAddress), this->tupleWidth, this->pos * LaneMultiplier);
     }
 
-    IntermediateIterator<T, SIMD::AVX512, S> *operator++() override {
+    IntermediateIterator<T, SIMD::AVX512, A> *operator++() override {
         ++(this->pos);
-        this->currentAddress += this->tupleWidth * VectorIterator<T, SIMD::AVX512, S>::LaneMultiplier;
+        this->currentAddress += this->tupleWidth * VectorIterator<T, SIMD::AVX512, A>::LaneMultiplier;
 
         return this;
     }
@@ -146,13 +146,13 @@ class VectorIterator<T, SIMD::AVX512, S> : public IntermediateIterator<T, SIMD::
     T *addressOf(uint64_t index) override { return const_cast<T *>(this->baseAddress + index * this->tupleWidth); }
 };
 
-template <typename T, int S>
-class VectorIterator<T, SIMD::AVX512_Strided, S> : public IntermediateIterator<T, SIMD::AVX512_Strided, S> {
+template <typename T, int A>
+class VectorIterator<T, SIMD::AVX512_Strided, A> : public IntermediateIterator<T, SIMD::AVX512_Strided, A> {
    public:
     static const uint32_t LaneMultiplier = VECTOR_BYTE_WIDTH / sizeof(T);
 
    private:
-    VectorIteratorHelper<T, SIMD::AVX512_Strided, S> helper;
+    VectorIteratorHelper<T, SIMD::AVX512_Strided, A> helper;
 
     const size_t strideW;
     const size_t strideSetW;
@@ -164,11 +164,11 @@ class VectorIterator<T, SIMD::AVX512_Strided, S> : public IntermediateIterator<T
 
    public:
     VectorIterator(T *baseAddress, uint32_t tupleWidth)
-        : IntermediateIterator<T, SIMD::AVX512_Strided, S>(baseAddress, tupleWidth),
+        : IntermediateIterator<T, SIMD::AVX512_Strided, A>(baseAddress, tupleWidth),
           helper(),
-          strideW(S / sizeof(T)),
-          strideSetW((S / sizeof(T)) * (VECTOR_BYTE_WIDTH / sizeof(T))),
-          strideCapacity(S / (tupleWidth * sizeof(T))),
+          strideW(A / sizeof(T)),
+          strideSetW((A / sizeof(T)) * (VECTOR_BYTE_WIDTH / sizeof(T))),
+          strideCapacity(A / (tupleWidth * sizeof(T))),
           stridesPerSet(VECTOR_BYTE_WIDTH / sizeof(T)) {
         this->currentAddress = baseAddress;
     }
@@ -180,12 +180,12 @@ class VectorIterator<T, SIMD::AVX512_Strided, S> : public IntermediateIterator<T
         this->currentAddress += strideSet * strideSetW + stridePos * this->tupleWidth;
     }
 
-    ScalarIterator<T, SIMD::AVX512_Strided, S> *getScalarIterator() {
-        return new ScalarIterator<T, SIMD::AVX512_Strided, S>(const_cast<T *>(this->baseAddress), this->tupleWidth,
+    ScalarIterator<T, SIMD::AVX512_Strided, A> *getScalarIterator() {
+        return new ScalarIterator<T, SIMD::AVX512_Strided, A>(const_cast<T *>(this->baseAddress), this->tupleWidth,
                                                               this->pos * stridesPerSet);
     }
 
-    IntermediateIterator<T, SIMD::AVX512_Strided, S> *operator++() override {
+    IntermediateIterator<T, SIMD::AVX512_Strided, A> *operator++() override {
         ++(this->pos);
 
         stridePos = (++stridePos) % strideCapacity;

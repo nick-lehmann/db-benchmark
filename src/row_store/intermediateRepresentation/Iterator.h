@@ -7,7 +7,7 @@ namespace RowStore {
 /// \tparam T base type
 /// \tparam V simd variant, decides the internal data layout of the table
 /// \tparam A alignment of the data and stridesize (shold be a multiple of sizeof(T))
-template <typename T, SIMD V, int S>
+template <typename T, SIMD V, int A>
 class IntermediateIterator {
    protected:
     /// starting address of the IntermediateTables data
@@ -29,7 +29,7 @@ class IntermediateIterator {
     IntermediateIterator(T *baseAddress, uint32_t tupleWidth) : baseAddress(baseAddress), tupleWidth(tupleWidth) {}
 
     /// Increment operator, iterator points to the next tuple or tuple set (in case of teh vector iterator)
-    virtual IntermediateIterator<T, V, S> *operator++() = 0;
+    virtual IntermediateIterator<T, V, A> *operator++() = 0;
 
     /// Value-at operator, returns a reference to the first column of the index-th tuple
     /// \param index index of the tuple whose first elements value is requested
@@ -38,9 +38,9 @@ class IntermediateIterator {
     T &operator*() { return *currentAddress; }
 
     /// Equal operator, returns if two iterator are currently referencing the same index or not
-    bool operator==(const IntermediateIterator<T, V, S> &other) { return pos == other.pos; }
+    bool operator==(const IntermediateIterator<T, V, A> &other) { return pos == other.pos; }
     /// Not Equal operator, returns if two iterator are currently referencing different indices or not
-    bool operator!=(const IntermediateIterator<T, V, S> &other) { return pos != other.pos; }
+    bool operator!=(const IntermediateIterator<T, V, A> &other) { return pos != other.pos; }
 
     /// Retuns address that is currently referenced by the iterator
     T *getAddress() { return currentAddress; }

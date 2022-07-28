@@ -9,13 +9,13 @@ namespace RowStore {
 /// \tparam T base type
 /// \tparam V simd variant, decides the internal data layout of the table
 /// \tparam A alignment of the data and stridesize (shold be a multiple of sizeof(T))
-template <typename T, SIMD V, int S>
-class ScalarIterator : public IntermediateIterator<T, V, S> {};
+template <typename T, SIMD V, int A>
+class ScalarIterator : public IntermediateIterator<T, V, A> {};
 
-template <typename T, int S>
-class ScalarIterator<T, SIMD::None, S> : public IntermediateIterator<T, SIMD::None, S> {
+template <typename T, int A>
+class ScalarIterator<T, SIMD::None, A> : public IntermediateIterator<T, SIMD::None, A> {
    public:
-    ScalarIterator(T *baseAddress, uint32_t tupleWidth) : IntermediateIterator<T, SIMD::None, S>(baseAddress, tupleWidth) {
+    ScalarIterator(T *baseAddress, uint32_t tupleWidth) : IntermediateIterator<T, SIMD::None, A>(baseAddress, tupleWidth) {
         this->currentAddress = baseAddress;
     }
 
@@ -24,7 +24,7 @@ class ScalarIterator<T, SIMD::None, S> : public IntermediateIterator<T, SIMD::No
         this->pos = position;
     }
 
-    IntermediateIterator<T, SIMD::None, S> *operator++() override {
+    IntermediateIterator<T, SIMD::None, A> *operator++() override {
         ++(this->pos);
         this->currentAddress += this->tupleWidth;
 
@@ -35,10 +35,10 @@ class ScalarIterator<T, SIMD::None, S> : public IntermediateIterator<T, SIMD::No
     T *addressOf(uint64_t index) override { return const_cast<T *>(this->baseAddress + index * this->tupleWidth); }
 };
 
-template <typename T, int S>
-class ScalarIterator<T, SIMD::AVX512, S> : public IntermediateIterator<T, SIMD::AVX512, S> {
+template <typename T, int A>
+class ScalarIterator<T, SIMD::AVX512, A> : public IntermediateIterator<T, SIMD::AVX512, A> {
    public:
-    ScalarIterator(T *baseAddress, uint32_t tupleWidth) : IntermediateIterator<T, SIMD::AVX512, S>(baseAddress, tupleWidth) {
+    ScalarIterator(T *baseAddress, uint32_t tupleWidth) : IntermediateIterator<T, SIMD::AVX512, A>(baseAddress, tupleWidth) {
         this->currentAddress = baseAddress;
     }
 
@@ -47,7 +47,7 @@ class ScalarIterator<T, SIMD::AVX512, S> : public IntermediateIterator<T, SIMD::
         this->pos = position;
     }
 
-    IntermediateIterator<T, SIMD::AVX512, S> *operator++() override {
+    IntermediateIterator<T, SIMD::AVX512, A> *operator++() override {
         ++(this->pos);
         this->currentAddress += this->tupleWidth;
 
@@ -58,8 +58,8 @@ class ScalarIterator<T, SIMD::AVX512, S> : public IntermediateIterator<T, SIMD::
     T *addressOf(uint64_t index) override { return const_cast<T *>(this->baseAddress + index * this->tupleWidth); }
 };
 
-template <typename T, int S>
-class ScalarIterator<T, SIMD::AVX512_Strided, S> : public IntermediateIterator<T, SIMD::AVX512_Strided, S> {
+template <typename T, int A>
+class ScalarIterator<T, SIMD::AVX512_Strided, A> : public IntermediateIterator<T, SIMD::AVX512_Strided, A> {
    private:
     const size_t strideW;
     const size_t strideSetW;
@@ -72,10 +72,10 @@ class ScalarIterator<T, SIMD::AVX512_Strided, S> : public IntermediateIterator<T
 
    public:
     ScalarIterator(T *baseAddress, uint32_t tupleWidth)
-        : IntermediateIterator<T, SIMD::AVX512_Strided, S>(baseAddress, tupleWidth),
-          strideW(S / sizeof(T)),
-          strideSetW((S / sizeof(T)) * (VECTOR_BYTE_WIDTH / sizeof(T))),
-          strideCapacity(S / (tupleWidth * sizeof(T))),
+        : IntermediateIterator<T, SIMD::AVX512_Strided, A>(baseAddress, tupleWidth),
+          strideW(A / sizeof(T)),
+          strideSetW((A / sizeof(T)) * (VECTOR_BYTE_WIDTH / sizeof(T))),
+          strideCapacity(A / (tupleWidth * sizeof(T))),
           stridesPerSet(VECTOR_BYTE_WIDTH / sizeof(T)) {
         this->currentAddress = baseAddress;
     }
@@ -88,7 +88,7 @@ class ScalarIterator<T, SIMD::AVX512_Strided, S> : public IntermediateIterator<T
         this->currentAddress += strideSet * strideSetW + strideNum * strideW + stridePos * this->tupleWidth;
     }
 
-    IntermediateIterator<T, SIMD::AVX512_Strided, S> *operator++() override {
+    IntermediateIterator<T, SIMD::AVX512_Strided, A> *operator++() override {
         ++(this->pos);
         strideNum = (++strideNum) % stridesPerSet;
         this->currentAddress += strideW;
