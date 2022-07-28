@@ -26,7 +26,7 @@ template <SIMD Variant, int Alignment>
 class TupleCopyHelper<uint32_t, Variant, Alignment> {
    public:
     static void copyMaskedTupleN(IntermediateTable<uint32_t, Variant, Alignment> *result,
-                                 IntermediateIterator<uint32_t, Variant, Alignment> &scalarIterBegin, __mmask16 mask) {
+                                 IntermediateIterator<uint32_t, Variant, Alignment> &scalarIterBegin, uint16_t mask) {
         if (!mask) return;
 
         for (int i = 0; i < 16; ++i) {
@@ -41,7 +41,7 @@ template <SIMD Variant, int Alignment>
 class TupleCopyHelper<uint64_t, Variant, Alignment> {
    public:
     static void copyMaskedTupleN(IntermediateTable<uint64_t, Variant, Alignment> *result,
-                                 IntermediateIterator<uint64_t, Variant, Alignment> &scalarIterBegin, __mmask16 mask) {
+                                 IntermediateIterator<uint64_t, Variant, Alignment> &scalarIterBegin, uint16_t mask) {
         if (!mask) return;
 
         for (int i = 0; i < 8; ++i) {
@@ -96,13 +96,10 @@ IntermediateTable<T, Variant, Alignment> *apply_filters_unified(IntermediateTabl
             for (int j = 0; j < filters.size(); ++j) {
                 auto vectorReg = vectorIterBegin->gather(filters[j]->index);
                 filteringMask = filters[j]->match(vectorReg, filteringMask);
-                if (!filteringMask) {
-                    break;
-                }
             }
             // copy tuples to result
             auto scalarIter = vectorIterBegin->getScalarIterator();
-            TupleCopyHelper<T, Variant, Alignment>::copyMaskedTupleN(result, *scalarIter, filteringMask);
+            TupleCopyHelper<T, Variant, Alignment>::copyMaskedTupleN(result, *scalarIter, _mm512_mask2int(filteringMask));
             delete scalarIter;
         }
 
