@@ -9,6 +9,7 @@
 #include <tuple>
 #include <type_traits>
 #include <vector>
+#include <algorithm>
 
 #include "../column_store/ColumnStoreTable.h"
 #include "../pax_store/PaxTable.h"
@@ -82,10 +83,12 @@ std::tuple<double, double, double> measureTime(Tables::ITable<T> &table, std::ve
     count = std::accumulate(counts.begin(), counts.end(), 0.0) / (double)counts.size();
     */
 
-    clockDuration = std::nth_element(clockDurations.begin(), clockDurations.begin() + clockDurations.size() / 2,
+    std::nth_element(clockDurations.begin(), clockDurations.begin() + clockDurations.size() / 2,
                      clockDurations.end());
-    realDuration = std::nth_element(realDurations.begin(), realDurations.begin() + realDurations.size() / 2,
+    clockDuration = (double) clockDurations[clockDurations.size()/2];
+    std::nth_element(realDurations.begin(), realDurations.begin() + realDurations.size() / 2,
                                     realDurations.end());
+    realDuration = realDurations[realDurations.size()/2];
     count = std::accumulate(counts.begin(), counts.end(), 0.0) / (double)counts.size();
     // print result
     if (enablePrint) {
