@@ -67,7 +67,7 @@ void increasingRows(std::vector<uint64_t> &projection) {
     using Type64 = std::uint64_t;
     using Type32 = std::uint32_t;
 
-    unsigned int filterNr=6;
+    unsigned int filterNr=5;
 
     // AVX with 64 bit
     std::vector<Filters::Filter<Type64, SIMD::AVX512> *> filters_AVX64 = genFilters<Type64,SIMD::AVX512>(filterNr);
@@ -130,19 +130,19 @@ void increaseFilterNumber(unsigned int filterNr, std::vector<uint64_t> &projecti
                 filters.push_back(
                     new Filters::Equal<T, Variant>(i, std::rand() % 21 +40));
                 break;*/
-            case 2:
+            case 1:
                 filters.push_back(
                     new Filters::GreaterEqual<T, Variant>(i, std::rand() % 21 +40));
                 break;
-            case 3:
+            case 2:
                 filters.push_back(
                     new Filters::GreaterThan<T, Variant>(i, std::rand() % 21 +40));
                 break;
-            case 4:
+            case 3:
                 filters.push_back(
                     new Filters::LessEqual<T, Variant>(i, std::rand() % 21 +40));
                 break;
-            case 5:
+            case 4:
                 filters.push_back(
                     new Filters::LessThan<T, Variant>(i, std::rand() % 21 +40));
                 break;
@@ -154,12 +154,12 @@ void increaseFilterNumber(unsigned int filterNr, std::vector<uint64_t> &projecti
 int main(int argc, char **argv) {
     std::vector<uint64_t> projection{0, 1, 2, 3, 12, 28};
 
-    increasingRows(projection);
-    //increaseFilterNumber<uint64_t,SIMD::AVX512>(30,projection,"AVX64");
-    //increaseFilterNumber<uint64_t,SIMD::None>(30,projection,"Scalar64");
+    //increasingRows(projection);
+    increaseFilterNumber<uint64_t,SIMD::AVX512>(30,projection,"AVX64");
+    increaseFilterNumber<uint64_t,SIMD::None>(30,projection,"Scalar64");
 
-    //increaseFilterNumber<uint32_t,SIMD::AVX512>(30,projection,"AVX32");
-    //increaseFilterNumber<uint32_t,SIMD::None>(30,projection,"Scalar32");
+    increaseFilterNumber<uint32_t,SIMD::AVX512>(30,projection,"AVX32");
+    increaseFilterNumber<uint32_t,SIMD::None>(30,projection,"Scalar32");
 
     return 0;
 }
