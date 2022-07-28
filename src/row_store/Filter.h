@@ -29,10 +29,53 @@ class TupleCopyHelper<uint32_t, Variant, Alignment> {
                                  IntermediateIterator<uint32_t, Variant, Alignment> &scalarIterBegin, uint16_t mask) {
         if (!mask) return;
 
-        for (int i = 0; i < 16; ++i) {
-            if ((mask >> i) & 1) {
-                result->addRow(scalarIterBegin.addressOf(scalarIterBegin.getPos() + i));
-            }
+        if (mask & 0b1000000000000000) {
+            result->addRow(scalarIterBegin.addressOf(scalarIterBegin.getPos() + 0));
+        }
+        if (mask & 0b0100000000000000) {
+            result->addRow(scalarIterBegin.addressOf(scalarIterBegin.getPos() + 1));
+        }
+        if (mask & 0b0010000000000000) {
+            result->addRow(scalarIterBegin.addressOf(scalarIterBegin.getPos() + 2));
+        }
+        if (mask & 0b0001000000000000) {
+            result->addRow(scalarIterBegin.addressOf(scalarIterBegin.getPos() + 3));
+        }
+        if (mask & 0b0000100000000000) {
+            result->addRow(scalarIterBegin.addressOf(scalarIterBegin.getPos() + 4));
+        }
+        if (mask & 0b0000010000000000) {
+            result->addRow(scalarIterBegin.addressOf(scalarIterBegin.getPos() + 5));
+        }
+        if (mask & 0b0000001000000000) {
+            result->addRow(scalarIterBegin.addressOf(scalarIterBegin.getPos() + 6));
+        }
+        if (mask & 0b0000000100000000) {
+            result->addRow(scalarIterBegin.addressOf(scalarIterBegin.getPos() + 7));
+        }
+        if (mask & 0b0000000010000000) {
+            result->addRow(scalarIterBegin.addressOf(scalarIterBegin.getPos() + 8));
+        }
+        if (mask & 0b0000000001000000) {
+            result->addRow(scalarIterBegin.addressOf(scalarIterBegin.getPos() + 9));
+        }
+        if (mask & 0b0000000000100000) {
+            result->addRow(scalarIterBegin.addressOf(scalarIterBegin.getPos() + 10));
+        }
+        if (mask & 0b0000000000010000) {
+            result->addRow(scalarIterBegin.addressOf(scalarIterBegin.getPos() + 11));
+        }
+        if (mask & 0b0000000000001000) {
+            result->addRow(scalarIterBegin.addressOf(scalarIterBegin.getPos() + 12));
+        }
+        if (mask & 0b0000000000000100) {
+            result->addRow(scalarIterBegin.addressOf(scalarIterBegin.getPos() + 13));
+        }
+        if (mask & 0b0000000000000010) {
+            result->addRow(scalarIterBegin.addressOf(scalarIterBegin.getPos() + 14));
+        }
+        if (mask & 0b0000000000000001) {
+            result->addRow(scalarIterBegin.addressOf(scalarIterBegin.getPos() + 15));
         }
     }
 };
@@ -44,10 +87,29 @@ class TupleCopyHelper<uint64_t, Variant, Alignment> {
                                  IntermediateIterator<uint64_t, Variant, Alignment> &scalarIterBegin, uint16_t mask) {
         if (!mask) return;
 
-        for (int i = 0; i < 8; ++i) {
-            if ((mask >> i) & 1) {
-                result->addRow(scalarIterBegin.addressOf(scalarIterBegin.getPos() + i));
-            }
+        if (mask & 0b10000000) {
+            result->addRow(scalarIterBegin.addressOf(scalarIterBegin.getPos() + 0));
+        }
+        if (mask & 0b01000000) {
+            result->addRow(scalarIterBegin.addressOf(scalarIterBegin.getPos() + 1));
+        }
+        if (mask & 0b00100000) {
+            result->addRow(scalarIterBegin.addressOf(scalarIterBegin.getPos() + 2));
+        }
+        if (mask & 0b00010000) {
+            result->addRow(scalarIterBegin.addressOf(scalarIterBegin.getPos() + 3));
+        }
+        if (mask & 0b00001000) {
+            result->addRow(scalarIterBegin.addressOf(scalarIterBegin.getPos() + 4));
+        }
+        if (mask & 0b00000100) {
+            result->addRow(scalarIterBegin.addressOf(scalarIterBegin.getPos() + 5));
+        }
+        if (mask & 0b00000010) {
+            result->addRow(scalarIterBegin.addressOf(scalarIterBegin.getPos() + 6));
+        }
+        if (mask & 0b00000001) {
+            result->addRow(scalarIterBegin.addressOf(scalarIterBegin.getPos() + 7));
         }
     }
 };
