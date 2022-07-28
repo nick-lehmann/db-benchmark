@@ -27,36 +27,36 @@ void benchmark(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T,
 }
 
 template<typename T, SIMD Variant>
-std::vector<Filters::Filter<T, Variant> *> genFilters(unsigned int filterNr){
+std::vector<Filters::Filter<T, Variant> *> genFilters(unsigned int filterNr) {
     std::srand(42);
     std::vector<Filters::Filter<T, Variant> *> filters;
     unsigned int rFilter;
     for (int i = 0; i < filterNr; i++) {
-        rFilter= i % 5;
+        rFilter = i % 5;
         switch (rFilter) {
             case 0:
                 filters.push_back(
-                    new Filters::NotEqual<T, Variant>(i, std::rand() %  21 +40));
+                        new Filters::NotEqual<T, Variant>(i, std::rand() % 21 + 40));
                 break;
-            /* case 1:
-                filters.push_back(
-                    new Filters::Equal<T, Variant>(i, std::rand() % 21 +40));
-                break; */
+                /* case 1:
+                    filters.push_back(
+                        new Filters::Equal<T, Variant>(i, std::rand() % 21 +40));
+                    break; */
             case 1:
                 filters.push_back(
-                    new Filters::GreaterEqual<T, Variant>(i, std::rand() % 21 +40));
+                        new Filters::GreaterEqual<T, Variant>(i, std::rand() % 21 + 40));
                 break;
             case 2:
                 filters.push_back(
-                    new Filters::GreaterThan<T, Variant>(i, std::rand() % 21 +40));
+                        new Filters::GreaterThan<T, Variant>(i, std::rand() % 21 + 40));
                 break;
             case 3:
                 filters.push_back(
-                    new Filters::LessEqual<T, Variant>(i, std::rand() % 21 +40));
+                        new Filters::LessEqual<T, Variant>(i, std::rand() % 21 + 40));
                 break;
             case 4:
                 filters.push_back(
-                    new Filters::LessThan<T, Variant>(i, std::rand() % 21 +40));
+                        new Filters::LessThan<T, Variant>(i, std::rand() % 21 + 40));
                 break;
         }
     }

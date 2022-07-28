@@ -44,11 +44,15 @@ std::tuple<double, double, double> measureTime(Tables::ITable<T> &table, std::ve
         auto clockStartTime = std::clock();
         auto realStartTime = std::chrono::steady_clock::now();
 
-        // call query count function
-        auto countTMP = table.queryCount(projection, filters);
+        // call query function
+        auto [result, rows, columns] = table.queryTable(projection, filters);
+        auto countTMP = rows;
 
         auto clockEndTime = std::clock();
         auto realEndTime = std::chrono::steady_clock::now();
+
+        // free the table
+        TableHelper::freeTable(result, rows);
 
         // store results
         auto clockDurationTMP = clockEndTime - clockStartTime;
