@@ -176,7 +176,9 @@ class IntermediateTable {
             ++(*iter);
         }
 
-        return std::make_tuple(output, iter->getPos());
+        uint64_t pos = iter->getPos();
+        delete iter;
+        return std::make_tuple(output, pos);
     }
 
     /// Returns the number of values in a tuple, aka number of attributes of the table.
