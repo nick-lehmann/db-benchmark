@@ -99,7 +99,7 @@ void increasingRows(std::vector<uint64_t> &projection) {
 
 template <typename T, SIMD Variant>
 void benchmarkFilter(std::vector<uint64_t> &projection, std::vector<Filters::Filter<T, Variant> *> &filters, const std::string &fileId,
-                     unsigned rows = 500000, unsigned columns = 50, unsigned increase = 100, unsigned steps = 1) {
+                     unsigned rows = 50000, unsigned columns = 50, unsigned increase = 100, unsigned steps = 1) {
     std::string fileName = "../output_files/PSbenchmark_" + fileId + "_fNR_" + std::to_string(filters.size()) + ".csv";
     Benchmark::benchmarkRows<T, Variant>(2, projection, filters, rows, columns, false, increase, steps, 0, 100, 42, fileName);
     fileName = "../output_files/CSbenchmark_" + fileId + "_fNR_" + std::to_string(filters.size()) + ".csv";
@@ -114,7 +114,7 @@ void increaseFilterNumber(unsigned int filterNr, std::vector<uint64_t> &projecti
     std::vector<Filters::Filter<T, Variant> *> filters;
     unsigned int rFilter;
     for (int i = 0; i < filterNr; i++) {
-        rFilter = i % 5;
+        rFilter = 0;
         switch (rFilter) {
             case 0:
                 filters.push_back(new Filters::NotEqual<T, Variant>(i, std::rand() % 21 + 40));
@@ -149,7 +149,7 @@ int main(int argc, char **argv) {
     increaseFilterNumber<uint32_t, SIMD::AVX512>(30, projection, "AVX32");
     increaseFilterNumber<uint32_t, SIMD::None>(30, projection, "Scalar32");
    	
-    increasingRows(projection); 
+    //increasingRows(projection); 
    
     return 0;
 }
